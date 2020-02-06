@@ -205,6 +205,10 @@ namespace ADBRuntime
 
         public void initializeCollider(bool generateScript, List<Transform> allPointTrans)
         {
+            if (allPointTrans == null)
+            {
+                Debug.Log("use <generate Point> to get higher accuate collider");
+            }
             colliderControll = new ADBRuntimeColliderControll(gameObject, allPointTrans, isGenerateColliderAutomaitc);//OYM：在这里获取collider
             if (generateScript)
             {
