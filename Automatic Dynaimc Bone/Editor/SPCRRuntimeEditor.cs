@@ -12,7 +12,6 @@ namespace ADBRuntime
     {
 
         ADBRuntimeController controller;
-        bool isDebug;
         public void OnEnable()
         {
             controller = target as ADBRuntimeController;
@@ -67,8 +66,8 @@ namespace ADBRuntime
             EditorGUILayout.PropertyField(serializedObject.FindProperty("editorColliderList"), new GUIContent("Collider"), true);
 
             Titlebar("physical setting", new Color(0.7f, 1.0f, 0.7f));
-            isDebug = EditorGUILayout.Toggle("isDebug", isDebug);
-            if (isDebug)
+            controller. isDebug = EditorGUILayout.Toggle("isDebug", controller.isDebug);
+            if (controller.isDebug)
             {
                 controller.iteration = EditorGUILayout.IntSlider("Iterations number", controller.iteration, 1, 1024);
             }
@@ -77,7 +76,7 @@ namespace ADBRuntime
                 controller.iteration = EditorGUILayout.IntSlider("Iterations number", controller.iteration, 4, 256);
             }
             controller.delayTime = EditorGUILayout.FloatField("delayTime", controller.delayTime);
-
+            controller.windScale=EditorGUILayout.Slider("windForcePower",controller.windScale, 0, 1); 
             controller.colliderCollisionType= (ColliderCollisionType)EditorGUILayout.EnumPopup("Collision Quantity",controller.colliderCollisionType);
            serializedObject.ApplyModifiedProperties();
         }

@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Unity.Mathematics;
 
 namespace ADBRuntime
 {
@@ -29,7 +30,9 @@ namespace ADBRuntime
         public float delayTime=0.0001f;
         [SerializeField]
         public int iteration;
-
+        [SerializeField]
+        public float windScale;
+        public bool isDebug;
         public bool isResetPoint;
         [SerializeField]
         public ADBGlobalSetting settings;
@@ -55,9 +58,10 @@ namespace ADBRuntime
         private bool isInitialize = false;
         private float initializeScale;
         private float scale;
-
+        private Vector3 windForce;
         private void Start()//OYM：滚回来自己来趟这趟屎山
         {
+            isDebug = false;
             if (!isInitialize)
             {
                 initializePoint();
@@ -85,6 +89,7 @@ namespace ADBRuntime
 
         private void OnDrawGizmos()
         {
+            if (!isDebug) return;
             
             if (jointAndPointControlls != null)
             {
@@ -127,6 +132,10 @@ namespace ADBRuntime
             }
             deltaTime = Mathf.Min(Time.deltaTime, 0.016f);
             scale = transform.lossyScale.x / initializeScale;
+
+            windForce = ADBWindZone.getWindForce(transform.position, deltaTime * windScale) * windScale;
+
+
                 UpdateDataPakage();
  
         }
@@ -141,7 +150,7 @@ namespace ADBRuntime
         }
         private void UpdateDataPakage()
         {
-            dataPackage.SetRuntimeData(deltaTime, scale / initializeScale, iteration, colliderCollisionType);
+            dataPackage.SetRuntimeData(deltaTime, scale / initializeScale, iteration, windForce, colliderCollisionType);
         }
 
         internal void GenerateNewOne()
@@ -226,9 +235,5 @@ namespace ADBRuntime
             }
         }
 
-        private Vector3 getWindForce(Vector3 position)
-        {
-            return Vector3.zero;
-        }
     }
 }

@@ -286,6 +286,7 @@ namespace ADBRuntime.Internal
                     }
                     */
                         pReadWritePoint->velocity += pReadPoint->gravity * scale * (0.5f * deltaTime * deltaTime) /iteration;//OYM：重力(要计算iteration次所以除以个iteration)
+                    pReadWritePoint->velocity += windForcePower/(iteration * pReadPoint->weight);
                     pReadWritePoint->position += pReadWritePoint->velocity/iteration ;
                 }
             }
@@ -327,8 +328,6 @@ namespace ADBRuntime.Internal
             public int colliderCount;
             [ReadOnly]
             public float scale;
-            [ReadOnly]
-            public float iteration;
             [ReadOnly]
             public int globalColliderCount;
             [ReadOnly]
