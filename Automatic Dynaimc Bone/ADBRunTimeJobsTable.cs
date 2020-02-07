@@ -32,31 +32,15 @@ namespace ADBRuntime.Internal
             return instance_ADBRunTimeJobsTable;
         }
 
-        public void AddGlobalCollider(ADBRuntimeCollider ADBRuntimeCollider)
-        {
-            allGlobalColliderReadTable.Add(ADBRuntimeCollider.colliderRead);
-            allGlobalColliderReadWriteTable.Add(ADBRuntimeCollider.colliderReadWrite);
-            allGlobalColliderTransformTable.Add(ADBRuntimeCollider.appendTransform);
-        }
-
         #endregion
         internal JobHandle returnHJob;
         // private int complexHJobBatchCount=8;
         //先预留在这里看下性能
-        internal NativeList<ColliderRead> allGlobalColliderReadTable;
-        internal NativeList<ColliderReadWrite> allGlobalColliderReadWriteTable;
-        internal TransformAccessArray allGlobalColliderTransformTable;
-        private ColliderUpdate colliderUpdate;
+
         private const float EPSILON = 0.001f;
         public bool needRestart;
         public int computeCount { get; private set; }
 
-        private void OnDestroy()
-        {
-            allGlobalColliderReadTable.Dispose();
-            allGlobalColliderReadWriteTable.Dispose();
-            allGlobalColliderTransformTable.Dispose();
-        }
         #region Jobs
         [BurstCompile]
         public struct InitiralizeCollider : IJobParallelForTransform
@@ -146,7 +130,8 @@ namespace ADBRuntime.Internal
             public PointRead* pReadPoints;
             [NativeDisableUnsafePtrRestriction]
             public PointReadWrite* pReadWritePoints;
-
+            [ReadOnly]
+            public int iteration;
             public void Execute(int index, TransformAccess transform)
             {
                 /*
@@ -166,12 +151,22 @@ namespace ADBRuntime.Internal
             public void Execute(int index, Transform transform)
             {
             */
-                (pReadWritePoints + index)->velocity *= (pReadPoints + index)->mass;
+                PointRead* pReadPoint = pReadPoints + index;
+                PointReadWrite* pReadWritePoint = pReadWritePoints + index;
+                (pReadWritePoint)->velocity *= pReadPoint->mass;
 
-                if ((pReadPoints + index)->fixedIndex == index)//OYM：fixedpoint
+                if (pReadPoint->fixedIndex == index)//OYM：fixedpoint
                 {
                     (pReadWritePoints + index)->velocity = transform.position - (pReadWritePoints + index)->position;
                     (pReadWritePoints + index)->position = transform.position;
+                }
+                else
+                {
+                    PointReadWrite* pFixedPointReadWrite = (pReadWritePoints + pReadPoint->fixedIndex);
+                    pReadWritePoint->position += pFixedPointReadWrite->velocity;
+                    pReadWritePoint->velocity -= pFixedPointReadWrite->velocity * 0.05f * pReadPoint->airResistance/ pReadPoint->weight;
+                    //OYM：0.05是我试出来的,如果你有更好的值可以填进去
+
                 }
             }
         }
@@ -278,16 +273,12 @@ namespace ADBRuntime.Internal
                 PointReadWrite* pReadWritePoint = pReadWritePoints + index;
                 if (pReadPoint->fixedIndex != index)
                 {
-                    PointReadWrite* pFixedPointReadWrite = (pReadWritePoints + pReadPoint->fixedIndex);
-                    /*
-                    if (pFixedPointReadWrite->velocity.sqrMagnitude > 0.01f)
-                    {
-                       // pReadWritePoint->position += pFixedPointReadWrite->velocity*(1 - 0.1f/pFixedPointReadWrite->velocity.magnitude);//OYM：问题是                                                                                                                                    //OYM：有没有更快的方法?
-                    }
-                    */
-                        pReadWritePoint->velocity += pReadPoint->gravity * scale * (0.5f * deltaTime * deltaTime) /iteration;//OYM：重力(要计算iteration次所以除以个iteration)
-                    pReadWritePoint->velocity += windForcePower/(iteration * pReadPoint->weight);
-                    pReadWritePoint->position += pReadWritePoint->velocity/iteration ;
+
+                    //OYM：正常流程
+
+                    pReadWritePoint->velocity += pReadPoint->gravity * scale * (0.5f * deltaTime * deltaTime) / iteration;//OYM：重力(要计算iteration次所以除以个iteration)
+                    pReadWritePoint->velocity += windForcePower / (iteration * pReadPoint->weight);
+                    pReadWritePoint->position += pReadWritePoint->velocity / iteration;
                 }
             }
         }
@@ -366,7 +357,7 @@ namespace ADBRuntime.Internal
                 //OYM：获取约束的朝向
                 var Direction = pReadWritePointB->position - pReadWritePointA->position;
 
-      
+
                 float Distance = Direction.magnitude;
                 //OYM：力度等于距离减去长度除以弹性，这个值可以不存在，可以大于1但是没有什么卵用
                 float Force = (Distance - constraint->length * scale);
@@ -467,8 +458,8 @@ namespace ADBRuntime.Internal
                         break;
                     case ColliderType.OBB:
                         {
-                            
-                            SegmentToOBB(pReadWritePointA->position, pReadWritePointB->position, pReadWriteCollider->position, - pReadCollider->boxSize,  pReadCollider->boxSize, Quaternion.Inverse(pReadWriteCollider->normal), out float t1, out float t2);
+
+                            SegmentToOBB(pReadWritePointA->position, pReadWritePointB->position, pReadWriteCollider->position, -pReadCollider->boxSize, pReadCollider->boxSize, Quaternion.Inverse(pReadWriteCollider->normal), out float t1, out float t2);
                             Vector3 dir = pReadWritePointB->position - pReadWritePointA->position;
                             t1 = Clamp01(t1);
                             t2 = Clamp01(t2);
@@ -479,44 +470,44 @@ namespace ADBRuntime.Internal
                             {
                                 float t = (t1 + t2) * 0.5f;
                                 Vector3 nearestPoint = pReadWritePointA->position + dir * t;
-                                Vector3 pushout = Quaternion.Inverse(pReadWriteCollider->normal)*( nearestPoint - pReadWriteCollider->position);
+                                Vector3 pushout = Quaternion.Inverse(pReadWriteCollider->normal) * (nearestPoint - pReadWriteCollider->position);
                                 float pushoutX = pushout.x > 0 ? pReadCollider->boxSize.x - pushout.x : -pReadCollider->boxSize.x - pushout.x;
-                                float pushoutY = pushout.y > 0 ? pReadCollider->boxSize.y - pushout.y :- pReadCollider->boxSize.y - pushout.y;
+                                float pushoutY = pushout.y > 0 ? pReadCollider->boxSize.y - pushout.y : -pReadCollider->boxSize.y - pushout.y;
                                 float pushoutZ = pushout.z > 0 ? pReadCollider->boxSize.z - pushout.z : -pReadCollider->boxSize.z - pushout.z;
 
                                 if (Abs(pushoutZ) < Abs(pushoutY) && Abs(pushoutZ) < Abs(pushoutX))
                                 {
-                                    pushout = pReadWriteCollider->normal*new Vector3(0, 0, pushoutZ);
+                                    pushout = pReadWriteCollider->normal * new Vector3(0, 0, pushoutZ);
 
                                 }
                                 else if (Abs(pushoutY) < Abs(pushoutX) && Abs(pushoutY) < Abs(pushoutZ))
                                 {
-                                    pushout = pReadWriteCollider->normal* new Vector3(0, pushoutY, 0);
+                                    pushout = pReadWriteCollider->normal * new Vector3(0, pushoutY, 0);
                                 }
                                 else
                                 {
-                                    pushout = pReadWriteCollider->normal* new Vector3(pushoutX, 0, 0);
+                                    pushout = pReadWriteCollider->normal * new Vector3(pushoutX, 0, 0);
                                 }
                                 if (pushout.sqrMagnitude != 0)
                                 {
 
-                                        float inverse1Velocity = Vector3.Dot(pushout, pReadWritePointA->velocity) / pushout.sqrMagnitude;
-                                        pReadWritePointA->velocity -= pushout * inverse1Velocity;
-                                        pReadWritePointB->velocity -= pushout * inverse1Velocity;
+                                    float inverse1Velocity = Vector3.Dot(pushout, pReadWritePointA->velocity) / pushout.sqrMagnitude;
+                                    pReadWritePointA->velocity -= pushout * inverse1Velocity;
+                                    pReadWritePointB->velocity -= pushout * inverse1Velocity;
 
-                                        float Propotion = WeightProportion * t / (1 - WeightProportion - t + 2 * WeightProportion * t);
-                                        if (WeightProportion > 0)
-                                        {
-                                            pReadWritePointA->position += (pushout* Propotion);
-                                            pReadWritePointA->velocity += (pushout * Propotion);
-                                        }
-                                        else
-                                        {
-                                            Propotion = 1;
-                                        }
-                                        pReadWritePointB->position += (pushout*(1- Propotion) );
-                                        pReadWritePointB->velocity += (pushout *(1- Propotion));
-                                    
+                                    float Propotion = WeightProportion * t / (1 - WeightProportion - t + 2 * WeightProportion * t);
+                                    if (WeightProportion > 0)
+                                    {
+                                        pReadWritePointA->position += (pushout * Propotion);
+                                        pReadWritePointA->velocity += (pushout * Propotion);
+                                    }
+                                    else
+                                    {
+                                        Propotion = 1;
+                                    }
+                                    pReadWritePointB->position += (pushout * (1 - Propotion));
+                                    pReadWritePointB->velocity += (pushout * (1 - Propotion));
+
                                 }
                             }
                             break;
@@ -604,9 +595,9 @@ out float tP, out float tQ, out Vector3 pointOnP, out Vector3 pointOnQ)
             {
                 return A > 0 ? (A < 1 ? A : 1) : 0;
             }
-            float Min(float A, float B,float C)
+            float Min(float A, float B, float C)
             {
-                return A<B?(A<C?A:C):(B<C?B:C);
+                return A < B ? (A < C ? A : C) : (B < C ? B : C);
             }
             float Min(float A, float B)
             {
@@ -678,13 +669,13 @@ out float tP, out float tQ, out Vector3 pointOnP, out Vector3 pointOnQ)
                     switch (pReadCollider->colliderType)
                     {
                         case ColliderType.Sphere:
-                            pushout = pReadWritePoint->position- pReadWriteCollider->position ;
+                            pushout = pReadWritePoint->position - pReadWriteCollider->position;
                             sqrPushout = pushout.sqrMagnitude;
                             if (sqrPushout < pReadCollider->radius * pReadCollider->radius)
                             {
                                 pushout = pushout * (pReadCollider->radius / Mathf.Sqrt(sqrPushout) - 1);
                                 pReadWritePoint->position += pushout;
-                                pReadWritePoint->velocity += pushout ;
+                                pReadWritePoint->velocity += pushout;
                             }
                             break;
                         case ColliderType.Capsule:
@@ -698,8 +689,8 @@ out float tP, out float tQ, out Vector3 pointOnP, out Vector3 pointOnQ)
                             break;
                         case ColliderType.OBB:
                             pushout = Quaternion.Inverse(pReadWriteCollider->normal) * (pReadWritePoint->position - pReadWriteCollider->position);
-                            if (-pReadCollider->boxSize.x< pushout.x&&pushout.x< pReadCollider->boxSize.x&&
-                                -pReadCollider->boxSize.y < pushout.y && pushout.y < pReadCollider->boxSize.y&&
+                            if (-pReadCollider->boxSize.x < pushout.x && pushout.x < pReadCollider->boxSize.x &&
+                                -pReadCollider->boxSize.y < pushout.y && pushout.y < pReadCollider->boxSize.y &&
                                 -pReadCollider->boxSize.z < pushout.z && pushout.z < pReadCollider->boxSize.z
                                 )
                             {
@@ -721,7 +712,7 @@ out float tP, out float tQ, out Vector3 pointOnP, out Vector3 pointOnQ)
                                     pushout = pReadWriteCollider->normal * new Vector3(pushoutX, 0, 0);
                                 }
                                 pReadWritePoint->position += pushout;
-                                pReadWritePoint->velocity += pushout ;
+                                pReadWritePoint->velocity += pushout;
                             }
                             break;
                         default:
@@ -801,17 +792,18 @@ out float tP, out float tQ, out Vector3 pointOnP, out Vector3 pointOnQ)
             public void Execute(int index, Transform transform)
             {
                 */
-                PointReadWrite* pReadWrite = pReadWritePoints + index;//OYM：获取每个读写点
-                PointRead* pRead = pReadPoints + index;//OYM：获取每个只读点
+                PointReadWrite* pReadWritePoint = pReadWritePoints + index;//OYM：获取每个读写点
+                PointRead* pReadPoint = pReadPoints + index;//OYM：获取每个只读点
 
-                if (!(pRead->fixedIndex == index || pRead->isVirtual))//OYM：不是fix点
+                if (!(pReadPoint->fixedIndex == index || pReadPoint->isVirtual))//OYM：不是fix点
                 {
-                    transform.position = pReadWrite->position;
+                    transform.position = pReadWritePoint->position;
                 }
 
-                if (pRead->childFirstIndex > -1)
+
+                if (pReadPoint->childFirstIndex > -1)
                 {
-                    SetRotation(index, transform, pReadWrite, pRead);//OYM：设置旋转
+                    SetRotation(index, transform, pReadWritePoint, pReadPoint);//OYM：设置旋转
                 }
             }
             void SetRotation(int index, TransformAccess transform, PointReadWrite* pReadWrite, PointRead* pRead)

@@ -61,7 +61,6 @@ namespace ADBRuntime
         private Vector3 windForce;
         private void Start()//OYM：滚回来自己来趟这趟屎山
         {
-            isDebug = false;
             if (!isInitialize)
             {
                 initializePoint();
@@ -88,9 +87,9 @@ namespace ADBRuntime
         }
 
         private void OnDrawGizmos()
-        {
-            if (!isDebug) return;
-            
+        {       
+            if(!isDebug) return;
+
             if (jointAndPointControlls != null)
             {
                 foreach (var controll in jointAndPointControlls)
@@ -105,8 +104,6 @@ namespace ADBRuntime
                     Gizmos.color = Color.red;
                     colliderControll.OnDrawGizmos();
                 }
-
-            
         }
 
         private void Update()
@@ -130,12 +127,11 @@ namespace ADBRuntime
                 isResetPoint = false;
                 return;
             }
-            deltaTime = Mathf.Min(Time.deltaTime, 0.016f);
+            // deltaTime = Mathf.Min(Time.deltaTime, 0.016f);
+            deltaTime = 0.016f;
             scale = transform.lossyScale.x / initializeScale;
 
             windForce = ADBWindZone.getWindForce(transform.position, deltaTime * windScale) * windScale;
-
-
                 UpdateDataPakage();
  
         }

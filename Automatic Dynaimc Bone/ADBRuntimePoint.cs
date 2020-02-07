@@ -82,16 +82,17 @@ namespace ADBRuntime
         /// </summary>);
         public float weight;
         /// <summary>
-        /// 可塑性，默认为1
+        /// 怠速，默认为1
         /// </summary>);
         public float mass;
         /// <summary>
-        /// 阻尼，默认为1
+        /// 风阻，默认为1
         /// </summary>);
-        public float resistance;
+        public float airResistance;
         /// <summary>
-        /// 摩擦力大小
+        /// 摩擦力大小(对于collider来说)
         /// </summary>);
+        public float friction;
         public float structuralShrinkVertical;
         public float structuralStretchVertical;
         public float structuralShrinkHorizontal;
@@ -108,7 +109,6 @@ namespace ADBRuntime
         public Vector3 boneAxis;
         public Vector3 initialPosition;
         public Quaternion localRotation;
-
     }
 
     //OYM：写入系统

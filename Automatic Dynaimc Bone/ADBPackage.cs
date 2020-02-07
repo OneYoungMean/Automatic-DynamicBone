@@ -140,6 +140,7 @@ namespace ADBRuntime
 
             JobHandle Hjob = ADBRunTimeJobsTable.returnHJob;
 
+            pointGet.iteration = iteration;
             pointUpdate.deltaTime = deltaTime;
             pointUpdate.scale = scale;
             pointUpdate.iteration = iteration;
@@ -162,20 +163,20 @@ namespace ADBRuntime
                 {
                     step = 1 / ((float)iteration - i);
                    Hjob = pointUpdate.Schedule(pointReadList.Length, batchLength);
-                 //  pointUpdate.TryExecute(pointReadList.Length, batchLength,Hjob);
+                    //pointUpdate.TryExecute(pointReadList.Length, batchLength,Hjob);
                     colliderUpdate.step = step;
                     Hjob = colliderUpdate.Schedule(collidersReadList.Length, batchLength);
 
                     for (int j0 = 0; j0 < constraintUpdates.Length; j0++)
                     {
-                        Hjob = constraintUpdates[j0].Schedule(constraintReadList[j0].Length, batchLength);
+                       Hjob = constraintUpdates[j0].Schedule(constraintReadList[j0].Length, batchLength, Hjob);
                       //  constraintUpdates[j0].TryExecute(constraintReadList[j0].Length, batchLength, Hjob);
                     }
 
                     Hjob = pointCollision.Schedule(pointReadList.Length, batchLength);
 
                 }
-                 Hjob = pointToTransform.Schedule(pointTransformsList);
+                 Hjob = pointToTransform.Schedule(pointTransformsList, Hjob);
                 //pointToTransform.TryExecute(pointTransformsList, Hjob);
             }
         }

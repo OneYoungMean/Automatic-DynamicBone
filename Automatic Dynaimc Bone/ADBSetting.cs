@@ -7,11 +7,11 @@ namespace ADBRuntime
     public class ADBSetting : ScriptableObject
     {
         public SettingType settingType;
-        public bool isAdvantage = false;
+        public bool useGlobal = false;
         //高级情况下用这一套
+            public AnimationCurve frictionCurve = new AnimationCurve(new Keyframe[] { new Keyframe(0.0f, 0.0f), new Keyframe(1.0f, 0.0f) });
         public AnimationCurve gravityScaleCurve = new AnimationCurve(new Keyframe[] { new Keyframe(0.0f, 1.0f), new Keyframe(1.0f, 1.0f) });
-
-        public AnimationCurve freezeCurve = new AnimationCurve(new Keyframe[] { new Keyframe(0.0f, 0.7f), new Keyframe(1.0f, 0.7f) });
+        public AnimationCurve airResistanceCurve = new AnimationCurve(new Keyframe[] { new Keyframe(0.0f, 1.0f), new Keyframe(1.0f, 1.0f) });
         public AnimationCurve massCurve = new AnimationCurve(new Keyframe[] { new Keyframe(0.0f, 0.9f), new Keyframe(1.0f, 1f) });
         public AnimationCurve structuralShrinkVerticalScaleCurve = new AnimationCurve(new Keyframe[] { new Keyframe(0.0f, 1.0f), new Keyframe(1.0f, 1.0f) });
         public AnimationCurve structuralStretchVerticalScaleCurve = new AnimationCurve(new Keyframe[] { new Keyframe(0.0f, 1.0f), new Keyframe(1.0f, 1.0f) });
@@ -27,8 +27,10 @@ namespace ADBRuntime
         public AnimationCurve structuralCircumferenceStretchScaleCurve = new AnimationCurve(new Keyframe[] { new Keyframe(0.0f, 1.0f), new Keyframe(1.0f, 1.0f) });
         //OYM：调试情况用这一套
 
-        public float freezeGlobal = 0.7f;
+        public float frictionGlobal = 0f;
+        public float freezeGlobal = 0.1f;
         public float massGlobal=1f;
+        public float airResistanceGlobal = 1f;
         public float structuralShrinkVerticalScaleGlobal = 1.0f;
         public float structuralStretchVerticalScaleGlobal = 1.0f;
         public float structuralShrinkHorizontalScaleGlobal = 1.0f;

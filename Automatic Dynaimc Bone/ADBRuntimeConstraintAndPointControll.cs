@@ -14,7 +14,7 @@ namespace ADBRuntime
     public class ADBConstraintReadAndPointControll
     {
 
-        public ADBSetting ADBSetting;
+        public ADBSetting aDBSetting;
 
         //OYM：pointList
         public ADBRuntimePoint rootNode;
@@ -51,7 +51,7 @@ namespace ADBRuntime
             allNodeList = new List<ADBRuntimePoint>();
             addVirtualPointList = new List<ADBRuntimePoint>();
             maxNodeDepth = 1;
-            ADBSetting = setting;
+            aDBSetting = setting;
         }
 
         public void Initialize()
@@ -74,7 +74,7 @@ namespace ADBRuntime
             {
                 if (PointList[i].childNode == null && !PointList[i].isVirtual)
                 {
-                    var virtualPoint = new ADBRuntimePoint(PointList[i].trans, PointList[i].depth+1, PointList[i].keyWord, true);
+                    var virtualPoint = new ADBRuntimePoint(PointList[i].trans, PointList[i].depth + 1, PointList[i].keyWord, true);
                     PointList[i].childNode = new List<ADBRuntimePoint>() { virtualPoint };
                     PointList[i].pointRead.childFirstIndex = allNodeList.Count;
                     PointList[i].pointRead.childLastIndex = allNodeList.Count + 1;
@@ -86,24 +86,24 @@ namespace ADBRuntime
                     virtualPoint.pointRead.boneAxis = Vector3.down * 0.1f;
                     virtualPoint.pointRead.localRotation = Quaternion.identity;
                     virtualPoint.pointRead.initialPosition = Vector3.zero;
-                   allNodeList.Add(virtualPoint);
+                    allNodeList.Add(virtualPoint);
                 }
             }
             constraintsVirtual = new List<ADBConstraintRead>();
             for (int i = 0; i < PointList.Count; ++i)
             {
-                CreateConstraintStructuralVertical(PointList[i], ref constraintsVirtual , ADBSetting.structuralShrinkVertical, ADBSetting.structuralStretchVertical);
+                CreateConstraintStructuralVertical(PointList[i], ref constraintsVirtual, aDBSetting.structuralShrinkVertical, aDBSetting.structuralStretchVertical);
             }
             for (int i = 0; i < constraintsVirtual.Count; i++)
             {
                 constraintsVirtual[i].constraintRead.isCollider = false;
-                constraintsVirtual[i].constraintRead.type = ConstraintType.Virtual ;
+                constraintsVirtual[i].constraintRead.type = ConstraintType.Virtual;
             }
         }
 
         private void CreatePointStructList(List<ADBRuntimePoint> allPointList)
         {
-            ComputeQuality(constraintsStructuralHorizontal,constraintsStructuralVertical);
+            ComputeQuality(constraintsStructuralHorizontal, constraintsStructuralVertical);
 
             pointReadList = new PointRead[allPointList.Count];
             pointReadWriteList = new PointReadWrite[allPointList.Count];
@@ -112,44 +112,46 @@ namespace ADBRuntime
             {
                 //OYM：有一部分设置被我搬到生成constrain里面生成去了,在这里生成太啰嗦了,不想写.
                 var point = allPointList[i];//OYM：翻译出来是源文件  
-                point.pointRead.initialPosition = point.trans.position- allPointList[point.pointRead.fixedIndex].trans.position;//OYM：相对于固定点的位置
+                point.pointRead.initialPosition = point.trans.position - allPointList[point.pointRead.fixedIndex].trans.position;//OYM：相对于固定点的位置
 
-                if (ADBSetting.isAdvantage)
+                if (!aDBSetting.useGlobal)
                 {
                     float rate = point.pointDepthRateMaxPointDepth;
                     rate = Mathf.Clamp01(rate);
-
-                    point.pointRead.mass =  ADBSetting.massCurve.Evaluate(rate);//OYM：重力补间
-                    point.pointRead.gravity = ADBSetting.gravity * ADBSetting.gravityScaleCurve.Evaluate(rate);//OYM：重力补间
-                    point.pointRead.circumferenceShrink = 0.5f * ADBSetting.structuralCircumferenceShrinkScaleCurve.Evaluate(rate);
-                    point.pointRead.circumferenceStretch = 0.5f * ADBSetting.structuralCircumferenceStretchScaleCurve.Evaluate(rate);
-                    point.pointRead.structuralShrinkVertical = 0.5f * ADBSetting.structuralShrinkVerticalScaleCurve.Evaluate(rate);
-                    point.pointRead.structuralStretchVertical = 0.5f * ADBSetting.structuralStretchVerticalScaleCurve.Evaluate(rate);
-                    point.pointRead.structuralShrinkHorizontal = 0.5f * ADBSetting.structuralShrinkHorizontalScaleCurve.Evaluate(rate);
-                    point.pointRead.structuralStretchHorizontal = 0.5f * ADBSetting.structuralStretchHorizontalScaleCurve.Evaluate(rate);
-                    point.pointRead.shearShrink = 0.5f * ADBSetting.shearShrinkScaleCurve.Evaluate(rate);
-                    point.pointRead.shearStretch = 0.5f * ADBSetting.shearStretchScaleCurve.Evaluate(rate);
-                    point.pointRead.bendingShrinkVertical = 0.5f * ADBSetting.bendingShrinkVerticalScaleCurve.Evaluate(rate);
-                    point.pointRead.bendingStretchVertical = 0.5f * ADBSetting.bendingStretchVerticalScaleCurve.Evaluate(rate);
-                    point.pointRead.bendingShrinkHorizontal = 0.5f * ADBSetting.bendingShrinkHorizontalScaleCurve.Evaluate(rate);
-                    point.pointRead.bendingStretchHorizontal = 0.5f * ADBSetting.bendingStretchHorizontalScaleCurve.Evaluate(rate);
+                    point.pointRead.friction = aDBSetting.frictionCurve.Evaluate(rate);
+                    point.pointRead.airResistance = aDBSetting.airResistanceCurve.Evaluate(rate);
+                    point.pointRead.mass = aDBSetting.massCurve.Evaluate(rate);
+                    point.pointRead.gravity = aDBSetting.gravity * aDBSetting.gravityScaleCurve.Evaluate(rate);
+                    point.pointRead.circumferenceShrink = 0.5f * aDBSetting.structuralCircumferenceShrinkScaleCurve.Evaluate(rate);
+                    point.pointRead.circumferenceStretch = 0.5f * aDBSetting.structuralCircumferenceStretchScaleCurve.Evaluate(rate);
+                    point.pointRead.structuralShrinkVertical = 0.5f * aDBSetting.structuralShrinkVerticalScaleCurve.Evaluate(rate);
+                    point.pointRead.structuralStretchVertical = 0.5f * aDBSetting.structuralStretchVerticalScaleCurve.Evaluate(rate);
+                    point.pointRead.structuralShrinkHorizontal = 0.5f * aDBSetting.structuralShrinkHorizontalScaleCurve.Evaluate(rate);
+                    point.pointRead.structuralStretchHorizontal = 0.5f * aDBSetting.structuralStretchHorizontalScaleCurve.Evaluate(rate);
+                    point.pointRead.shearShrink = 0.5f * aDBSetting.shearShrinkScaleCurve.Evaluate(rate);
+                    point.pointRead.shearStretch = 0.5f * aDBSetting.shearStretchScaleCurve.Evaluate(rate);
+                    point.pointRead.bendingShrinkVertical = 0.5f * aDBSetting.bendingShrinkVerticalScaleCurve.Evaluate(rate);
+                    point.pointRead.bendingStretchVertical = 0.5f * aDBSetting.bendingStretchVerticalScaleCurve.Evaluate(rate);
+                    point.pointRead.bendingShrinkHorizontal = 0.5f * aDBSetting.bendingShrinkHorizontalScaleCurve.Evaluate(rate);
+                    point.pointRead.bendingStretchHorizontal = 0.5f * aDBSetting.bendingStretchHorizontalScaleCurve.Evaluate(rate);
                 }
                 else
                 {
-                    point.pointRead.resistance = 1f;
-                    point.pointRead.mass = ADBSetting.massGlobal;//OYM：重力补间
-                    point.pointRead.gravity = ADBSetting.gravity ;//OYM：重力补间
-                    point.pointRead.circumferenceShrink = 0.5f * ADBSetting.structuralCircumferenceShrinkScaleGlobal;
-                    point.pointRead.structuralShrinkVertical = 0.5f * ADBSetting.structuralShrinkVerticalScaleGlobal;
-                    point.pointRead.structuralStretchVertical = 0.5f * ADBSetting.structuralStretchVerticalScaleGlobal;
-                    point.pointRead.structuralShrinkHorizontal = 0.5f * ADBSetting.structuralShrinkHorizontalScaleGlobal;
-                    point.pointRead.structuralStretchHorizontal = 0.5f * ADBSetting.structuralStretchHorizontalScaleGlobal;
-                    point.pointRead.shearShrink = 0.5f * ADBSetting.shearShrinkScaleGlobal;
-                    point.pointRead.shearStretch = 0.5f * ADBSetting.shearStretchScaleGlobal;
-                    point.pointRead.bendingShrinkVertical = 0.5f * ADBSetting.bendingShrinkVerticalScaleGlobal;
-                    point.pointRead.bendingStretchVertical = 0.5f * ADBSetting.bendingStretchVerticalScaleGlobal;
-                    point.pointRead.bendingShrinkHorizontal = 0.5f * ADBSetting.bendingShrinkHorizontalScaleGlobal;
-                    point.pointRead.bendingStretchHorizontal = 0.5f * ADBSetting.bendingStretchHorizontalScaleGlobal;
+                    point.pointRead.friction = aDBSetting.frictionGlobal;
+                    point.pointRead.airResistance = aDBSetting.airResistanceGlobal;
+                    point.pointRead.mass = aDBSetting.massGlobal;
+                    point.pointRead.gravity = aDBSetting.gravity;
+                    point.pointRead.circumferenceShrink = 0.5f * aDBSetting.structuralCircumferenceShrinkScaleGlobal;
+                    point.pointRead.structuralShrinkVertical = 0.5f * aDBSetting.structuralShrinkVerticalScaleGlobal;
+                    point.pointRead.structuralStretchVertical = 0.5f * aDBSetting.structuralStretchVerticalScaleGlobal;
+                    point.pointRead.structuralShrinkHorizontal = 0.5f * aDBSetting.structuralShrinkHorizontalScaleGlobal;
+                    point.pointRead.structuralStretchHorizontal = 0.5f * aDBSetting.structuralStretchHorizontalScaleGlobal;
+                    point.pointRead.shearShrink = 0.5f * aDBSetting.shearShrinkScaleGlobal;
+                    point.pointRead.shearStretch = 0.5f * aDBSetting.shearStretchScaleGlobal;
+                    point.pointRead.bendingShrinkVertical = 0.5f * aDBSetting.bendingShrinkVerticalScaleGlobal;
+                    point.pointRead.bendingStretchVertical = 0.5f * aDBSetting.bendingStretchVerticalScaleGlobal;
+                    point.pointRead.bendingShrinkHorizontal = 0.5f * aDBSetting.bendingShrinkHorizontalScaleGlobal;
+                    point.pointRead.bendingStretchHorizontal = 0.5f * aDBSetting.bendingStretchHorizontalScaleGlobal;
                 }
                 pointReadList[i] = point.pointRead;
                 pointReadWriteList[i] = allPointList[i].pointReadWrite;
@@ -162,7 +164,7 @@ namespace ADBRuntime
         {
             //OYM：Use Area 
             float[] nodeWeight = new float[allNodeList.Count];
-            if (ADBSetting.isComputeQuantityByArea)
+            if (aDBSetting.isComputeQuantityByArea)
             {
                 Vector3[] HorizontalVector = new Vector3[allNodeList.Count];
                 Vector3[] VerticalVector = new Vector3[allNodeList.Count];
@@ -186,10 +188,10 @@ namespace ADBRuntime
             {
                 for (int i = 0; i < constraintsStructuralHorizontal.Count; i++)
                 {
-                    nodeWeight[constraintsStructuralHorizontal[i].pointA.index] +=  constraintsStructuralHorizontal[i].constraintRead.length*0.5f;
-                    nodeWeight[constraintsStructuralHorizontal[i].pointB.index] +=  constraintsStructuralHorizontal[i].constraintRead.length * 0.5f;
+                    nodeWeight[constraintsStructuralHorizontal[i].pointA.index] += constraintsStructuralHorizontal[i].constraintRead.length * 0.5f;
+                    nodeWeight[constraintsStructuralHorizontal[i].pointB.index] += constraintsStructuralHorizontal[i].constraintRead.length * 0.5f;
                 }
-                if (ADBSetting.isComputeStructuralVertical)
+                if (aDBSetting.isComputeStructuralVertical)
                 {
                     for (int i = 0; i < constraintsStructuralVertical.Count; i++)
                     {
@@ -211,7 +213,7 @@ namespace ADBRuntime
                 }
                 else
                 {
-                    float weight= nodeWeight[i];
+                    float weight = nodeWeight[i];
                     if (allNodeList[i].pointRead.childFirstIndex != -1)
                     {
                         for (int j0 = allNodeList[i].pointRead.childFirstIndex; j0 < allNodeList[i].pointRead.childLastIndex; j0++)
@@ -225,7 +227,7 @@ namespace ADBRuntime
                     }
                     else
                     {
-                        allNodeList[i].pointRead.weight =  weight;
+                        allNodeList[i].pointRead.weight = weight;
                     }
                 }
             }
@@ -235,13 +237,13 @@ namespace ADBRuntime
         {
             var ConstraintReadList = new List<List<ConstraintRead>>();
             int constraintindex = 0;
-            CheckAndAddConstraint(ADBSetting.isComputeStructuralVertical, ref constraintindex, constraintsStructuralVertical, ref ConstraintReadList);
-            CheckAndAddConstraint(ADBSetting.isComputeStructuralHorizontal,ref  constraintindex, constraintsStructuralHorizontal, ref ConstraintReadList);
-            CheckAndAddConstraint(ADBSetting.isComputeShear, ref constraintindex, constraintsShear, ref ConstraintReadList);
-            CheckAndAddConstraint(ADBSetting.isComputeBendingVertical, ref constraintindex, constraintsBendingVertical, ref ConstraintReadList);
-            CheckAndAddConstraint(ADBSetting.isComputeBendingHorizontal, ref constraintindex, constraintsBendingHorizontal, ref ConstraintReadList);
-            CheckAndAddConstraint(ADBSetting.isComputeCircumference, ref constraintindex,constraintsCircumference, ref ConstraintReadList);
-            CheckAndAddConstraint(ADBSetting.isComputeVirtual, ref constraintindex, constraintsVirtual, ref ConstraintReadList);
+            CheckAndAddConstraint(aDBSetting.isComputeStructuralVertical, ref constraintindex, constraintsStructuralVertical, ref ConstraintReadList);
+            CheckAndAddConstraint(aDBSetting.isComputeStructuralHorizontal, ref constraintindex, constraintsStructuralHorizontal, ref ConstraintReadList);
+            CheckAndAddConstraint(aDBSetting.isComputeShear, ref constraintindex, constraintsShear, ref ConstraintReadList);
+            CheckAndAddConstraint(aDBSetting.isComputeBendingVertical, ref constraintindex, constraintsBendingVertical, ref ConstraintReadList);
+            CheckAndAddConstraint(aDBSetting.isComputeBendingHorizontal, ref constraintindex, constraintsBendingHorizontal, ref ConstraintReadList);
+            CheckAndAddConstraint(aDBSetting.isComputeCircumference, ref constraintindex, constraintsCircumference, ref ConstraintReadList);
+            CheckAndAddConstraint(aDBSetting.isComputeVirtual, ref constraintindex, constraintsVirtual, ref ConstraintReadList);
             constraintList = new ConstraintRead[ConstraintReadList.Count][];
             for (int i = 0; i < ConstraintReadList.Count; i++)
             {
@@ -249,7 +251,7 @@ namespace ADBRuntime
             }
         }
 
-        private void CheckAndAddConstraint(bool isCompute,ref int constraintIndex, List<ADBConstraintRead> constraintList, ref List<List<ConstraintRead>> ConstraintReadList)
+        private void CheckAndAddConstraint(bool isCompute, ref int constraintIndex, List<ADBConstraintRead> constraintList, ref List<List<ConstraintRead>> ConstraintReadList)
         {
             if (isCompute)
             {
@@ -286,43 +288,43 @@ namespace ADBRuntime
             {
                 for (int i = 0; i < HorizontalRootCount; ++i)
                 {
-                    CreateConstraintStructuralVertical(fixedPointList[i], ref constraintsStructuralVertical, ADBSetting.structuralShrinkVertical, ADBSetting.structuralStretchVertical);
+                    CreateConstraintStructuralVertical(fixedPointList[i], ref constraintsStructuralVertical, aDBSetting.structuralShrinkVertical, aDBSetting.structuralStretchVertical);
                 }
             }
             #endregion
             //OYM：所有横着排列的节点之间的杆件
             #region Vertical_Horizontal
             constraintsStructuralHorizontal = new List<ADBConstraintRead>();
-            if (ADBSetting.isLoopRootPoints && HorizontalRootCount > 2)//OYM：循环获取？
+            if (aDBSetting.isLoopRootPoints && HorizontalRootCount > 2)//OYM：循环获取？
             {
                 for (int i = 0; i < HorizontalRootCount; ++i)
                 {
-                    CreationConstraintHorizontal(fixedPointList[(i + 0) % HorizontalRootCount], fixedPointList[(i + 1) % HorizontalRootCount], ref constraintsStructuralHorizontal, ADBSetting.structuralShrinkHorizontal, ADBSetting.structuralStretchHorizontal);
+                    CreationConstraintHorizontal(fixedPointList[(i + 0) % HorizontalRootCount], fixedPointList[(i + 1) % HorizontalRootCount], ref constraintsStructuralHorizontal, aDBSetting.structuralShrinkHorizontal, aDBSetting.structuralStretchHorizontal);
                 }
             }
             else
             {
                 for (int i = 0; i < HorizontalRootCount - 1; ++i)//OYM：同上，但是不会循环
                 {
-                    CreationConstraintHorizontal(fixedPointList[i + 0], fixedPointList[i + 1], ref constraintsStructuralHorizontal, ADBSetting.structuralShrinkHorizontal, ADBSetting.structuralStretchHorizontal);
+                    CreationConstraintHorizontal(fixedPointList[i + 0], fixedPointList[i + 1], ref constraintsStructuralHorizontal, aDBSetting.structuralShrinkHorizontal, aDBSetting.structuralStretchHorizontal);
                 }
             }
             #endregion
             //OYM：所有对角线上(就是正方形的四个角交叉相连)的杆件
             #region Shear
             constraintsShear = new List<ADBConstraintRead>();
-            if (ADBSetting.isLoopRootPoints && HorizontalRootCount > 2)
+            if (aDBSetting.isLoopRootPoints && HorizontalRootCount > 2)
             {
                 for (int i = 0; i < HorizontalRootCount; ++i)
                 {
-                    CreationConstraintShear(fixedPointList[(i + 0) % HorizontalRootCount], fixedPointList[(i + 1) % HorizontalRootCount], ref constraintsShear, ADBSetting.shearShrink, ADBSetting.shearStretch);
+                    CreationConstraintShear(fixedPointList[(i + 0) % HorizontalRootCount], fixedPointList[(i + 1) % HorizontalRootCount], ref constraintsShear, aDBSetting.shearShrink, aDBSetting.shearStretch);
                 }
             }
             else
             {
                 for (int i = 0; i < HorizontalRootCount - 1; ++i)
                 {
-                    CreationConstraintShear(fixedPointList[i + 0], fixedPointList[i + 1], ref constraintsShear, ADBSetting.shearShrink, ADBSetting.shearStretch);
+                    CreationConstraintShear(fixedPointList[i + 0], fixedPointList[i + 1], ref constraintsShear, aDBSetting.shearShrink, aDBSetting.shearStretch);
                 }
             }
             #endregion
@@ -331,13 +333,13 @@ namespace ADBRuntime
             constraintsBendingVertical = new List<ADBConstraintRead>();
             for (int i = 0; i < HorizontalRootCount; ++i)
             {
-                CreationConstraintBendingVertical(fixedPointList[i], ref constraintsBendingVertical, ADBSetting.bendingShrinkVertical, ADBSetting.bendingStretchVertical);
+                CreationConstraintBendingVertical(fixedPointList[i], ref constraintsBendingVertical, aDBSetting.bendingShrinkVertical, aDBSetting.bendingStretchVertical);
             }
             #endregion
             //OYM：所有横着排列的跨一个节点的杆件
             #region Bending_Horizontal
             constraintsBendingHorizontal = new List<ADBConstraintRead>();
-            CreationConstraintBendingHorizontal(constraintsStructuralHorizontal, ref constraintsBendingHorizontal, ADBSetting.bendingShrinkHorizontal, ADBSetting.bendingStretchHorizontal, ADBSetting.isLoopRootPoints);//OYM：写的话太难了,要三个节点一起循环,改为遍历一下算了
+            CreationConstraintBendingHorizontal(constraintsStructuralHorizontal, ref constraintsBendingHorizontal, aDBSetting.bendingShrinkHorizontal, aDBSetting.bendingStretchHorizontal, aDBSetting.isLoopRootPoints);//OYM：写的话太难了,要三个节点一起循环,改为遍历一下算了
 
             #endregion
             //OYM：所有从root点出到所有节点的杆件
@@ -345,7 +347,7 @@ namespace ADBRuntime
             constraintsCircumference = new List<ADBConstraintRead>();
             for (int i = 0; i < HorizontalRootCount; ++i)
             {
-                CreationConstraintCircumference(fixedPointList[i], ref constraintsCircumference, ADBSetting.circumferenceShrink, ADBSetting.circumferenceStretch);//OYM：横向跨一个进行循环搜索
+                CreationConstraintCircumference(fixedPointList[i], ref constraintsCircumference, aDBSetting.circumferenceShrink, aDBSetting.circumferenceStretch);//OYM：横向跨一个进行循环搜索
             }
 
             #endregion
@@ -441,7 +443,7 @@ namespace ADBRuntime
                 ConstraintList.Add(new ADBConstraintRead(ConstraintType.Shear, childPointBList[0], PointA, shrink, stretch));
                 CreationConstraintShear(childPointAList[childPointAList.Count - 1], childPointBList[0], ref ConstraintList, shrink, stretch);
             }
-            else if ((childPointAList != null ^ childPointBList != null) && !ADBSetting.isComputeStructuralHorizontal)//OYM：如果横向创建了,那么斜对角再创建就没有必要了
+            else if ((childPointAList != null ^ childPointBList != null) && !aDBSetting.isComputeStructuralHorizontal)//OYM：如果横向创建了,那么斜对角再创建就没有必要了
             {
                 var existPoint = childPointAList == null ? PointA : PointB;
                 var existList = childPointAList == null ? childPointBList : childPointAList;
@@ -482,8 +484,8 @@ namespace ADBRuntime
 
                 ADBConstraintRead ConstraintA = horizontalConstraintList[i];
 
-                int j0= isLoop ? 0 : i;
-                for (; j0< horizontalConstraintList.Count; j0++)
+                int j0 = isLoop ? 0 : i;
+                for (; j0 < horizontalConstraintList.Count; j0++)
                 {
                     ADBConstraintRead ConstraintB = horizontalConstraintList[j0];
                     if (ConstraintA.pointB == ConstraintB.pointA)
@@ -516,8 +518,8 @@ namespace ADBRuntime
             {
                 for (int i = 0; i < childPointB.Count; i++)
                 {
-                    var isRepetA = ADBSetting.isComputeStructuralVertical && (childPointB[i].depth == 1);
-                    var isRepetB = ADBSetting.isComputeBendingVertical && (childPointB[i].depth == 2);
+                    var isRepetA = aDBSetting.isComputeStructuralVertical && (childPointB[i].depth == 1);
+                    var isRepetB = aDBSetting.isComputeBendingVertical && (childPointB[i].depth == 2);
                     if (!isRepetA && !isRepetB)
                     {
                         ConstraintList.Add(new ADBConstraintRead(ConstraintType.Circumference, PointA, childPointB[i], shrink, stretch));
@@ -539,7 +541,7 @@ namespace ADBRuntime
             });
         }
         #endregion
-        private void SerializeAndSearchAllPoints(ADBRuntimePoint point, ref List<ADBRuntimePoint> allPointList, out  int maxPointDepth)//OYM：在这里递归搜索
+        private void SerializeAndSearchAllPoints(ADBRuntimePoint point, ref List<ADBRuntimePoint> allPointList, out int maxPointDepth)//OYM：在这里递归搜索
         {
             if (point == null)
             {
@@ -549,7 +551,7 @@ namespace ADBRuntime
 
             if (point.childNode == null)
             {//OYM：没有子节点
-                if (point.depth == 0||ADBSetting.isComputeVirtual)
+                if (point.depth == 0 || aDBSetting.isComputeVirtual)
                 {
                     //OYM：如果只有一个节点,而且还是一个fix点
                     addVirtualPointList.Add(point);
@@ -561,9 +563,9 @@ namespace ADBRuntime
                     point.pointRead.childLastIndex = -1;
                 }
                 point.pointDepthRateMaxPointDepth = 1;
-                maxPointDepth = point.depth; 
+                maxPointDepth = point.depth;
                 return;
-            }  
+            }
             else
             //OYM：有子节点的情况
             {
@@ -583,7 +585,7 @@ namespace ADBRuntime
                     childPoint.pointRead.boneAxis = point.trans.InverseTransformPoint(childPoint.trans.position).normalized;
                     childPoint.pointRead.localRotation = childPoint.trans.localRotation;
                     childPoint.index = allPointList.Count;
-                    childPoint.pointRead.fixedIndex = childPoint.isFixed? childPoint.index: point.pointRead.fixedIndex;
+                    childPoint.pointRead.fixedIndex = childPoint.isFixed ? childPoint.index : point.pointRead.fixedIndex;
 
 
                     allPointList.Add(point.childNode[i]);
@@ -613,7 +615,7 @@ namespace ADBRuntime
         public static ADBConstraintReadAndPointControll[] GetJointAndPointControllList(Transform transform, List<string> generateKeyWordWhiteList, List<string> generateKeyWordBlackList, List<Transform> blackListOfGenerateTransform, ADBGlobalSetting settings)//OYM：一个巨啰嗦的方法
         {
             List<ADBRuntimePoint> FixedADBRuntimePoint = searchFixedADBRuntimePoint(transform, generateKeyWordWhiteList, generateKeyWordBlackList, blackListOfGenerateTransform, 0);//OYM：获取所有的固定点,,这里的固定时指那些能动的点的父节点,顺便一提,这个方法顺便把所有节点的子节点赋值了
-            
+
             if (FixedADBRuntimePoint == null)
                 return null;
 
@@ -662,7 +664,7 @@ namespace ADBRuntime
         private static List<ADBRuntimePoint> searchFixedADBRuntimePoint(Transform transform, List<string> generateKeyWordWhiteList, List<string> generateKeyWordBlackList, List<Transform> blackListOfGenerateTransform, int depth)
         {       //OYM：利用深度搜索,能很快找到所有的固定点,
                 //OYM：如果是子节点与父节点匹配,则父节点添加子节点坐标
-            //OYM：
+                //OYM：
             if (transform == null || transform.childCount == 0) return null;
             //OYM：防空
             List<ADBRuntimePoint> ADBRuntimePoint = new List<ADBRuntimePoint>();
@@ -674,14 +676,14 @@ namespace ADBRuntime
                 ADBRuntimePoint point = null;
 
                 //OYM：[判断是否属于黑名单
-                bool isblack =false;
-                for (int j0= 0; j0< blackListOfGenerateTransform.Count; j0++)
+                bool isblack = false;
+                for (int j0 = 0; j0 < blackListOfGenerateTransform.Count; j0++)
                 {
                     if (isblack) break;
 
                     isblack = childNodeTarns.Equals(blackListOfGenerateTransform[j0]);
                 }
-                for (int j0= 0; j0< generateKeyWordBlackList.Count; j0++)
+                for (int j0 = 0; j0 < generateKeyWordBlackList.Count; j0++)
                 {
                     if (isblack) break;
 
@@ -728,33 +730,33 @@ namespace ADBRuntime
         #endregion
         public void OnDrawGizmos()
         {
-            if (!ADBSetting.isDebugDraw) return;
+            if (!aDBSetting.isDebugDraw) return;
 
             foreach (var point in allNodeList)
             {
                 point.OnDrawGizmos();
             }
-            if (ADBSetting.isComputeStructuralVertical)
+            if (aDBSetting.isComputeStructuralVertical)
             {
                 DrawConstraint(constraintsStructuralVertical);
             }
-            if (ADBSetting.isComputeStructuralHorizontal)
+            if (aDBSetting.isComputeStructuralHorizontal)
             {
                 DrawConstraint(constraintsStructuralHorizontal);
             }
-            if (ADBSetting.isComputeShear)
+            if (aDBSetting.isComputeShear)
             {
                 DrawConstraint(constraintsShear);
             }
-            if (ADBSetting.isComputeCircumference)
+            if (aDBSetting.isComputeCircumference)
             {
                 DrawConstraint(constraintsCircumference);
             }
-            if (ADBSetting.isComputeBendingHorizontal)
+            if (aDBSetting.isComputeBendingHorizontal)
             {
                 DrawConstraint(constraintsBendingHorizontal);
             }
-            if (ADBSetting.isComputeBendingVertical)
+            if (aDBSetting.isComputeBendingVertical)
             {
                 DrawConstraint(constraintsBendingVertical);
             }
