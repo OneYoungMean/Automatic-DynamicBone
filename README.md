@@ -18,6 +18,6 @@
 - 安装 [Mathmatic] package(preview)
 
 - 更多详情请参见[wiki](https://github.com/OneYoungMean/AutomaticDynamicBone/wiki)  
-![2](https://github.com/OneYoungMean/AutomaticDynamicBone/blob/master/Manual%20GIF/A0.gif)
-`看见上面的模型没,相同的物理60帧能跑同时跑64个!`
+![2](https://github.com/OneYoungMean/AutomaticDynamicBone/blob/master/Manual%20GIF/A0.gif)  
+`看见上面的物理计算没,相同的模型我的6700HQ能同时64个还能再60帧!`
 
