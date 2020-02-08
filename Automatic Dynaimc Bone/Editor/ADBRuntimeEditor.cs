@@ -7,7 +7,7 @@ using UnityEngine;
 namespace ADBRuntime
 {
     [CustomEditor(typeof(ADBRuntimeController))]
-    public class ADBJointDynamicsControllerInspector : Editor
+    public class ADBRuntimeEditor : Editor
     //OYM：它的编辑器，我觉得我有必要把一部分方法写到里面去
     {
 
