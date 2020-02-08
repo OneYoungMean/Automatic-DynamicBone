@@ -42,7 +42,7 @@ namespace ADBRuntime
         [SerializeField]
         public List<string> generateKeyWordBlackList = new List<string> { "ik" };
         [SerializeField]
-        public List<Transform> blackListOfGenerateTransform;
+        public List<Transform> blackListOfGenerateTransform = new List<Transform>();
 
         public Transform generateTransform;
         public List<Transform> allPointTrans;
