@@ -13,7 +13,31 @@ MonoBehaviour:
   m_Name: skirtSetting
   m_EditorClassIdentifier: 
   settingType: 2
-  isAdvantage: 1
+  useGlobal: 0
+  frictionCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
   gravityScaleCurve:
     serializedVersion: 2
     m_Curve:
@@ -38,12 +62,12 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  freezeCurve:
+  airResistanceCurve:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 0.7
+      value: 1
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -52,7 +76,7 @@ MonoBehaviour:
       outWeight: 0
     - serializedVersion: 3
       time: 1
-      value: 0.7
+      value: 1
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -67,7 +91,7 @@ MonoBehaviour:
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 0.9
+      value: 0.5
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -76,7 +100,7 @@ MonoBehaviour:
       outWeight: 0
     - serializedVersion: 3
       time: 1
-      value: 1
+      value: 0.9002342
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -374,8 +398,10 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+  frictionGlobal: 0
   freezeGlobal: 0.7
   massGlobal: 1
+  airResistanceGlobal: 1
   structuralShrinkVerticalScaleGlobal: 1
   structuralStretchVerticalScaleGlobal: 1
   structuralShrinkHorizontalScaleGlobal: 1
@@ -401,7 +427,7 @@ MonoBehaviour:
   circumferenceShrink: 1
   circumferenceStretch: 1
   isCollideStructuralVertical: 1
-  isCollideStructuralHorizontal: 1
+  isCollideStructuralHorizontal: 0
   isCollideShear: 0
   isComputeStructuralVertical: 1
   isComputeStructuralHorizontal: 1

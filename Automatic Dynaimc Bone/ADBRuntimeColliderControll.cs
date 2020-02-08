@@ -381,7 +381,7 @@ namespace ADBRuntime
                 else
                 {
                     Vector3 nearstPoint = position + direction * Mathf.Clamp01(Vector3.Dot(pointTrans[i].position - position, direction) / direction.sqrMagnitude);
-                    MaxLength = Mathf.Min(MaxLength, (nearstPoint - pointTrans[i].position).magnitude);
+                    MaxLength = Mathf.Min(MaxLength, (nearstPoint - pointTrans[i].position).magnitude-0.005f);
                 }
             }
             return MaxLength;

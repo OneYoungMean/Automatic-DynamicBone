@@ -163,7 +163,7 @@ namespace ADBRuntime
                 {
                     step = 1 / ((float)iteration - i);
                    Hjob = pointUpdate.Schedule(pointReadList.Length, batchLength);
-                    //pointUpdate.TryExecute(pointReadList.Length, batchLength,Hjob);
+                    pointUpdate.TryExecute(pointReadList.Length, batchLength,Hjob);
                     colliderUpdate.step = step;
                     Hjob = colliderUpdate.Schedule(collidersReadList.Length, batchLength);
 

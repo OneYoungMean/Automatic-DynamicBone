@@ -524,24 +524,23 @@ namespace ADBRuntime.Internal
                 if (sqrPushout < radius * radius && sqrPushout != 0)
                 {
                     //OYM：把pushout方向多余的力给减掉
-                    float inverse1Velocity = Vector3.Dot(pushout, pReadWritePointA->velocity) / sqrPushout;
-                    pReadWritePointA->velocity -= pushout * inverse1Velocity;
-                    pReadWritePointB->velocity -= pushout * inverse1Velocity;
+                    pReadWritePointA->velocity -= pushout * (Vector3.Dot(pushout, pReadWritePointA->velocity) / sqrPushout);
+                    pReadWritePointB->velocity -= pushout * (Vector3.Dot(pushout, pReadWritePointB->velocity) / sqrPushout);
 
                     pushout = pushout * (radius / Mathf.Sqrt(sqrPushout) - 1);
-                    float Propotion = WeightProportion * lengthPropotion / (1 - WeightProportion - lengthPropotion + 2 * WeightProportion * lengthPropotion);
-                    if (WeightProportion > 0)
+                  //  float Propotion = WeightProportion * lengthPropotion / (1 - WeightProportion - lengthPropotion + 2 * WeightProportion * lengthPropotion);
+                    if (WeightProportion < EPSILON)
                     {
-                        pReadWritePointA->position += (pushout * (1 - Propotion));
-                        pReadWritePointA->velocity += (pushout * (1 - Propotion)) * 0.5f;
+                        pReadWritePointA->position += (pushout * (1 - lengthPropotion));
+                        pReadWritePointA->velocity += (pushout * (1 - lengthPropotion));
                     }
                     else
                     {
-                        Propotion = 1;
+                        lengthPropotion = 1;
                     }
 
-                    pReadWritePointB->position += (pushout * Propotion);
-                    pReadWritePointB->velocity += (pushout * Propotion) * 0.5f;
+                    pReadWritePointB->position += (pushout * lengthPropotion);
+                    pReadWritePointB->velocity += (pushout * lengthPropotion);
 
                 }
             }

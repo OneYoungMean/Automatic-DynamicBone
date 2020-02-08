@@ -57,6 +57,8 @@ namespace ADBRuntime
        
         public ADBRuntimeCollider GetCollider()
         {
+            if (isGlobal) return null;
+
             initialize();
             return aDBRuntimeCollider;
         }

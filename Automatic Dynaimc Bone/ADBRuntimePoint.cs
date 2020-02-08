@@ -114,7 +114,8 @@ namespace ADBRuntime
     //OYM：写入系统
     public struct PointReadWrite
     {
-        public Vector3 position { get { return Position; }
+        public Vector3 position;
+        /* { get { return Position; }
             set {
                 if (float.IsNaN(value.x))
                 {
@@ -124,25 +125,10 @@ namespace ADBRuntime
                 {
                     Position = value;
                 }
-            } }
-        public Vector3 Position;
+            } }*/
 
-        public Vector3 velocity
-        {
-            get { return Velocity; }
-            set
-            {
-                if (float.IsNaN(value.x))
-                {
-                    Velocity = Vector3.zero;
-                }
-                else
-                {
-                    Velocity = value;
-                }
-            }
-        }
-        public Vector3 Velocity;
+        public Vector3 velocity;
+
     }
 
     /// <summary>

@@ -103,7 +103,7 @@ namespace ADBRuntime
 
         private void CreatePointStructList(List<ADBRuntimePoint> allPointList)
         {
-            ComputeQuality(constraintsStructuralHorizontal, constraintsStructuralVertical);
+            ComputeWeight(constraintsStructuralHorizontal, constraintsStructuralVertical);
 
             pointReadList = new PointRead[allPointList.Count];
             pointReadWriteList = new PointReadWrite[allPointList.Count];
@@ -160,7 +160,7 @@ namespace ADBRuntime
 
         }
 
-        private void ComputeQuality(List<ADBConstraintRead> constraintsStructuralHorizontal, List<ADBConstraintRead> constraintsStructuralVertical)
+        private void ComputeWeight(List<ADBConstraintRead> constraintsStructuralHorizontal, List<ADBConstraintRead> constraintsStructuralVertical)
         {
             //OYM：Use Area 
             float[] nodeWeight = new float[allNodeList.Count];
@@ -186,17 +186,20 @@ namespace ADBRuntime
             else
             //OYM：use Length
             {
-                for (int i = 0; i < constraintsStructuralHorizontal.Count; i++)
+                if (aDBSetting.isCollideStructuralHorizontal)
                 {
-                    nodeWeight[constraintsStructuralHorizontal[i].pointA.index] += constraintsStructuralHorizontal[i].constraintRead.length * 0.5f;
-                    nodeWeight[constraintsStructuralHorizontal[i].pointB.index] += constraintsStructuralHorizontal[i].constraintRead.length * 0.5f;
+                    for (int i = 0; i < constraintsStructuralHorizontal.Count; i++)
+                    {
+                        nodeWeight[constraintsStructuralHorizontal[i].pointA.index] += constraintsStructuralHorizontal[i].constraintRead.length * 0.5f;
+                        nodeWeight[constraintsStructuralHorizontal[i].pointB.index] += constraintsStructuralHorizontal[i].constraintRead.length * 0.5f;
+                    }
                 }
                 if (aDBSetting.isComputeStructuralVertical)
                 {
                     for (int i = 0; i < constraintsStructuralVertical.Count; i++)
                     {
                         nodeWeight[constraintsStructuralVertical[i].pointA.index] += constraintsStructuralVertical[i].constraintRead.length * 0.5f;
-                        nodeWeight[constraintsStructuralVertical[i].pointB.index] += constraintsStructuralVertical[i].constraintRead.length;
+                        nodeWeight[constraintsStructuralVertical[i].pointB.index] += constraintsStructuralVertical[i].constraintRead.length * 0.5f;
                     }
                 }
             }
