@@ -1,6 +1,6 @@
 # AutomaticDynamicBone
-基于https://github.com/SPARK-inc/SPCRJointDynamics   ，它具有更简单的界面，更高的效率以及（令人难以置信的）骨骼和碰撞对象的自动生成。
-需要从assetpackage导入unity的jobs包才能运行.
+基于https://github.com/SPARK-inc/SPCRJointDynamics ,一个可以自动生成具有物理效果头发和裙子的插件.
+详情请参见wiki
 
 
-说明我待会再来写，现在先去rushB XD
+
