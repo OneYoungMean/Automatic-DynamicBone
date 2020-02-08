@@ -35,6 +35,7 @@ namespace ADBRuntime
             if (GUILayout.Button("Generate Point", GUILayout.Height(22.0f)))
             {
                 controller.initializePoint();
+                controller.isDebug = true;
             }
             if (GUILayout.Button("Reset All Point", GUILayout.Height(22.0f)))
             {
@@ -49,6 +50,7 @@ namespace ADBRuntime
             if (GUILayout.Button("Generate Collider", GUILayout.Height(22.0f)))
             {
                 controller.initializeCollider(true, controller.allPointTrans);
+                controller.isDebug = true;
             }
             if (GUILayout.Button("Remove All Collider", GUILayout.Height(22.0f)))
             {
