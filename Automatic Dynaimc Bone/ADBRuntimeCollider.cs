@@ -318,6 +318,7 @@ namespace ADBRuntime
             length = length < 0 ? 0 : length;
             boxSize = boxSize.normalized * boxSize.magnitude;
             staticDirection = staticDirection == Vector3.zero ? Vector3.up : staticDirection;
+            staticNormal = Quaternion.FromToRotation(Vector3.up, staticDirection);
         }
     }
     public struct ColliderReadWrite
