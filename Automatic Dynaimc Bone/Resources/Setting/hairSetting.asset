@@ -12,7 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 15b93a3a2ef1bab4583f2d024dfcff47, type: 3}
   m_Name: hairSetting
   m_EditorClassIdentifier: 
-  settingType: 0
   useGlobal: 0
   frictionCurve:
     serializedVersion: 2
@@ -66,8 +65,8 @@ MonoBehaviour:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
-      time: 0
-      value: 0
+      time: 0.025
+      value: 0.9988185
       inSlope: -0.030735651
       outSlope: -0.030735651
       tangentMode: 0
@@ -76,7 +75,7 @@ MonoBehaviour:
       outWeight: 0.386716
     - serializedVersion: 3
       time: 1
-      value: 0.5
+      value: 1
       inSlope: -0.01982197
       outSlope: -0.01982197
       tangentMode: 0
@@ -107,6 +106,45 @@ MonoBehaviour:
       weightedMode: 0
       inWeight: 0
       outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  lazyCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0.098236084
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 0.9998169
+      value: 0.06081277
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  freezeCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0.00351288
+      inSlope: -0.046905953
+      outSlope: -0.046905953
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0.22222188
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
@@ -389,8 +427,9 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+  lazyGlobal: 0
+  freezeGlobal: 0
   frictionGlobal: 0
-  freezeGlobal: 0.7
   massGlobal: 1
   airResistanceGlobal: 1
   structuralShrinkVerticalScaleGlobal: 1
@@ -417,18 +456,17 @@ MonoBehaviour:
   bendingStretchHorizontal: 1
   circumferenceShrink: 1
   circumferenceStretch: 1
-  isCollideStructuralVertical: 1
-  isCollideStructuralHorizontal: 0
-  isCollideShear: 0
+  isComputeVirtual: 0
   isComputeStructuralVertical: 1
   isComputeStructuralHorizontal: 0
   isComputeShear: 0
-  isComputeVirtual: 0
-  isComputeBendingVertical: 0
+  isComputeBendingVertical: 1
   isComputeBendingHorizontal: 0
   isComputeCircumference: 0
+  isCollideStructuralVertical: 1
+  isCollideStructuralHorizontal: 0
+  isCollideShear: 0
   isLoopRootPoints: 0
   isDebugDraw: 1
   gravity: {x: 0, y: -9.81, z: 0}
-  windForce: {x: 0, y: 0, z: 0}
   isComputeQuantityByArea: 0

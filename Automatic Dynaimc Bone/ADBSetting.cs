@@ -6,13 +6,14 @@ namespace ADBRuntime
     [CreateAssetMenu(fileName = "ADBSettingFile",menuName = "ADB/SettingFile")]
     public class ADBSetting : ScriptableObject
     {
-        public SettingType settingType;
         public bool useGlobal = false;
         //高级情况下用这一套
             public AnimationCurve frictionCurve = new AnimationCurve(new Keyframe[] { new Keyframe(0.0f, 0.0f), new Keyframe(1.0f, 0.0f) });
         public AnimationCurve gravityScaleCurve = new AnimationCurve(new Keyframe[] { new Keyframe(0.0f, 1.0f), new Keyframe(1.0f, 1.0f) });
         public AnimationCurve airResistanceCurve = new AnimationCurve(new Keyframe[] { new Keyframe(0.0f, 1.0f), new Keyframe(1.0f, 1.0f) });
         public AnimationCurve massCurve = new AnimationCurve(new Keyframe[] { new Keyframe(0.0f, 0.9f), new Keyframe(1.0f, 1f) });
+        public AnimationCurve lazyCurve = new AnimationCurve(new Keyframe[] { new Keyframe(0.0f, 0.0f), new Keyframe(1.0f, 0.2f) });
+        public AnimationCurve freezeCurve = new AnimationCurve(new Keyframe[] { new Keyframe(0.0f, 0.0f), new Keyframe(1.0f, 1.0f) });
         public AnimationCurve structuralShrinkVerticalScaleCurve = new AnimationCurve(new Keyframe[] { new Keyframe(0.0f, 1.0f), new Keyframe(1.0f, 1.0f) });
         public AnimationCurve structuralStretchVerticalScaleCurve = new AnimationCurve(new Keyframe[] { new Keyframe(0.0f, 1.0f), new Keyframe(1.0f, 1.0f) });
         public AnimationCurve structuralShrinkHorizontalScaleCurve = new AnimationCurve(new Keyframe[] { new Keyframe(0.0f, 1.0f), new Keyframe(1.0f, 1.0f) });
@@ -27,8 +28,9 @@ namespace ADBRuntime
         public AnimationCurve structuralCircumferenceStretchScaleCurve = new AnimationCurve(new Keyframe[] { new Keyframe(0.0f, 1.0f), new Keyframe(1.0f, 1.0f) });
         //OYM：调试情况用这一套
 
+        public float lazyGlobal = 0f;
+        public float freezeGlobal = 0f;
         public float frictionGlobal = 0f;
-        public float freezeGlobal = 0.1f;
         public float massGlobal=1f;
         public float airResistanceGlobal = 1f;
         public float structuralShrinkVerticalScaleGlobal = 1.0f;
@@ -59,33 +61,21 @@ namespace ADBRuntime
         public float circumferenceStretch = 1.0f;
 
         //各种设定
-        public bool isCollideStructuralVertical = true;
-        public bool isCollideStructuralHorizontal = true;
-        public bool isCollideShear = true;
+        public bool isComputeVirtual = true;//OYM：计算虚拟
         public bool isComputeStructuralVertical = true;//OYM：要计算垂直
         public bool isComputeStructuralHorizontal = false;//OYM：要计算水平
         public bool isComputeShear = false;//OYM：要计算剪切
-        public bool isComputeVirtual = true;//OYM：计算虚拟
         public bool isComputeBendingVertical = false;//OYM：要计算垂直弯曲
         public bool isComputeBendingHorizontal = false;//OYM：要计算水平弯曲
-        public bool isComputeCircumference = false;//OYM：计算圆周
+        public bool isComputeCircumference = false;//OYM：计算fixPoint与point
+        public bool isCollideStructuralVertical = true;
+        public bool isCollideStructuralHorizontal = true;
+        public bool isCollideShear = true;
         public bool isLoopRootPoints = true;//OYM：与首节点循环链接（非刚体尽量别点
 
         public bool isDebugDraw;
         public Vector3 gravity = new Vector3(0.0f, -9.81f, 0.0f);//OYM：重力
-        public Vector3 windForce = new Vector3(0.0f, 0.0f, 0.0f);//OYM：风力
-
-        private bool isWind = true;//OYM：开启风
         public bool isComputeQuantityByArea = false;
 
     }
-    public enum SettingType
-    {
-        Hair=0,
-        Tail=1,
-        Cloth=2,
-        Oppai=3,
-        Default=5
-    }
-
 }

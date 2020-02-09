@@ -68,6 +68,7 @@ namespace ADBRuntime
             EditorGUILayout.PropertyField(serializedObject.FindProperty("editorColliderList"), new GUIContent("Collider"), true);
 
             Titlebar("physical setting", new Color(0.7f, 1.0f, 0.7f));
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("settings"), new GUIContent("Global Setting"), true);
             controller. isDebug = EditorGUILayout.Toggle("isDebug", controller.isDebug);
             if (controller.isDebug)
             {

@@ -25,13 +25,13 @@ namespace ADBRuntime
     public class ADBRuntimeController : MonoBehaviour
     {
         [SerializeField]
-        public bool isGenerateColliderAutomaitc;
+        public bool isGenerateColliderAutomaitc=true;
         [SerializeField]
         public float delayTime=0.0001f;
         [SerializeField]
-        public int iteration;
+        public int iteration=4;
         [SerializeField]
-        public float windScale;
+        public float windScale=0.5f;
         public bool isDebug;
         public bool isResetPoint;
         [SerializeField]
@@ -42,7 +42,7 @@ namespace ADBRuntime
         [SerializeField]
         public List<string> generateKeyWordBlackList = new List<string> { "ik" };
         [SerializeField]
-        public List<Transform> blackListOfGenerateTransform = new List<Transform>();
+        public List<Transform> blackListOfGenerateTransform;
 
         public Transform generateTransform;
         public List<Transform> allPointTrans;
@@ -127,17 +127,20 @@ namespace ADBRuntime
                 isResetPoint = false;
                 return;
             }
-            // deltaTime = Mathf.Min(Time.deltaTime, 0.016f);
-            deltaTime = 0.016f;
+             deltaTime = Mathf.Min(Time.deltaTime, 0.016f);
             scale = transform.lossyScale.x / initializeScale;
 
             windForce = ADBWindZone.getWindForce(transform.position, deltaTime * windScale) * windScale;
                 UpdateDataPakage();
  
         }
-
+        private void OnDisable()
+        {
+            RestorePoint();
+        }
         private void OnDestroy()
         {
+            RestorePoint();
             dataPackage.Dispose();
         }
         public void RestorePoint()

@@ -24,10 +24,10 @@ namespace ADBRuntime
                 windZone = new ADBWindZone();
             }
             windZone.time += deltaTime;
-            windZone.randomVec += Random.insideUnitSphere*0.1f;
+            windZone.randomVec += Random.insideUnitSphere* deltaTime;
             windZone.randomVec.y = 0;
             windZone.randomVec.Normalize();
-            return windZone.randomVec* Mathf.PerlinNoise(position.x+ windZone.time, position.y+ windZone.time) *0.0005f;
+            return windZone.randomVec* Mathf.PerlinNoise(position.x+ windZone.time, position.y+ windZone.time) *0.2f;
             
         }
     }

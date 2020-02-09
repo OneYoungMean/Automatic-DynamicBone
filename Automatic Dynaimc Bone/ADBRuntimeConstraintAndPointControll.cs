@@ -121,6 +121,8 @@ namespace ADBRuntime
                     point.pointRead.friction = aDBSetting.frictionCurve.Evaluate(rate);
                     point.pointRead.airResistance = aDBSetting.airResistanceCurve.Evaluate(rate);
                     point.pointRead.mass = aDBSetting.massCurve.Evaluate(rate);
+                    point.pointRead.lazy = aDBSetting.lazyCurve.Evaluate(rate);
+                    point.pointRead.freeze = aDBSetting.freezeCurve.Evaluate(rate);
                     point.pointRead.gravity = aDBSetting.gravity * aDBSetting.gravityScaleCurve.Evaluate(rate);
                     point.pointRead.circumferenceShrink = 0.5f * aDBSetting.structuralCircumferenceShrinkScaleCurve.Evaluate(rate);
                     point.pointRead.circumferenceStretch = 0.5f * aDBSetting.structuralCircumferenceStretchScaleCurve.Evaluate(rate);
@@ -140,6 +142,8 @@ namespace ADBRuntime
                     point.pointRead.friction = aDBSetting.frictionGlobal;
                     point.pointRead.airResistance = aDBSetting.airResistanceGlobal;
                     point.pointRead.mass = aDBSetting.massGlobal;
+                    point.pointRead.lazy = aDBSetting.lazyGlobal;
+                    point.pointRead.freeze = aDBSetting.freezeGlobal;
                     point.pointRead.gravity = aDBSetting.gravity;
                     point.pointRead.circumferenceShrink = 0.5f * aDBSetting.structuralCircumferenceShrinkScaleGlobal;
                     point.pointRead.structuralShrinkVertical = 0.5f * aDBSetting.structuralShrinkVerticalScaleGlobal;
@@ -208,6 +212,7 @@ namespace ADBRuntime
 
         private void ComputeWeight(float[] nodeWeight, List<ADBRuntimePoint> allNodeList)
         {
+            float minWeight = 1000000;
             for (int i = allNodeList.Count - 1; i >= 0; i--)
             {
                 if (allNodeList[i].isFixed)
@@ -217,13 +222,7 @@ namespace ADBRuntime
                 else
                 {
                     float weight = nodeWeight[i];
-                    if (allNodeList[i].pointRead.childFirstIndex != -1)
-                    {
-                        for (int j0 = allNodeList[i].pointRead.childFirstIndex; j0 < allNodeList[i].pointRead.childLastIndex; j0++)
-                        {
-                            weight += nodeWeight[j0];
-                        }
-                    }
+                    nodeWeight[allNodeList[i].pointRead.parent] += weight;
                     if (weight <= 0.001f)
                     {
                         allNodeList[i].pointRead.weight = 0.001f;
@@ -232,9 +231,15 @@ namespace ADBRuntime
                     {
                         allNodeList[i].pointRead.weight = weight;
                     }
+                    minWeight = weight < minWeight ? weight : minWeight;
                 }
             }
+            for (int i = allNodeList.Count - 1; i >= 0; i--)
+            {
+                allNodeList[i].pointRead.weight /= minWeight;//OYM：平衡质量
+            }
         }
+
         #region constrain
         private void CreationConstraintList()
         {

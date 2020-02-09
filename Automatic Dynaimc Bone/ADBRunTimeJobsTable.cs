@@ -163,11 +163,16 @@ namespace ADBRuntime.Internal
                 else
                 {
                     PointReadWrite* pFixedPointReadWrite = (pReadWritePoints + pReadPoint->fixedIndex);
-                    pReadWritePoint->position += pFixedPointReadWrite->velocity;
-                    pReadWritePoint->velocity -= pFixedPointReadWrite->velocity * 0.05f * pReadPoint->airResistance/ pReadPoint->weight;
-                    //OYM：0.05是我试出来的,如果你有更好的值可以填进去
-
+                    PointReadWrite* pParentReadWrite = (pReadWritePoints + pReadPoint->parent);
+                    Vector3 move = Vector3.Lerp(pFixedPointReadWrite->velocity, pParentReadWrite->velocity, pReadPoint->lazy);
+                    pReadWritePoint->position += move;
+                    pReadWritePoint->velocity -= move * pReadPoint->airResistance/ pReadPoint->weight;
                 }
+            }
+            float Lerp(float a, float b, float t)
+            {
+                t = t < 0 ? 0 : (t > 1 ? 1 : t);
+                return a * (1 - t) + b * t;
             }
         }
         [BurstCompile]
@@ -270,13 +275,16 @@ namespace ADBRuntime.Internal
                 //OYM：默认移动距离超过1就采用修正,防止裙子螺旋升天
 
                 PointRead* pReadPoint = pReadPoints + index;
-                PointReadWrite* pReadWritePoint = pReadWritePoints + index;
                 if (pReadPoint->fixedIndex != index)
                 {
+                    PointReadWrite* pReadWritePoint = pReadWritePoints + index;
+                    PointReadWrite* pParentReadWritePoint = pReadWritePoints + (pReadPoint->parent);
 
-                    //OYM：正常流程
+                    Vector3 freezeforce = (pReadPoint->initialPosition - (pReadWritePoint->position - pParentReadWritePoint->position)) * pReadPoint->freeze;
+                    //OYM：这个函数运转效果并不是很好,这很容易理解,你不能要求一个弹簧又拉又伸,这在逻辑上是行不通的
 
                     pReadWritePoint->velocity += pReadPoint->gravity * scale * (0.5f * deltaTime * deltaTime) / iteration;//OYM：重力(要计算iteration次所以除以个iteration)
+                    pReadWritePoint->velocity += freezeforce / iteration;
                     pReadWritePoint->velocity += windForcePower / (iteration * pReadPoint->weight);
                     pReadWritePoint->position += pReadWritePoint->velocity / iteration;
                 }
@@ -430,14 +438,16 @@ namespace ADBRuntime.Internal
                         ColliderReadWrite* pReadWriteCollider = pReadWriteColliders + i;//OYM：啊啊啊我好激动
                         if (pReadCollider->isOpen)
                         {
-                            ComputeCollider(pReadCollider, pReadWriteCollider, pReadWritePointA, pReadWritePointB, WeightProportion);
+                            ComputeCollider(pReadCollider, pReadWriteCollider, pReadWritePointA, pReadWritePointB, WeightProportion, pPointReadA->friction,pPointReadB->friction);
                         }
 
                     }
                 }
             }
 
-            private void ComputeCollider(ColliderRead* pReadCollider, ColliderReadWrite* pReadWriteCollider, PointReadWrite* pReadWritePointA, PointReadWrite* pReadWritePointB, float WeightProportion)
+            private void ComputeCollider(ColliderRead* pReadCollider, ColliderReadWrite* pReadWriteCollider, PointReadWrite* pReadWritePointA, PointReadWrite* pReadWritePointB, float WeightProportion,
+                float frictionA,float frictionB
+                )
             {
 
                 switch (pReadCollider->colliderType)
@@ -445,14 +455,14 @@ namespace ADBRuntime.Internal
                     case ColliderType.Sphere:
                         {
                             Vector3 pointOnLine = ConstrainToSegment(pReadWriteCollider->position, pReadWritePointA->position, pReadWritePointB->position - pReadWritePointA->position, out float t);
-                            DistributionPower(pointOnLine - pReadWriteCollider->position, pReadCollider->radius, pReadWritePointA, pReadWritePointB, WeightProportion, t);
+                            DistributionPower(pointOnLine - pReadWriteCollider->position, pReadCollider->radius, pReadWritePointA, pReadWritePointB, WeightProportion, t,frictionA,frictionB);
                         }
 
                         break;
                     case ColliderType.Capsule:
                         {
                             SqrComputeNearestPoints(pReadWriteCollider->position, pReadWriteCollider->direction, pReadWritePointA->position, pReadWritePointB->position - pReadWritePointA->position, out _, out float t, out Vector3 pointOnCollider, out Vector3 pointOnLine);
-                            DistributionPower(pointOnLine - pointOnCollider, pReadCollider->radius, pReadWritePointA, pReadWritePointB, WeightProportion, t);
+                            DistributionPower(pointOnLine - pointOnCollider, pReadCollider->radius, pReadWritePointA, pReadWritePointB, WeightProportion, t,frictionA,frictionB);
                         }
 
                         break;
@@ -494,19 +504,21 @@ namespace ADBRuntime.Internal
                                     float inverse1Velocity = Vector3.Dot(pushout, pReadWritePointA->velocity) / pushout.sqrMagnitude;
                                     pReadWritePointA->velocity -= pushout * inverse1Velocity;
                                     pReadWritePointB->velocity -= pushout * inverse1Velocity;
+                                    pReadWritePointA->velocity *= (1 - frictionA);
+                                    pReadWritePointB->velocity *= (1 - frictionB);
 
-                                    float Propotion = WeightProportion * t / (1 - WeightProportion - t + 2 * WeightProportion * t);
-                                    if (WeightProportion > 0)
+                                    //float Propotion = WeightProportion * t / (1 - WeightProportion - t + 2 * WeightProportion * t);
+                                    if (WeightProportion > EPSILON)
                                     {
-                                        pReadWritePointA->position += (pushout * Propotion);
-                                        pReadWritePointA->velocity += (pushout * Propotion);
+                                        pReadWritePointA->position += (pushout * t);
+                                        pReadWritePointA->velocity += (pushout * t);
                                     }
                                     else
                                     {
-                                        Propotion = 1;
+                                        t = 1;
                                     }
-                                    pReadWritePointB->position += (pushout * (1 - Propotion));
-                                    pReadWritePointB->velocity += (pushout * (1 - Propotion));
+                                    pReadWritePointB->position += (pushout * (1 - t));
+                                    pReadWritePointB->velocity += (pushout * (1 - t));
 
                                 }
                             }
@@ -518,7 +530,7 @@ namespace ADBRuntime.Internal
                 }
             }
 
-            void DistributionPower(Vector3 pushout, float radius, PointReadWrite* pReadWritePointA, PointReadWrite* pReadWritePointB, float WeightProportion, float lengthPropotion)
+            void DistributionPower(Vector3 pushout, float radius, PointReadWrite* pReadWritePointA, PointReadWrite* pReadWritePointB, float WeightProportion, float lengthPropotion,float frictionA,float frictionB)
             {
                 float sqrPushout = pushout.sqrMagnitude;
                 if (sqrPushout < radius * radius && sqrPushout != 0)
@@ -526,6 +538,8 @@ namespace ADBRuntime.Internal
                     //OYM：把pushout方向多余的力给减掉
                     pReadWritePointA->velocity -= pushout * (Vector3.Dot(pushout, pReadWritePointA->velocity) / sqrPushout);
                     pReadWritePointB->velocity -= pushout * (Vector3.Dot(pushout, pReadWritePointB->velocity) / sqrPushout);
+                    pReadWritePointA->velocity *= (1 - frictionA);
+                    pReadWritePointB->velocity *= (1 - frictionB);
 
                     pushout = pushout * (radius / Mathf.Sqrt(sqrPushout) - 1);
                   //  float Propotion = WeightProportion * lengthPropotion / (1 - WeightProportion - lengthPropotion + 2 * WeightProportion * lengthPropotion);
@@ -796,7 +810,7 @@ out float tP, out float tQ, out Vector3 pointOnP, out Vector3 pointOnQ)
 
                 if (!(pReadPoint->fixedIndex == index || pReadPoint->isVirtual))//OYM：不是fix点
                 {
-                    transform.position = pReadWritePoint->position;
+
                 }
 
 

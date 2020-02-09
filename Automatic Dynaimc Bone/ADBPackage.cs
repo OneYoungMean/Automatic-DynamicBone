@@ -162,7 +162,7 @@ namespace ADBRuntime
                 for (int i = 0; i < iteration; i++)
                 {
                     step = 1 / ((float)iteration - i);
-                   Hjob = pointUpdate.Schedule(pointReadList.Length, batchLength);
+                   //Hjob = pointUpdate.Schedule(pointReadList.Length, batchLength);
                     pointUpdate.TryExecute(pointReadList.Length, batchLength,Hjob);
                     colliderUpdate.step = step;
                     Hjob = colliderUpdate.Schedule(collidersReadList.Length, batchLength);
@@ -183,6 +183,7 @@ namespace ADBRuntime
 
         public void restorePoint()
         {
+            
             ADBRunTimeJobsTable.InitiralizePoint initialpoint = new ADBRunTimeJobsTable.InitiralizePoint
             {
                 pReadPoints = (PointRead*)pointReadList.GetUnsafePtr(),
@@ -195,6 +196,7 @@ namespace ADBRuntime
                 pReadWriteColliders = (ColliderReadWrite*)collidersReadWriteList.GetUnsafePtr()
             };
             ADBRunTimeJobsTable.returnHJob = initialCollider.Schedule(colliderTransformsList, ADBRunTimeJobsTable.returnHJob);
+            ADBRunTimeJobsTable.returnHJob = pointToTransform.Schedule(pointTransformsList, ADBRunTimeJobsTable.returnHJob);
         }
 
         public void Dispose()
