@@ -29,11 +29,18 @@ namespace ADBRuntime
         public AnimationCurve circumferenceStretchScaleCurve = new AnimationCurve(new Keyframe[] { new Keyframe(0.0f, 1.0f), new Keyframe(1.0f, 1.0f) });
         //OYM：调试情况用这一套
 
+        public float frictionGlobal = 0f;
+
+        public float windScaleGlobal =1f;
+        public float gravityScaleGlobal = 1f;
+        public float airResistanceGlobal = 1f;
+
+        public float massGlobal = 1f;
         public float lazyGlobal = 0f;
         public float freezeGlobal = 0f;
-        public float frictionGlobal = 0f;
-        public float massGlobal=1f;
-        public float airResistanceGlobal = 1f;
+
+
+
         public float structuralShrinkVerticalScaleGlobal = 1.0f;
         public float structuralStretchVerticalScaleGlobal = 1.0f;
         public float structuralShrinkHorizontalScaleGlobal = 1.0f;

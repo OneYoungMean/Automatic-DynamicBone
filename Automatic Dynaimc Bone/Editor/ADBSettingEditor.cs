@@ -28,7 +28,6 @@ namespace ADBRuntime
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("airResistanceCurve"), new GUIContent("Air Resistance Curve"), true);
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("massCurve"), new GUIContent("Mass Curve"), true);
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("lazyCurve"), new GUIContent("Lazy Curve"), true);
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("frictionCurve"), new GUIContent("Friction Curve"), true);
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("freezeCurve"), new GUIContent("Freeze Curve"), true);
                 GUILayout.Space(10);
                 showConstraintGlobal = EditorGUILayout.Foldout(showConstraintGlobal,"Constraint Scale");
@@ -51,11 +50,13 @@ namespace ADBRuntime
             else
             {
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("frictionGlobal"), new GUIContent("Friction Global"), true);
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("windScaleGlobal"), new GUIContent("WindScale Global"), true);
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("gravityScaleGlobal"), new GUIContent("GravityScale Global"), true);
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("airResistanceGlobal"), new GUIContent("Air Resistance Global"), true);
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("massGlobal"), new GUIContent("Mass Global"), true);
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("lazyGlobal"), new GUIContent("Lazy Global"), true);
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("frictionGlobal"), new GUIContent("Friction Global"), true);
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("freezeGlobal"), new GUIContent("Freeze Global"), true);
-                GUILayout.Space(5);
+                GUILayout.Space(10);
                 showConstraintGlobal = EditorGUILayout.Foldout(showConstraintGlobal, "Constraint Scale");
                 if (showConstraintGlobal)
                 {

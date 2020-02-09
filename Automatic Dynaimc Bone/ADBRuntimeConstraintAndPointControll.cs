@@ -198,7 +198,7 @@ namespace ADBRuntime
             else
             //OYM：use Length
             {
-                if (aDBSetting.isCollideStructuralHorizontal)
+                if (aDBSetting.isComputeStructuralHorizontal)
                 {
                     for (int i = 0; i < constraintsStructuralHorizontal.Count; i++)
                     {
@@ -374,20 +374,20 @@ namespace ADBRuntime
             #endregion
         }
 
-        private static void CreateConstraintStructuralVertical(ADBRuntimePoint Point, ref List<ADBConstraintRead> ConstraintList, float shrink, float stretch)
+        private  void CreateConstraintStructuralVertical(ADBRuntimePoint Point, ref List<ADBConstraintRead> ConstraintList, float shrink, float stretch)
         {
             if (Point == null || Point.childNode == null) return;
 
             for (int i = 0; i < Point.childNode.Count; ++i)
             {
-                var constraint = new ADBConstraintRead(ConstraintType.Structural_Vertical, Point, Point.childNode[i], shrink, stretch);
+                var constraint = new ADBConstraintRead(ConstraintType.Structural_Vertical, Point, Point.childNode[i], shrink, stretch,aDBSetting.isCollideStructuralVertical);
 
                 ConstraintList.Add(constraint);
                 CreateConstraintStructuralVertical(Point.childNode[i], ref ConstraintList, shrink, stretch);
             }
         }
 
-        private static void CreationConstraintHorizontal(ADBRuntimePoint PointA, ADBRuntimePoint PointB, ref List<ADBConstraintRead> ConstraintList, float shrink, float stretch)//OYM：我建议你不要去看他,你只要相信他能够正常工作就好了
+        private void CreationConstraintHorizontal(ADBRuntimePoint PointA, ADBRuntimePoint PointB, ref List<ADBConstraintRead> ConstraintList, float shrink, float stretch)//OYM：我建议你不要去看他,你只要相信他能够正常工作就好了
         {
             if ((PointA == null) || (PointB == null)) return;//OYM：判空
             if (PointA == PointB) return;//OYM：这里是如果只有一条子列的话防止赋值自身
@@ -406,11 +406,11 @@ namespace ADBRuntime
                     sortByDistance(childPointAList[childPointAList.Count - 1], ref childPointBList, true);//OYM：好吧就这么写吧以后谁倒霉谁来改
                     for (int i = 0; i < childPointAList.Count - 1; i++)
                     {
-                        ConstraintList.Add(new ADBConstraintRead(ConstraintType.Structural_Horizontal, childPointAList[i], childPointAList[i + 1], shrink, stretch));
+                        ConstraintList.Add(new ADBConstraintRead(ConstraintType.Structural_Horizontal, childPointAList[i], childPointAList[i + 1], shrink, stretch, aDBSetting.isComputeBendingHorizontal));
                         CreationConstraintHorizontal(childPointAList[i], childPointAList[i + 1], ref ConstraintList, shrink, stretch);//OYM：递归
                     }
                 }
-                ConstraintList.Add(new ADBConstraintRead(ConstraintType.Structural_Horizontal, childPointAList[childPointAList.Count - 1], childPointBList[0], shrink, stretch));
+                ConstraintList.Add(new ADBConstraintRead(ConstraintType.Structural_Horizontal, childPointAList[childPointAList.Count - 1], childPointBList[0], shrink, stretch, aDBSetting.isComputeBendingHorizontal));
                 CreationConstraintHorizontal(childPointAList[childPointAList.Count - 1], childPointBList[0], ref ConstraintList, shrink, stretch);//OYM：递归
             }
             else if ((childPointAList != null) && (childPointBList == null))//OYM：为了防止互相连接,只允许向序号增大的方向进行连接
@@ -422,11 +422,11 @@ namespace ADBRuntime
                 {
                     for (int i = 0; i < childPointAList.Count - 1; i++)
                     {
-                        ConstraintList.Add(new ADBConstraintRead(ConstraintType.Structural_Horizontal, childPointAList[i], childPointAList[i + 1], shrink, stretch));
+                        ConstraintList.Add(new ADBConstraintRead(ConstraintType.Structural_Horizontal, childPointAList[i], childPointAList[i + 1], shrink, stretch, aDBSetting.isComputeBendingHorizontal));
                         CreationConstraintHorizontal(childPointAList[i], childPointAList[i + 1], ref ConstraintList, shrink, stretch);//OYM：递归
                     }
                 }
-                ConstraintList.Add(new ADBConstraintRead(ConstraintType.Structural_Horizontal, childPointAList[childPointAList.Count - 1], PointB, shrink, stretch));
+                ConstraintList.Add(new ADBConstraintRead(ConstraintType.Structural_Horizontal, childPointAList[childPointAList.Count - 1], PointB, shrink, stretch, aDBSetting.isComputeBendingHorizontal));
                 CreationConstraintHorizontal(childPointAList[childPointAList.Count - 1], PointB, ref ConstraintList, shrink, stretch);
 
             }
@@ -460,8 +460,8 @@ namespace ADBRuntime
                         CreationConstraintShear(childPointBList[i], childPointBList[i + 1], ref ConstraintList, shrink, stretch);//OYM：递归
                     }
                 }
-                ConstraintList.Add(new ADBConstraintRead(ConstraintType.Shear, childPointAList[childPointAList.Count - 1], PointB, shrink, stretch));
-                ConstraintList.Add(new ADBConstraintRead(ConstraintType.Shear, childPointBList[0], PointA, shrink, stretch));
+                ConstraintList.Add(new ADBConstraintRead(ConstraintType.Shear, childPointAList[childPointAList.Count - 1], PointB, shrink, stretch, aDBSetting.isCollideShear));
+                ConstraintList.Add(new ADBConstraintRead(ConstraintType.Shear, childPointBList[0], PointA, shrink, stretch, aDBSetting.isCollideShear));
                 CreationConstraintShear(childPointAList[childPointAList.Count - 1], childPointBList[0], ref ConstraintList, shrink, stretch);
             }
             else if ((childPointAList != null ^ childPointBList != null) && !aDBSetting.isComputeStructuralHorizontal)//OYM：如果横向创建了,那么斜对角再创建就没有必要了
@@ -479,7 +479,7 @@ namespace ADBRuntime
                         CreationConstraintHorizontal(existList[i], existList[i + 1], ref ConstraintList, shrink, stretch);//OYM：递归
                     }
                 }
-                ConstraintList.Add(new ADBConstraintRead(ConstraintType.Shear, existList[existList.Count - 1], existPoint, shrink, stretch));
+                ConstraintList.Add(new ADBConstraintRead(ConstraintType.Shear, existList[existList.Count - 1], existPoint, shrink, stretch, aDBSetting.isCollideShear));
                 CreationConstraintShear(existList[existList.Count - 1], existPoint, ref ConstraintList, shrink, stretch);
             }
         }
@@ -492,7 +492,7 @@ namespace ADBRuntime
                 if (child.childNode == null) continue;
                 foreach (var grandSon in child.childNode)
                 {
-                    ConstraintList.Add(new ADBConstraintRead(ConstraintType.Bending_Vertical, Point, grandSon, shrink, stretch));
+                    ConstraintList.Add(new ADBConstraintRead(ConstraintType.Bending_Vertical, Point, grandSon, shrink, stretch,false));
                 }
                 CreationConstraintBendingVertical(child, ref ConstraintList, shrink, stretch);
             }
@@ -511,7 +511,7 @@ namespace ADBRuntime
                     ADBConstraintRead ConstraintB = horizontalConstraintList[j0];
                     if (ConstraintA.pointB == ConstraintB.pointA)
                     {
-                        ConstraintList.Add(new ADBConstraintRead(ConstraintType.Bending_Horizontal, ConstraintA.pointA, ConstraintB.pointB, shrink, stretch));
+                        ConstraintList.Add(new ADBConstraintRead(ConstraintType.Bending_Horizontal, ConstraintA.pointA, ConstraintB.pointB, shrink, stretch,false));
                     }
                 }
             }
@@ -525,7 +525,7 @@ namespace ADBRuntime
             {
                 if (fixedPoint.childNode[i].isVirtual) continue;
 
-                ConstraintList.Add(new ADBConstraintRead(ConstraintType.Circumference, fixedPoint, fixedPoint.childNode[i], shrink, stretch));
+                ConstraintList.Add(new ADBConstraintRead(ConstraintType.Circumference, fixedPoint, fixedPoint.childNode[i], shrink, stretch,false));
                 CreationConstraintCircumference(fixedPoint, fixedPoint.childNode[i], ref ConstraintList, shrink, stretch);//OYM：递归
             }
         }
@@ -543,7 +543,7 @@ namespace ADBRuntime
                     var isRepetB = aDBSetting.isComputeBendingVertical && (childPointB[i].depth == 2);
                     if (!isRepetA && !isRepetB)
                     {
-                        ConstraintList.Add(new ADBConstraintRead(ConstraintType.Circumference, PointA, childPointB[i], shrink, stretch));
+                        ConstraintList.Add(new ADBConstraintRead(ConstraintType.Circumference, PointA, childPointB[i], shrink, stretch,false));
                     }
                     CreationConstraintCircumference(PointA, childPointB[i], ref ConstraintList, shrink, stretch);//OYM：递归
                 }
