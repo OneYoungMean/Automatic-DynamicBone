@@ -1,5 +1,5 @@
 # AutomaticDynamicBone
-基于https://github.com/SPARK-inc/SPCRJointDynamics ,一个可以自动生成具有物理效果头发和裙子的插件.  
+基于https://github.com/SPARK-inc/SPCRJointDynamics ,一个可以根据骨骼布料,自动生成具有物理效果头发和裙子的插件.  
 ## 特性
 
 - 采用 unity Job System + Burst compiler,采用指针写的物理底层,拥有着**及其高的优化程度!**
