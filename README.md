@@ -16,10 +16,10 @@
 ## 要求
 - Unity2018.2或更高
 - 要求 [IL2CPP][.NET4x][Allow 'unsafe' Code]
-- 安装 [Burst] package
-- 安装 [Jobs] package(preview)
-- 安装 [Collection] package(preview)
-- 安装 [Mathmatic] package(preview)
+- 需要 [Burst] package
+- 需要 [Jobs] package(preview)
+- 需要 [Collection] package(preview)
+- 需要 [Mathmatic] package(preview)
 
 - 更多详情请参见[wiki](https://github.com/OneYoungMean/AutomaticDynamicBone/wiki)  
 ![2](https://github.com/OneYoungMean/AutomaticDynamicBone/blob/master/Manual%20GIF/A0.gif)  
