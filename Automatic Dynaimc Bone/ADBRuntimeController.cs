@@ -27,6 +27,8 @@ namespace ADBRuntime
         [SerializeField]
         public bool isGenerateColliderAutomaitc=true;
         [SerializeField]
+        public bool isGenerateByFixedPoint = true;
+        [SerializeField]
         public float delayTime=0.0001f;
         [SerializeField]
         public int iteration=4;
@@ -64,7 +66,7 @@ namespace ADBRuntime
             if (!isInitialize)
             {
                 initializePoint();
-                initializeCollider(false,allPointTrans);
+                initializeCollider(false, isGenerateByFixedPoint);
             }
 
             if (jointAndPointControlls == null) return;
@@ -79,7 +81,6 @@ namespace ADBRuntime
                 }
                 colliderControll.GetData(ref dataPackage);
                 dataPackage.SetNativeArray();
-
                 initializeScale = transform.lossyScale.x;
                 isInitialize = true;
             }
@@ -145,6 +146,11 @@ namespace ADBRuntime
         }
         public void RestorePoint()
         {
+            if (!Application.isPlaying)
+            {
+                Debug.Log("Use it On Runtime!");
+                return;
+            }
             dataPackage.restorePoint();
         }
         private void UpdateDataPakage()
@@ -164,8 +170,12 @@ namespace ADBRuntime
 
             if (!(generateKeyWordWhiteList?.Count != 0))
             {
-                Debug.Log("The white key is null!");
-                return;
+                generateKeyWordWhiteList = settings.defaultKeyWord;
+                if (generateKeyWordWhiteList == null)
+                {
+                    Debug.Log("The white key is null!Check the RuntimeController or Global Setting!");
+                    return;
+                }
             }
             else
             {
@@ -211,24 +221,44 @@ namespace ADBRuntime
             }
         }
 
-        public void initializeCollider(bool generateScript, List<Transform> allPointTrans)
+        public void initializeCollider(bool generateScript, bool isFixedPoint)
         {
-            if (allPointTrans == null)
+            List<ADBRuntimePoint> list = null;
+            if (jointAndPointControlls == null || jointAndPointControlls.Length == 0)
             {
                 Debug.Log("use <generate Point> to get higher accuate collider");
             }
-            colliderControll = new ADBRuntimeColliderControll(gameObject, allPointTrans, isGenerateColliderAutomaitc);//OYM：在这里获取collider
+            else
+            {
+                list = new List<ADBRuntimePoint>();
+                for (int i = 0; i < jointAndPointControlls.Length; i++)
+                {
+                    if (isFixedPoint)
+                    {
+                        list.AddRange(jointAndPointControlls[i].fixedNodeList);
+                    }
+                    else
+                    {
+                        list.AddRange(jointAndPointControlls[i].allNodeList);
+                    }
+                }
+            }
+
+            colliderControll = new ADBRuntimeColliderControll(gameObject, list, isGenerateColliderAutomaitc);//OYM：在这里获取collider
             if (generateScript)
             {
                 editorColliderList = new List<ADBEditorCollider>();
+                var OtheerColliderList = gameObject.GetComponentsInChildren<ADBEditorCollider>();
                 for (int i = 0; i < colliderControll.runtimeColliderList.Count; i++)
                 {
                     if (colliderControll.runtimeColliderList[i].appendTransform == null) continue;
 
-                    var editor = ADBEditorCollider.RuntimeCollider2Editor(colliderControll.runtimeColliderList[i]);
-                    editor.isDraw = true;
-                    editorColliderList.Add(editor);
-
+                    ADBEditorCollider.RuntimeCollider2Editor(colliderControll.runtimeColliderList[i],ref editorColliderList);
+                }
+                editorColliderList.AddRange(OtheerColliderList);
+                for (int i = 0; i < editorColliderList.Count; i++)
+                {
+                    editorColliderList[i].isDraw = true;
                 }
                 isGenerateColliderAutomaitc = false;
             }

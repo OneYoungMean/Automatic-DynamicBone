@@ -19,9 +19,7 @@ namespace ADBRuntime
         public override void OnInspectorGUI()
         {
             serializedObject.Update();
-            //OYM：更新表现形式
-
-            ADBRuntimeController controller = target as ADBRuntimeController;
+            //OYM：更新表现形式;
             GUILayout.Space(8);
             EditorGUILayout.TextField("Name", controller.transform.name);
 
@@ -49,7 +47,7 @@ namespace ADBRuntime
             EditorGUILayout.LabelField("=============== Collider");
             if (GUILayout.Button("Generate Collider", GUILayout.Height(22.0f)))
             {
-                controller.initializeCollider(true, controller.allPointTrans);
+                controller.initializeCollider(true,controller. isGenerateByFixedPoint);
                 controller.isDebug = true;
             }
             if (GUILayout.Button("Remove All Collider", GUILayout.Height(22.0f)))
@@ -63,8 +61,13 @@ namespace ADBRuntime
             }
 
             controller.isGenerateColliderAutomaitc = EditorGUILayout.Toggle("Is Generate Body Collider Automatic ", controller.isGenerateColliderAutomaitc);
+            if (controller.isGenerateColliderAutomaitc)
+            {
+               controller.isGenerateByFixedPoint= EditorGUILayout.Toggle("Is Generate By Fixed Point ", controller.isGenerateByFixedPoint);
+            }
 
-            if(controller.editorColliderList!=null)
+
+                if (controller.editorColliderList!=null)
             EditorGUILayout.PropertyField(serializedObject.FindProperty("editorColliderList"), new GUIContent("Collider"), true);
 
             Titlebar("physical setting", new Color(0.7f, 1.0f, 0.7f));

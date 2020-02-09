@@ -82,7 +82,7 @@ namespace ADBRuntime
                     virtualPoint.pointRead.fixedIndex = PointList[i].pointRead.fixedIndex;
                     virtualPoint.pointRead.childFirstIndex = virtualPoint.pointRead.childLastIndex = -1;
                     virtualPoint.pointRead.parent = PointList[i].index;
-                    virtualPoint.pointDepthRateMaxPointDepth = 1;
+                    virtualPoint.pointDepthRateMaxPointDepth =aDBSetting.virtualPointRate;
                     virtualPoint.pointRead.boneAxis = Vector3.down * 0.1f;
                     virtualPoint.pointRead.localRotation = Quaternion.identity;
                     virtualPoint.pointRead.initialPosition = Vector3.zero;
@@ -103,7 +103,7 @@ namespace ADBRuntime
 
         private void CreatePointStructList(List<ADBRuntimePoint> allPointList)
         {
-            ComputeWeight(constraintsStructuralHorizontal, constraintsStructuralVertical);
+            ComputeWeight();
 
             pointReadList = new PointRead[allPointList.Count];
             pointReadWriteList = new PointReadWrite[allPointList.Count];
@@ -113,19 +113,20 @@ namespace ADBRuntime
                 //OYM：有一部分设置被我搬到生成constrain里面生成去了,在这里生成太啰嗦了,不想写.
                 var point = allPointList[i];//OYM：翻译出来是源文件  
                 point.pointRead.initialPosition = point.trans.position - allPointList[point.pointRead.fixedIndex].trans.position;//OYM：相对于固定点的位置
-
+                point.pointRead.colliderChoice = aDBSetting.colliderChoice;
                 if (!aDBSetting.useGlobal)
                 {
                     float rate = point.pointDepthRateMaxPointDepth;
                     rate = Mathf.Clamp01(rate);
+                    point.pointRead.windScale = aDBSetting.windScaleCurve.Evaluate(rate);
                     point.pointRead.friction = aDBSetting.frictionCurve.Evaluate(rate);
                     point.pointRead.airResistance = aDBSetting.airResistanceCurve.Evaluate(rate);
                     point.pointRead.mass = aDBSetting.massCurve.Evaluate(rate);
                     point.pointRead.lazy = aDBSetting.lazyCurve.Evaluate(rate);
                     point.pointRead.freeze = aDBSetting.freezeCurve.Evaluate(rate);
                     point.pointRead.gravity = aDBSetting.gravity * aDBSetting.gravityScaleCurve.Evaluate(rate);
-                    point.pointRead.circumferenceShrink = 0.5f * aDBSetting.structuralCircumferenceShrinkScaleCurve.Evaluate(rate);
-                    point.pointRead.circumferenceStretch = 0.5f * aDBSetting.structuralCircumferenceStretchScaleCurve.Evaluate(rate);
+                    point.pointRead.circumferenceShrink = 0.5f * aDBSetting.circumferenceShrinkScaleCurve.Evaluate(rate);
+                    point.pointRead.circumferenceStretch = 0.5f * aDBSetting.circumferenceStretchScaleCurve.Evaluate(rate);
                     point.pointRead.structuralShrinkVertical = 0.5f * aDBSetting.structuralShrinkVerticalScaleCurve.Evaluate(rate);
                     point.pointRead.structuralStretchVertical = 0.5f * aDBSetting.structuralStretchVerticalScaleCurve.Evaluate(rate);
                     point.pointRead.structuralShrinkHorizontal = 0.5f * aDBSetting.structuralShrinkHorizontalScaleCurve.Evaluate(rate);
@@ -139,13 +140,15 @@ namespace ADBRuntime
                 }
                 else
                 {
+                    point.pointRead.windScale = 1;
                     point.pointRead.friction = aDBSetting.frictionGlobal;
                     point.pointRead.airResistance = aDBSetting.airResistanceGlobal;
                     point.pointRead.mass = aDBSetting.massGlobal;
                     point.pointRead.lazy = aDBSetting.lazyGlobal;
                     point.pointRead.freeze = aDBSetting.freezeGlobal;
                     point.pointRead.gravity = aDBSetting.gravity;
-                    point.pointRead.circumferenceShrink = 0.5f * aDBSetting.structuralCircumferenceShrinkScaleGlobal;
+                    point.pointRead.circumferenceShrink = 0.5f * aDBSetting.circumferenceShrinkScaleGlobal;
+                    point.pointRead.circumferenceStretch = 0.5f * aDBSetting.circumferenceStretchScaleGlobal;
                     point.pointRead.structuralShrinkVertical = 0.5f * aDBSetting.structuralShrinkVerticalScaleGlobal;
                     point.pointRead.structuralStretchVertical = 0.5f * aDBSetting.structuralStretchVerticalScaleGlobal;
                     point.pointRead.structuralShrinkHorizontal = 0.5f * aDBSetting.structuralShrinkHorizontalScaleGlobal;
@@ -164,7 +167,7 @@ namespace ADBRuntime
 
         }
 
-        private void ComputeWeight(List<ADBConstraintRead> constraintsStructuralHorizontal, List<ADBConstraintRead> constraintsStructuralVertical)
+        private void ComputeWeight()
         {
             //OYM：Use Area 
             float[] nodeWeight = new float[allNodeList.Count];
@@ -181,6 +184,11 @@ namespace ADBRuntime
                 {
                     VerticalVector[constraintsStructuralVertical[i].pointA.index] += constraintsStructuralVertical[i].direction;
                     VerticalVector[constraintsStructuralVertical[i].pointB.index] += constraintsStructuralVertical[i].direction;
+                }
+                for (int i = 0; i < constraintsVirtual.Count; i++)
+                {
+                    VerticalVector[constraintsVirtual[i].pointA.index] += constraintsVirtual[i].direction;
+                    VerticalVector[constraintsVirtual[i].pointB.index] += constraintsVirtual[i].direction;
                 }
                 for (int i = 0; i < nodeWeight.Length; i++)
                 {
@@ -205,6 +213,11 @@ namespace ADBRuntime
                         nodeWeight[constraintsStructuralVertical[i].pointA.index] += constraintsStructuralVertical[i].constraintRead.length * 0.5f;
                         nodeWeight[constraintsStructuralVertical[i].pointB.index] += constraintsStructuralVertical[i].constraintRead.length * 0.5f;
                     }
+                }
+                for (int i = 0; i < constraintsVirtual.Count; i++)
+                {
+                    nodeWeight[constraintsVirtual[i].pointA.index] += constraintsVirtual[i].constraintRead.length * 0.5f; 
+                    nodeWeight[constraintsVirtual[i].pointB.index] += constraintsVirtual[i].constraintRead.length * 0.5f;
                 }
             }
             ComputeWeight(nodeWeight, allNodeList);

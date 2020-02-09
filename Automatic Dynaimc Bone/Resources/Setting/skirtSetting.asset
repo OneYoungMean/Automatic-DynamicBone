@@ -37,6 +37,30 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+  windScaleCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
   gravityScaleCurve:
     serializedVersion: 2
     m_Curve:
@@ -397,7 +421,7 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  structuralCircumferenceShrinkScaleCurve:
+  circumferenceShrinkScaleCurve:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
@@ -421,7 +445,7 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  structuralCircumferenceStretchScaleCurve:
+  circumferenceStretchScaleCurve:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
@@ -460,8 +484,8 @@ MonoBehaviour:
   bendingStretchVerticalScaleGlobal: 1
   bendingShrinkHorizontalScaleGlobal: 1
   bendingStretchHorizontalScaleGlobal: 1
-  structuralCircumferenceShrinkScaleGlobal: 1
-  structuralCircumferenceStretchScaleGlobal: 1
+  circumferenceShrinkScaleGlobal: 1
+  circumferenceStretchScaleGlobal: 1
   structuralShrinkVertical: 1
   structuralStretchVertical: 1
   structuralShrinkHorizontal: 1
@@ -475,6 +499,7 @@ MonoBehaviour:
   circumferenceShrink: 1
   circumferenceStretch: 1
   isComputeVirtual: 0
+  virtualPointRate: 0.5
   isComputeStructuralVertical: 1
   isComputeStructuralHorizontal: 1
   isComputeShear: 0
@@ -488,3 +513,4 @@ MonoBehaviour:
   isDebugDraw: 1
   gravity: {x: 0, y: -9.81, z: 0}
   isComputeQuantityByArea: 1
+  colliderChoice: 76

@@ -3,8 +3,6 @@ using System.Collections.Generic;
 
 namespace ADBRuntime
 {
-    [DisallowMultipleComponent]
-
     public class ADBEditorCollider : MonoBehaviour
     {
         [SerializeField]
@@ -30,31 +28,26 @@ namespace ADBRuntime
                 initialize();
             }
 
-            if (aDBRuntimeCollider.appendTransform == null )
+            if (aDBRuntimeCollider.appendTransform == null)
             {
                 aDBRuntimeCollider.appendTransform = transform;
             }
 
-            if (isGlobal&&Application.isPlaying)
+            if (isGlobal && Application.isPlaying)
             {
                 globalColliderList.Add(aDBRuntimeCollider);
             }
             isDraw = false;
         }
-        public static ADBEditorCollider RuntimeCollider2Editor(ADBRuntimeCollider runtime)
+        public static List<ADBEditorCollider> RuntimeCollider2Editor(ADBRuntimeCollider runtime, ref List<ADBEditorCollider> result)
         {
-           
             var editor = runtime.appendTransform.gameObject.AddComponent<ADBEditorCollider>();
-            if(editor==null)
-            {
-                editor = runtime.appendTransform.gameObject.GetComponent<ADBEditorCollider>();
-                return editor;
-            }
             editor.editor = runtime;
-            
-            return editor;
+            result.Add(editor);
+            return result;
+
         }
-       
+
         public ADBRuntimeCollider GetCollider()
         {
             if (isGlobal) return null;
@@ -64,7 +57,7 @@ namespace ADBRuntime
         }
         public void initialize()
         {
-            if (aDBRuntimeCollider?.colliderRead == null || aDBRuntimeCollider.colliderRead.Equals(editor.colliderRead)) ;
+            if (aDBRuntimeCollider?.colliderRead == null || !aDBRuntimeCollider.colliderRead.Equals(editor.colliderRead))
             {
                 editor.colliderRead.CheckValue();
                 editor.colliderRead.isOpen = true;

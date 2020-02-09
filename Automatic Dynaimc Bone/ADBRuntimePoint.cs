@@ -7,7 +7,6 @@ namespace ADBRuntime
 {
     public class ADBRuntimePoint
     {
-
         public PointRead pointRead;
         public PointReadWrite pointReadWrite;
         public float pointDepthRateMaxPointDepth;
@@ -87,6 +86,10 @@ namespace ADBRuntime
         ///  惰性,防止头发末梢跟美杜莎一样到处乱动
         /// </summary>
         public float lazy;
+        /// <summary>
+        /// Collider选择性对撞
+        /// </summary>
+        public ColliderChoice colliderChoice;
         public float structuralShrinkVertical;
         public float structuralStretchVertical;
         public float structuralShrinkHorizontal;
@@ -105,6 +108,7 @@ namespace ADBRuntime
         public Quaternion localRotation;
 
         public float freeze;
+        internal float windScale;
     }
 
     //OYM：写入系统

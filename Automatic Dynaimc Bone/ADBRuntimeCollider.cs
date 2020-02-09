@@ -28,7 +28,6 @@ namespace ADBRuntime
         /// <summary>
         /// 嘿,它会给物体的两面都会碰撞,但是再碰撞之前它都是可以任意在里面或者外面
         /// </summary>
-        Free=8
     }
     [Serializable]
     public  class ADBRuntimeCollider
@@ -85,12 +84,13 @@ namespace ADBRuntime
             this.colliderRead = colliderRead;
             this.appendTransform = appendtTransform;
         }
-        public SphereCollider(float radius, Vector3 positionOffset, Transform appendTransform = null, CollideFunc collideFunc = CollideFunc.Outside)
+        public SphereCollider(float radius, Vector3 positionOffset,ColliderChoice colliderChoice, Transform appendTransform = null, CollideFunc collideFunc = CollideFunc.Outside)
         {
             colliderRead.radius = radius;
 
             colliderRead.colliderType = ColliderType.Sphere;
             colliderRead.collideFunc = CollideFunc.Outside;
+            colliderRead.colliderChoice = colliderChoice;
             if (appendTransform != null)
             {
                 this.appendTransform = appendTransform;
@@ -124,10 +124,12 @@ namespace ADBRuntime
             this.colliderRead = colliderRead;
             this.appendTransform = appendtTransform;
         }
-        public CapsuleCollider(float radius, Vector3 pointHead, Vector3 pointTail, Transform appendTransform = null, CollideFunc collideFunc = CollideFunc.Outside)
+        public CapsuleCollider(float radius, Vector3 pointHead, Vector3 pointTail, ColliderChoice colliderChoice,Transform appendTransform = null, CollideFunc collideFunc = CollideFunc.Outside)
         {
 
             colliderRead.colliderType = ColliderType.Capsule;
+            colliderRead.collideFunc = collideFunc;
+            colliderRead.colliderChoice = colliderChoice;
             colliderRead.radius = radius;
             colliderRead.length = (pointHead - pointTail).magnitude;
             if (appendTransform != null)
@@ -142,11 +144,12 @@ namespace ADBRuntime
                 colliderRead.staticDirection = pointTail - pointHead;
             }
         }
-        public CapsuleCollider(float radius,float length, Vector3 positionOffset,Vector3 direction, Transform appendTransform = null, CollideFunc collideFunc = CollideFunc.Outside)
+        public CapsuleCollider(float radius,float length, Vector3 positionOffset,Vector3 direction, ColliderChoice colliderChoice,Transform appendTransform = null, CollideFunc collideFunc = CollideFunc.Outside)
         {
 
             colliderRead.colliderType = ColliderType.Capsule;
-
+            colliderRead.collideFunc = collideFunc;
+            colliderRead.colliderChoice = colliderChoice;
             colliderRead.radius = radius;
             colliderRead.length = length;
             if (appendTransform != null)
@@ -205,44 +208,6 @@ namespace ADBRuntime
 
         }
     }
-    /*
-    class SphereComBine : ADBRuntimeCollider
-    {
-        float radius;
-        public SphereComBine(float radiu, float thickness, float curvature, Vector3 center, Vector3 direction, Transform appendTransform = null, CollideFunc collideFunc = CollideFunc.Outside)
-        {
-            //OYM：A*B=radius^2,A/B=curvature
-            this.radius = radiu;
-            this.appendTransform = appendTransform;
-            //colliderRead.colliderType = ColliderType.SphereCombine;
-            colliderRead.collideFunc = collideFunc;
-            float A1 = Mathf.Sqrt(radiu * radiu * curvature);
-            float A2 = A1 < thickness ? 0.001f : A1 - thickness;
-            float B1 = radiu * radiu / A1;
-            float B2 = radiu * radiu / A2;
-            colliderRead.lengthA = (A1 + B1) * 0.5f;
-            colliderRead.lengthB = (A2 + B2) * 0.5f;
-
-            colliderRead.pointB = appendTransform ? (center - (B1 - colliderRead.lengthA) * direction) : appendTransform.InverseTransformPoint((center - (B1 - colliderRead.lengthA) * direction));
-            colliderRead.pointC = appendTransform ? (center - (B2 - colliderRead.lengthB) * direction) : appendTransform.InverseTransformPoint((center - (B2 - colliderRead.lengthB) * direction));
-
-        }
-                                                                                                                                                                                                                                        
-        public override void OnDrawGizmos()
-        {
-            Gizmos.color = Color.red;
-            var mOld = Gizmos.matrix;//OYM：把旧的拿出来
-
-            Gizmos.matrix = Matrix4x4.TRS(appendTransform.position + appendTransform.rotation * colliderRead.positionOffset, appendTransform.rotation, Vector3.one);//OYM：创造一个坐标矩阵
-            DrawWireArc(radius, 360);
-
-            Gizmos.matrix = mOld;
-
-            Gizmos.DrawWireSphere(colliderRead.pointA, colliderRead.lengthA);
-            Gizmos.DrawWireSphere(colliderRead.pointB, colliderRead.lengthB);
-        }
-    }
-    */
 
     public class OBBBox : ADBRuntimeCollider
     {
@@ -255,7 +220,7 @@ namespace ADBRuntime
             OBBposition = colliderRead.positionOffset;
             OBBRotation = colliderRead.staticNormal;
         }
-        public OBBBox(Vector3 center, Vector3 range, Vector3 direction, Transform appendTransform = null, CollideFunc collideFunc = CollideFunc.Outside)
+        public OBBBox(Vector3 center, Vector3 range, Vector3 direction, ColliderChoice colliderChoice, Transform appendTransform = null, CollideFunc collideFunc = CollideFunc.Outside)
         {
             OBBposition = appendTransform ? appendTransform.InverseTransformPoint(center) : center;
             OBBRotation = appendTransform ? appendTransform.rotation * Quaternion.FromToRotation(Vector3.up, direction) : Quaternion.FromToRotation(Vector3.up, direction);
@@ -263,8 +228,9 @@ namespace ADBRuntime
             colliderRead.staticNormal = OBBRotation;
             colliderRead.positionOffset = OBBposition;
             colliderRead.boxSize = range * 0.5f;
-            colliderRead.collideFunc = collideFunc;
             colliderRead.colliderType = ColliderType.OBB;
+            colliderRead.collideFunc = CollideFunc.Outside;
+            colliderRead.colliderChoice = colliderChoice;
         }
 
         public override void OnDrawGizmos()
@@ -292,7 +258,7 @@ namespace ADBRuntime
 
         public ColliderType colliderType;
         public CollideFunc collideFunc;
-
+        public ColliderChoice colliderChoice;
         public Vector3 positionOffset;
         public Quaternion staticNormal;
         public Vector3 staticDirection;
@@ -319,6 +285,10 @@ namespace ADBRuntime
             boxSize = boxSize.normalized * boxSize.magnitude;
             staticDirection = staticDirection == Vector3.zero ? Vector3.up : staticDirection;
             staticNormal = Quaternion.FromToRotation(Vector3.up, staticDirection);
+            if (((int)colliderChoice) == 0)
+            {
+                colliderChoice = ColliderChoice.Other;
+            }
         }
     }
     public struct ColliderReadWrite
@@ -331,3 +301,41 @@ namespace ADBRuntime
         public Quaternion normalForward;
     }
 }//OYM：写死我了....历时四个月有余
+/*
+class SphereComBine : ADBRuntimeCllider
+{
+    float radius;
+    public SphereComBine(float radiu, float thickness, float curvature, Vector3 center, Vector3 direction, Transform appendTransform = null, CollideFunc collideFunc = CollideFunc.Outside)
+    {
+        //OYM：A*B=radius^2,A/B=curvature
+        this.radius = radiu;
+        this.appendTransform = appendTransform;
+        //colliderRead.colliderType = ColliderType.SphereCombine;
+        colliderRead.collideFunc = collideFunc;
+        float A1 = Mathf.Sqrt(radiu * radiu * curvature);
+        float A2 = A1 < thickness ? 0.001f : A1 - thickness;
+        float B1 = radiu * radiu / A1;
+        float B2 = radiu * radiu / A2;
+        colliderRead.lengthA = (A1 + B1) * 0.5f;
+        colliderRead.lengthB = (A2 + B2) * 0.5f;
+
+        colliderRead.pointB = appendTransform ? (center - (B1 - colliderRead.lengthA) * direction) : appendTransform.InverseTransformPoint((center - (B1 - colliderRead.lengthA) * direction));
+        colliderRead.pointC = appendTransform ? (center - (B2 - colliderRead.lengthB) * direction) : appendTransform.InverseTransformPoint((center - (B2 - colliderRead.lengthB) * direction));
+
+    }
+
+    public override void OnDrawGizmos()
+    {
+        Gizmos.color = Color.red;
+        var mOld = Gizmos.matrix;//OYM：把旧的拿出来
+
+        Gizmos.matrix = Matrix4x4.TRS(appendTransform.position + appendTransform.rotation * colliderRead.positionOffset, appendTransform.rotation, Vector3.one);//OYM：创造一个坐标矩阵
+        DrawWireArc(radius, 360);
+
+        Gizmos.matrix = mOld;
+
+        Gizmos.DrawWireSphere(colliderRead.pointA, colliderRead.lengthA);
+        Gizmos.DrawWireSphere(colliderRead.pointB, colliderRead.lengthB);
+    }
+}
+*/

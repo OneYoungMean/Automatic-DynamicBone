@@ -9,6 +9,7 @@ namespace ADBRuntime
     {
 
         public List<KeyWordSetting> settings;
+        public List<string> defaultKeyWord;
         public ADBSetting GetSetting(string keyword)
         {
             if (!(settings == null || settings.Count == 0))
@@ -19,6 +20,7 @@ namespace ADBRuntime
                         return settings[i].setting;
                 }
             }
+            Debug.Log("You dont add the keyword In ADBSetting!check the Automatic Dynamic Bone/Resource/GlobalSettingFile !");
             return (ADBSetting)ScriptableObject.CreateInstance(typeof(ADBSetting));
         }
 

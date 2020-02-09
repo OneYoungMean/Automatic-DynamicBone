@@ -9,6 +9,7 @@ namespace ADBRuntime
         public bool useGlobal = false;
         //高级情况下用这一套
             public AnimationCurve frictionCurve = new AnimationCurve(new Keyframe[] { new Keyframe(0.0f, 0.0f), new Keyframe(1.0f, 0.0f) });
+        public AnimationCurve windScaleCurve = new AnimationCurve(new Keyframe[] { new Keyframe(0.0f, 1.0f), new Keyframe(1.0f, 1.0f) });
         public AnimationCurve gravityScaleCurve = new AnimationCurve(new Keyframe[] { new Keyframe(0.0f, 1.0f), new Keyframe(1.0f, 1.0f) });
         public AnimationCurve airResistanceCurve = new AnimationCurve(new Keyframe[] { new Keyframe(0.0f, 1.0f), new Keyframe(1.0f, 1.0f) });
         public AnimationCurve massCurve = new AnimationCurve(new Keyframe[] { new Keyframe(0.0f, 0.9f), new Keyframe(1.0f, 1f) });
@@ -24,8 +25,8 @@ namespace ADBRuntime
         public AnimationCurve bendingStretchVerticalScaleCurve = new AnimationCurve(new Keyframe[] { new Keyframe(0.0f, 1.0f), new Keyframe(1.0f, 1.0f) });
         public AnimationCurve bendingShrinkHorizontalScaleCurve = new AnimationCurve(new Keyframe[] { new Keyframe(0.0f, 1.0f), new Keyframe(1.0f, 1.0f) });
         public AnimationCurve bendingStretchHorizontalScaleCurve = new AnimationCurve(new Keyframe[] { new Keyframe(0.0f, 1.0f), new Keyframe(1.0f, 1.0f) });
-        public AnimationCurve structuralCircumferenceShrinkScaleCurve = new AnimationCurve(new Keyframe[] { new Keyframe(0.0f, 1.0f), new Keyframe(1.0f, 1.0f) });
-        public AnimationCurve structuralCircumferenceStretchScaleCurve = new AnimationCurve(new Keyframe[] { new Keyframe(0.0f, 1.0f), new Keyframe(1.0f, 1.0f) });
+        public AnimationCurve circumferenceShrinkScaleCurve = new AnimationCurve(new Keyframe[] { new Keyframe(0.0f, 1.0f), new Keyframe(1.0f, 1.0f) });
+        public AnimationCurve circumferenceStretchScaleCurve = new AnimationCurve(new Keyframe[] { new Keyframe(0.0f, 1.0f), new Keyframe(1.0f, 1.0f) });
         //OYM：调试情况用这一套
 
         public float lazyGlobal = 0f;
@@ -43,8 +44,8 @@ namespace ADBRuntime
         public float bendingStretchVerticalScaleGlobal = 1.0f;
         public float bendingShrinkHorizontalScaleGlobal = 1.0f;
         public float bendingStretchHorizontalScaleGlobal = 1.0f;
-        public float structuralCircumferenceShrinkScaleGlobal = 1.0f;
-        public float structuralCircumferenceStretchScaleGlobal = 1.0f;
+        public float circumferenceShrinkScaleGlobal = 1.0f;
+        public float circumferenceStretchScaleGlobal = 1.0f;
         //这是基础值
 
         public float structuralShrinkVertical = 1.0f;//OYM：垂直结构收缩
@@ -62,6 +63,8 @@ namespace ADBRuntime
 
         //各种设定
         public bool isComputeVirtual = true;//OYM：计算虚拟
+        public float virtualPointRate=0.5f;
+
         public bool isComputeStructuralVertical = true;//OYM：要计算垂直
         public bool isComputeStructuralHorizontal = false;//OYM：要计算水平
         public bool isComputeShear = false;//OYM：要计算剪切
@@ -76,6 +79,20 @@ namespace ADBRuntime
         public bool isDebugDraw;
         public Vector3 gravity = new Vector3(0.0f, -9.81f, 0.0f);//OYM：重力
         public bool isComputeQuantityByArea = false;
+        public ColliderChoice colliderChoice = (ColliderChoice)(1 << 9 - 1);
+    }
 
+    public enum ColliderChoice
+    {
+        Head= 1 << 0,
+        UpperBody= 1 << 1,
+        LowerBody=1<<2,
+        UpperLeg = 1 << 3,
+        LowerLeg = 1 << 4,
+        UpperArm = 1 << 5,
+        LowerArm = 1 << 6,
+        Hand = 1 << 7,
+        Foot=1<<8,
+        Other = 1 << 9,
     }
 }

@@ -33,12 +33,13 @@ namespace ADBRuntime
         private NativeArray<PointReadWrite> pointReadWriteList;
         // private NativeArray<PointReadWrite> pointReadWriteListCopy;
         private TransformAccessArray pointTransformsList;
-        private bool isRunning = true;
-        private bool isDebug = false;
 
+        private bool isRunning = true;
+        private bool isTryExcute = false;
+        private bool isDebug = false;
         public DataPackage()
         {
-            ADBRunTimeJobsTable = ADBRunTimeJobsTable.GetRunTimeJobsTable();
+            ADBRunTimeJobsTable = ADBRunTimeJobsTable.GetRunTimeJobsTable(isDebug);
 
             m_constraintList = new List<ConstraintRead[]>();
             m_pointReadList = new List<PointRead>();
@@ -136,7 +137,7 @@ namespace ADBRuntime
 
         internal void SetRuntimeData(float deltaTime, float scale, int iteration, Vector3 windForce, ColliderCollisionType colliderCollisionType)
         {
-            int batchLength = isDebug ? 1 : 16;
+            int batchLength = isTryExcute ? 1 : 16;
 
             JobHandle Hjob = ADBRunTimeJobsTable.returnHJob;
 
@@ -162,19 +163,37 @@ namespace ADBRuntime
                 for (int i = 0; i < iteration; i++)
                 {
                     step = 1 / ((float)iteration - i);
-                   //Hjob = pointUpdate.Schedule(pointReadList.Length, batchLength);
-                    pointUpdate.TryExecute(pointReadList.Length, batchLength,Hjob);
+                    if (isTryExcute)
+                    {
+                        pointUpdate.TryExecute(pointReadList.Length, batchLength, Hjob);
+                    }
+                    else 
+                    {
+                        Hjob = pointUpdate.Schedule(pointReadList.Length, batchLength);
+                    } 
+
                     colliderUpdate.step = step;
                     Hjob = colliderUpdate.Schedule(collidersReadList.Length, batchLength);
 
                     for (int j0 = 0; j0 < constraintUpdates.Length; j0++)
                     {
-                       Hjob = constraintUpdates[j0].Schedule(constraintReadList[j0].Length, batchLength, Hjob);
-                      //  constraintUpdates[j0].TryExecute(constraintReadList[j0].Length, batchLength, Hjob);
+                        if (isTryExcute)
+                        {
+                            constraintUpdates[j0].TryExecute(constraintReadList[j0].Length, batchLength, Hjob);
+                        }
+                        else
+                        {
+                            Hjob = constraintUpdates[j0].Schedule(constraintReadList[j0].Length, batchLength, Hjob);
+                        }
                     }
-
-                    Hjob = pointCollision.Schedule(pointReadList.Length, batchLength);
-
+                    if (isTryExcute)
+                    {
+                        pointCollision.TryExecute(pointReadList.Length, batchLength, Hjob);
+                    }
+                    else
+                    {
+                        Hjob = pointCollision.Schedule(pointReadList.Length, batchLength);
+                    }
                 }
                  Hjob = pointToTransform.Schedule(pointTransformsList, Hjob);
                 //pointToTransform.TryExecute(pointTransformsList, Hjob);
