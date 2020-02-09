@@ -12,7 +12,7 @@
 - 作者被dynaimc bone坑走了15美刀.
 
 ## 要求
-- Unity2019.1或更高
+- Unity2018.2或更高
 - 要求 [IL2CPP][.NET4x][Allow 'unsafe' Code]
 - 安装 [Burst] package
 - 安装 [Jobs] package(preview)
