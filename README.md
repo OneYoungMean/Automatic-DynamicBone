@@ -1,4 +1,6 @@
 写在开头:**您可能需要科学上网才能看到GIF图!**
+如果您实在翻不了墙,下载还贼慢,你可以选择在[此处下载](https://pan.baidu.com/s/1Ku0kP6xLLpuFThX4WeDr4A)  提取码：10we 
+
 # AutomaticDynamicBone
 基于https://github.com/SPARK-inc/SPCRJointDynamics ,一个可以根据骨骼布料,自动生成具有物理效果头发和裙子的插件.  
 ## 特性
