@@ -809,7 +809,7 @@ out float tP, out float tQ, out Vector3 pointOnP, out Vector3 pointOnQ)
 
             public void Execute(int index, TransformAccess transform)
             {
-                /*
+               /*
             }
             public void TryExecute(TransformAccessArray transforms, JobHandle job)
             {
@@ -848,7 +848,15 @@ out float tP, out float tQ, out Vector3 pointOnP, out Vector3 pointOnQ)
                 var Direction = child->position - pReadWrite->position;//OYM：朝向等于面向子节点的方向
                 if (Direction.sqrMagnitude > EPSILON * EPSILON)//OYM：两点不再一起
                 {
-                    Vector3 AimVector = transform.rotation * childRead->boneAxis;//OYM：将BoneAxis按照transform.rotation进行旋转
+                    Vector3 AimVector;
+                    if (childRead->isVirtual)
+                    {
+                        AimVector = childRead->boneAxis;//OYM：将BoneAxis按照transform.rotation进行旋转
+                    }
+                    else 
+                    {
+                        AimVector = transform.rotation * childRead->boneAxis;//OYM：将BoneAxis按照transform.rotation进行旋转
+                    }
 
                     Quaternion AimRotation = Quaternion.FromToRotation(AimVector, Direction);//OYM：我觉得这里应该用lookRotation
                     transform.rotation = AimRotation * transform.rotation;//OYM：旋转过去

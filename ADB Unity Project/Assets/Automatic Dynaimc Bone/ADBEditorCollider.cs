@@ -43,6 +43,7 @@ namespace ADBRuntime
         {
             var editor = runtime.appendTransform.gameObject.AddComponent<ADBEditorCollider>();
             editor.editor = runtime;
+            editor.editor.colliderRead.isOpen = true;
             result.Add(editor);
             return result;
 
@@ -60,7 +61,7 @@ namespace ADBRuntime
             if (aDBRuntimeCollider?.colliderRead == null || !aDBRuntimeCollider.colliderRead.Equals(editor.colliderRead))
             {
                 editor.colliderRead.CheckValue();
-                editor.colliderRead.isOpen = true;
+
                 switch (editor.colliderRead.colliderType)
                 {
                     case ColliderType.Sphere:

@@ -190,6 +190,11 @@ namespace ADBRuntime
                     VerticalVector[constraintsVirtual[i].pointA.index] += constraintsVirtual[i].direction;
                     VerticalVector[constraintsVirtual[i].pointB.index] += constraintsVirtual[i].direction;
                 }
+                for (int i = 0; i < constraintsVirtual.Count; i++)
+                {
+                    VerticalVector[constraintsVirtual[i].pointA.index] += constraintsVirtual[i].direction;
+                    VerticalVector[constraintsVirtual[i].pointB.index] += constraintsVirtual[i].direction;
+                }
                 for (int i = 0; i < nodeWeight.Length; i++)
                 {
                     nodeWeight[i] = 1000 * 0.5f * Vector3.Cross(HorizontalVector[i], VerticalVector[i]).magnitude;
@@ -238,6 +243,7 @@ namespace ADBRuntime
                     nodeWeight[allNodeList[i].pointRead.parent] += weight;
                     if (weight <= 0.001f)
                     {
+                        Debug.Log(allNodeList[i].trans.name+" weight is too small ");
                         allNodeList[i].pointRead.weight = 0.001f;
                     }
                     else
