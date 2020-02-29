@@ -5,7 +5,7 @@
 基于https://github.com/SPARK-inc/SPCRJointDynamics ,一个可以根据骨骼布料,自动生成具有物理效果头发和裙子的插件.  
 ## 特性
 
-- 采用 unity Job System + Burst compiler,采用指针写的物理底层,拥有着**及其高的优化程度!**
+- 采用 unity Job System + Burst compiler,采用指针写的物理底层,拥有着**极其强悍的优化程度!**[详情](https://github.com/OneYoungMean/AutomaticDynamicBone/wiki/Q&A#q%E6%80%A7%E8%83%BD%E6%96%B9%E9%9D%A2%E5%85%B7%E4%BD%93%E6%80%8E%E4%B9%88%E6%A0%B7)  
 - 支持除了WebGL以外**所有平台**
 - **极其低的学习曲线!** 作者已经帮你们把门槛踏平了!无需任何复杂的添加与操作,通过关键词识别与humanoid识别,只需要三分钟学习就可以**一键生成**你想要的bone与collider!
 - **完全自动化的脚本**允许你在runtime过程中生成整套的bone与collider,是的,你甚至不需要任何操作就可以完整套物理的生成!
@@ -26,6 +26,5 @@
 - 需要 [Mathmatic] package(preview)
 
 - 更多详情请参见[wiki](https://github.com/OneYoungMean/AutomaticDynamicBone/wiki)  
-
 
 
