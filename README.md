@@ -15,7 +15,8 @@
 - **良好的迭代计算**!只需四次迭代就能获得逼真的物理效果!同时还有不会震颤的运动轨迹以及对高速运动的有效解决方案.
 - **免费**以及作者被dynaimc bone坑走了15美刀.
 - 作者是MMD模型白嫖怪(划掉)MMD友好程度**极高!**
-
+![2](https://github.com/OneYoungMean/AutomaticDynamicBone/blob/master/Manual%20GIF/A0.gif)  
+`看见上面的物理计算没,相同的模型我的6700HQ能同时64个还能再60帧!`
 ## 要求
 - Unity2018.2或更高
 - 要求 [IL2CPP][.NET4x][Allow 'unsafe' Code]
@@ -25,6 +26,6 @@
 - 需要 [Mathmatic] package(preview)
 
 - 更多详情请参见[wiki](https://github.com/OneYoungMean/AutomaticDynamicBone/wiki)  
-![2](https://github.com/OneYoungMean/AutomaticDynamicBone/blob/master/Manual%20GIF/A0.gif)  
-`看见上面的物理计算没,相同的模型我的6700HQ能同时64个还能再60帧!`
+
+
 
