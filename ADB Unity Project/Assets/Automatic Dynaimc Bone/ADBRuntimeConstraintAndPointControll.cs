@@ -41,7 +41,7 @@ namespace ADBRuntime
         private string keyWord;
         private int maxNodeDepth;
 
-
+        //OYM：new一个出来
         private ADBConstraintReadAndPointControll(Transform rootTransform, string keyWord, ADBSetting setting)
         {
             rootNode = new ADBRuntimePoint(rootTransform, -1);//OYM：rootpoint指所有fix骨骼的同一个父节点,他会独立出来,而不是参与到计算当中
@@ -53,7 +53,7 @@ namespace ADBRuntime
             maxNodeDepth = 1;
             aDBSetting = setting;
         }
-
+        //OYM：初始化
         public void Initialize()
         {
             if (isInitialize) return;
@@ -101,6 +101,7 @@ namespace ADBRuntime
             }
         }
 
+        //OYM：cratePointStruct
         private void CreatePointStructList(List<ADBRuntimePoint> allPointList)
         {
             ComputeWeight();
@@ -110,7 +111,6 @@ namespace ADBRuntime
             pointTransformsList = new Transform[allPointList.Count];
             for (int i = 0; i < allPointList.Count; ++i)
             {
-                //OYM：有一部分设置被我搬到生成constrain里面生成去了,在这里生成太啰嗦了,不想写.
                 var point = allPointList[i];//OYM：翻译出来是源文件  
                 point.pointRead.initialPosition = point.trans.position - allPointList[point.pointRead.fixedIndex].trans.position;//OYM：相对于固定点的位置
                 point.pointRead.colliderChoice = aDBSetting.colliderChoice;

@@ -177,9 +177,10 @@ namespace ADBRuntime.Internal
                 {
                     PointReadWrite* pFixedPointReadWrite = (pReadWritePoints + pReadPoint->fixedIndex);
                     PointReadWrite* pParentReadWrite = (pReadWritePoints + pReadPoint->parent);
-                    Vector3 move = Vector3.Lerp(pFixedPointReadWrite->velocity, pParentReadWrite->velocity, pReadPoint->lazy);
+
+                    Vector3 move = pFixedPointReadWrite->velocity * pReadPoint->airResistance + pParentReadWrite->velocity * pReadPoint->lazy;
                     pReadWritePoint->position += move;
-                    pReadWritePoint->velocity -= move * pReadPoint->airResistance/ pReadPoint->weight;
+                    pReadWritePoint->velocity -= move / pReadPoint->weight;
                 }
             }
             float Lerp(float a, float b, float t)
@@ -284,9 +285,6 @@ namespace ADBRuntime.Internal
             //OYM：
             public void Execute(int index)
             {
-                //OYM：找到固定的节点,如果移动速度过快,就修正距离
-                //OYM：默认移动距离超过1就采用修正,防止裙子螺旋升天
-
                 PointRead* pReadPoint = pReadPoints + index;
                 if (pReadPoint->fixedIndex != index)
                 {

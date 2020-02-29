@@ -137,7 +137,7 @@ namespace ADBRuntime
 
         internal void SetRuntimeData(float deltaTime, float scale, int iteration, Vector3 windForce, ColliderCollisionType colliderCollisionType)
         {
-            int batchLength = isTryExcute ? 1 : 16;
+            int batchLength = isTryExcute ? 1 :64;
 
             JobHandle Hjob = ADBRunTimeJobsTable.returnHJob;
 
