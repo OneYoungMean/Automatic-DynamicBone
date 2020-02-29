@@ -716,8 +716,9 @@ out float tP, out float tQ, out Vector3 pointOnP, out Vector3 pointOnQ)
                             sqrPushout = pushout.sqrMagnitude;
                             if (sqrPushout < pReadCollider->radius * pReadCollider->radius)
                             {
-                                pReadWritePoint->position += pushout * (pReadCollider->radius / pushout.magnitude - 1);
-                                pReadWritePoint->velocity = pushout * Vector3.Dot(pushout, pReadWritePoint->velocity) / sqrPushout;
+                                pushout = pushout * (pReadCollider->radius / Mathf.Sqrt(sqrPushout) - 1);
+                                pReadWritePoint->position += pushout;
+                                pReadWritePoint->velocity += pushout;
                             }
                             break;
                         case ColliderType.OBB:
@@ -781,7 +782,7 @@ out float tP, out float tQ, out Vector3 pointOnP, out Vector3 pointOnQ)
             }
             float Min(float A, float B, float C)
             {
-                return Min(Min(A, B), Min(B, C));
+                return A < B ? (A < C ? A : C) : (B < C ? B : C);
             }
             float Min(float A, float B)
             {
@@ -789,7 +790,7 @@ out float tP, out float tQ, out Vector3 pointOnP, out Vector3 pointOnQ)
             }
             float Max(float A, float B, float C)
             {
-                return Max(Max(A, B), Max(B, C));
+                return A > B ? (A > C ? A : C) : (B > C ? B : C);
             }
             float Max(float A, float B)
             {
