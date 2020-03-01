@@ -1,5 +1,5 @@
 写在开头:**您可能需要科学上网才能看到GIF图!**
-如果您实在翻不了墙,下载还贼慢,你可以选择在[此处下载](https://pan.baidu.com/s/1Ku0kP6xLLpuFThX4WeDr4A)  提取码：10we 
+如果您实在翻不了墙,下载还贼慢,你可以选择在[此处下载](https://pan.baidu.com/s/1cRbDzlr4d-8kJVzqNobGiw)提取码：10we  
 
 # AutomaticDynamicBone
 基于https://github.com/SPARK-inc/SPCRJointDynamics ,一个可以根据骨骼布料,自动生成具有物理效果头发和裙子的插件.  
@@ -18,7 +18,9 @@
 - **免费**以及作者被dynaimc bone坑走了15美刀.
 - 作者是MMD模型白嫖怪(划掉)MMD友好程度**极高!**
 ![2](https://github.com/OneYoungMean/AutomaticDynamicBone/blob/master/Manual%20GIF/A0.gif)  
-`看见上面的物理计算没,相同的模型我的6700HQ能同时64个还能再60帧!`
+`看见上面的物理计算没，相同的模型我的6700HQ能同时64个还能再60帧！  
+![2](https://s2.ax1x.com/2020/02/29/3yRc8g.gif)
+
 ## 要求
 - Unity2018.2或更高
 - 要求 [IL2CPP][.NET4x][Allow 'unsafe' Code]
