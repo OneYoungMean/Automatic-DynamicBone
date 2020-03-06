@@ -33,7 +33,7 @@
 
 1. 在脚本中找到**ADBRuntimeController**,添加到你想要添加的目标/目标父物体上.
 2. 检查目标需要添加物理效果的骨骼,通常这类骨骼名字都会包含一个**固定的关键词**,比如hair,skirt,你需要把关键词写入到`NameKeyWord`中.
-3. 按下`Generate Point`,并在底下找到isDebug勾选,如果一切顺利的话,你可以看到几条彩色的线和点,这些就是识别到的数据,是查看是否有遗漏的point/错误的point,并通过`BlackListTranform`和`BlackListKeyword`来排除自己不需要的point.
+3. 按下`Generate Point`,并在底下找到isDebug勾选,如果一切顺利的话,你可以看到几条彩色的线和点,这些就是识别到的数据,是查看是否有遗漏的point/错误的point,并通过`BlackListTranform`和`BlackListKeyword`来排除自己不需要的point.  
 4.运行游戏,一切已经就绪,晃动你的目标以查看效果XD!
 - 更多详情请参见[wiki](https://github.com/OneYoungMean/Automatic-DynamicBone/wiki)  
 ![3](https://github.com/OneYoungMean/Automatic-DynamicBone/blob/master/Manual%20GIF/A3.gif)   
