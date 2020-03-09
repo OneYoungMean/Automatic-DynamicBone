@@ -17,6 +17,13 @@ namespace ADBRuntime
                 for (int i = 0; i < settings.Count; i++)
                 {
                     if (settings[i].HasKey(keyword))
+                    {
+                        if (settings[i].setting == null)
+                        {
+                            Debug.LogError("ADB GlobalSetting has lost file! Check the Resource/setting/ADBGlobalSetting");
+                            settings[i].setting = (ADBSetting)ScriptableObject.CreateInstance("ADBSetting");
+                        }
+                    }
                         return settings[i].setting;
                 }
             }
