@@ -213,10 +213,9 @@ namespace ADBRuntime
 
             //Hip
 
-            Vector3 hipColliderCenter =(spineStartPoint + upperLegCentroid) *0.5f;
-            Vector3 test = spine.InverseTransformPoint(hipColliderCenter);
-            hipsColliderRadiuUp = CheckNearstPointToSegment((spineColliderRadiu + Vector3.Distance(leftLowerLeg.position, leftUpperLeg.position) * 0.1f), hipColliderCenter, Vector3.zero, ColliderChoice.LowerBody, allPointTrans);
-            runtimeColliders.Add(new SphereCollider(hipsColliderRadiuUp,spine.InverseTransformPoint(hipColliderCenter) , ColliderChoice.LowerBody, spine));
+            Vector3 hipColliderCenter = upperLegCentroid;
+            hipsColliderRadiuUp = CheckNearstPointToSegment((spineColliderRadiu * 2), hipColliderCenter, Vector3.zero, ColliderChoice.UpperBody, allPointTrans);
+            runtimeColliders.Add(new SphereCollider(hipsColliderRadiuUp, spine.InverseTransformPoint(hipColliderCenter), ColliderChoice.UpperBody, spine));
             Vector3 hipColliderCenterDownA = upperLegCentroid- new Vector3(hipsWidth*0.5f, 0, 0);
             Vector3 hipColliderCenterDownB = hipColliderCenterDownA + new Vector3(hipsWidth, 0,0);
             hipsColliderRadiuDown = CheckNearstPointToSegment(hipsWidth, hipColliderCenterDownA, hipColliderCenterDownB- hipColliderCenterDownA, ColliderChoice.LowerBody, allPointTrans);
