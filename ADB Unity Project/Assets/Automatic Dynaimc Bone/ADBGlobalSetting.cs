@@ -23,8 +23,8 @@ namespace ADBRuntime
                             Debug.LogError("ADB GlobalSetting has lost file! Check the Resource/setting/ADBGlobalSetting");
                             settings[i].setting = (ADBSetting)ScriptableObject.CreateInstance("ADBSetting");
                         }
-                    }
                         return settings[i].setting;
+                    }                       
                 }
             }
             Debug.Log("You dont add the keyword In ADBSetting!check the Automatic Dynamic Bone/Resource/GlobalSettingFile !");
