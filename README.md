@@ -24,7 +24,7 @@
 ![2](https://s2.ax1x.com/2020/02/29/3yRc8g.gif)
 
 ## 要求
-- Unity2018.2或更高
+- Unity2019.2或更高版本测试完毕, 2018版本待测试
 - 要求 [IL2CPP][.NET4x][Allow 'unsafe' Code]
 - 需要 [Burst] package
 - 需要 [Jobs] package(preview)
