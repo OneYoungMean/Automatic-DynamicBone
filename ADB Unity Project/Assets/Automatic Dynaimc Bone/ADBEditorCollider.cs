@@ -77,14 +77,21 @@ namespace ADBRuntime
             }
 
         }
-        private void OnDrawGizmos()
+
+        private void OnDrawGizmosSelected()
         {
 
             initialize();
+
             if (isDraw && aDBRuntimeCollider != null)
             {
-                aDBRuntimeCollider.OnDrawGizmos();
+            aDBRuntimeCollider.OnDrawGizmos();
             }
+
+        }
+        public override string ToString()
+        {
+            return aDBRuntimeCollider.colliderRead.colliderType.ToString();
         }
     }
 }

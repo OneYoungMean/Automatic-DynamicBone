@@ -22,8 +22,14 @@ namespace ADBRuntime
             //OYM：更新表现形式;
             GUILayout.Space(8);
             EditorGUILayout.TextField("Name", controller.transform.name);
-
-            Titlebar("Generate setting", new Color(0.7f, 1.0f, 0.7f));
+            if (!Application.isPlaying)
+            {
+                Titlebar("EditorMode", new Color(0.7f, 1.0f, 0.7f));
+            }
+            else
+            {
+                Titlebar("RuntimeMode", Color.red);
+            }
             EditorGUILayout.LabelField("=============== Point");
             controller.generateTransform = (Transform)EditorGUILayout.ObjectField(new GUIContent("parent Transform"), controller.generateTransform, typeof(Transform), true);
             EditorGUILayout.PropertyField(serializedObject.FindProperty("generateKeyWordWhiteList"), new GUIContent("Name KeyWord"), true);
@@ -35,10 +41,7 @@ namespace ADBRuntime
                 controller.initializePoint();
                 controller.isDebug = true;
             }
-            if (GUILayout.Button("Reset All Point", GUILayout.Height(22.0f)))
-            {
-                controller.RestorePoint();
-            }
+
             if (controller.allPointTrans != null)
             {
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("allPointTrans"), new GUIContent("All point list"), true);
@@ -58,6 +61,19 @@ namespace ADBRuntime
                     DestroyImmediate(controller.editorColliderList[i]);
                 }
                 controller.editorColliderList = null;
+            }
+            if( Application.isPlaying)
+            {
+                EditorGUILayout.LabelField("=============== Runtime Debug");
+
+                if (GUILayout.Button("Refresh point", GUILayout.Height(22.0f)))
+                {
+                    controller.RestorePoint();
+                }
+                if (GUILayout.Button("Force refresh point", GUILayout.Height(22.0f)))
+                {
+                    controller.Reset();
+                }
             }
 
             controller.isGenerateColliderAutomaitc = EditorGUILayout.Toggle("Is Generate Body Collider Automatic ", controller.isGenerateColliderAutomaitc);
@@ -84,7 +100,13 @@ namespace ADBRuntime
             controller.delayTime = EditorGUILayout.FloatField("delayTime", controller.delayTime);
             controller.windScale=EditorGUILayout.Slider("windForcePower",controller.windScale, 0, 1); 
             controller.colliderCollisionType= (ColliderCollisionType)EditorGUILayout.EnumPopup("Collision Quantity",controller.colliderCollisionType);
-           serializedObject.ApplyModifiedProperties();
+
+            if (GUILayout.Button("test", GUILayout.Height(22.0f)))
+            {
+                BoneSubdivision();
+            }
+
+            serializedObject.ApplyModifiedProperties();
         }
 
         void Titlebar(string text, Color color)
@@ -101,6 +123,20 @@ namespace ADBRuntime
             GUI.backgroundColor = backgroundColor;
 
             GUILayout.Space(3);
+        }
+
+        void BoneSubdivision()
+        {
+            SkinnedMeshRenderer[] renders = controller.gameObject.GetComponentsInChildren<SkinnedMeshRenderer>();
+            int meshCount = renders.Length;
+            BoneWeight[][] weights = new BoneWeight[meshCount][];
+            List<Transform> bones = new List<Transform>();
+            for (int i = 0; i <meshCount; i++)
+            {
+              //  bones.AddRange(renders[i].bones);
+                weights[i]  =renders[i].sharedMesh.boneWeights;
+            }
+
         }
     }
 }

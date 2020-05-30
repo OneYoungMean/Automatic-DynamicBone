@@ -77,7 +77,7 @@ namespace ADBRuntime
                 isInitialize = true;
                 for (int i = 0; i < jointAndPointControlls.Length; i++)
                 {
-                    jointAndPointControlls[i].GetData(ref dataPackage);//OYM：在这里对各种joint和point进行分类与编号
+                    jointAndPointControlls[i].GetData( dataPackage);//OYM：在这里对各种joint和point进行分类与编号
                 }
                 colliderControll.GetData(ref dataPackage);
                 dataPackage.SetNativeArray();
@@ -86,6 +86,23 @@ namespace ADBRuntime
             }
             delayTime = delayTime < 0.001f ? 0.001f : delayTime;
         }
+
+        public void Reset()
+        {
+            if (Application.isPlaying)
+            {
+                RestorePoint();
+                initializePoint();
+                dataPackage.Dispose(true);
+                for (int i = 0; i < jointAndPointControlls.Length; i++)
+                {
+                    jointAndPointControlls[i].GetData(dataPackage);//OYM：在这里对各种joint和point进行分类与编号
+                }
+                dataPackage.SetNativeArray();
+                delayTime = delayTime < 0.017f ? 0.017f : delayTime;
+            }
+        }
+
 
         private void OnDrawGizmos()
         {       
@@ -142,7 +159,7 @@ namespace ADBRuntime
         private void OnDestroy()
         {
             RestorePoint();
-            dataPackage.Dispose();
+            dataPackage.Dispose(false);
         }
         public void RestorePoint()
         {
@@ -156,13 +173,6 @@ namespace ADBRuntime
         private void UpdateDataPakage()
         {
             dataPackage.SetRuntimeData(deltaTime, scale / initializeScale, iteration, windForce, colliderCollisionType);
-        }
-
-        internal void GenerateNewOne()
-        {
-            delayTime = 0.5f;
-            isInitialize = false;
-            Start();
         }
 
         public void initializeList()

@@ -34,9 +34,9 @@ namespace ADBRuntime
         // private NativeArray<PointReadWrite> pointReadWriteListCopy;
         private TransformAccessArray pointTransformsList;
 
-        private bool isRunning = true;
-        private bool isTryExcute = false;
-        private bool isDebug = false;
+        private const bool isRunning = true;
+        private const bool isTryExcute = false;
+        private const bool isDebug = false;
         public DataPackage()
         {
             ADBRunTimeJobsTable = ADBRunTimeJobsTable.GetRunTimeJobsTable(isDebug);
@@ -80,7 +80,6 @@ namespace ADBRuntime
             this.m_constraintList.AddRange(constraintList);
             this.m_pointReadList.AddRange(pointReadList);
             this.m_pointReadWriteList.AddRange(pointReadWriteList);
-
             for (int i = 0; i < pointTransformsList.Length; i++)
             {
                 this.pointTransformsList.Add(pointTransformsList[i]);
@@ -129,6 +128,7 @@ namespace ADBRuntime
             pointCollision.pReadColliders = (ColliderRead*)collidersReadList.GetUnsafePtr();
             pointCollision.pReadWriteColliders = (ColliderReadWrite*)collidersReadWriteList.GetUnsafePtr();
             pointCollision.pReadWritePoints = (PointReadWrite*)pointReadWriteList.GetUnsafePtr();
+            pointCollision.pReadPoints = (PointRead*)pointReadList.GetUnsafePtr();
 
             pointToTransform.pReadPoints = (PointRead*)pointReadList.GetUnsafePtr();
             pointToTransform.pReadWritePoints = (PointReadWrite*)pointReadWriteList.GetUnsafePtr();
@@ -183,7 +183,7 @@ namespace ADBRuntime
                         }
                         else
                         {
-                            Hjob = constraintUpdates[j0].Schedule(constraintReadList[j0].Length, batchLength, Hjob);
+                            Hjob = constraintUpdates[j0].Schedule(constraintReadList[j0].Length, batchLength);
                         }
                     }
                     if (isTryExcute)
@@ -195,7 +195,7 @@ namespace ADBRuntime
                         Hjob = pointCollision.Schedule(pointReadList.Length, batchLength);
                     }
                 }
-                 Hjob = pointToTransform.Schedule(pointTransformsList, Hjob);
+                 Hjob = pointToTransform.Schedule(pointTransformsList);
                 //pointToTransform.TryExecute(pointTransformsList, Hjob);
             }
         }
@@ -218,11 +218,9 @@ namespace ADBRuntime
             ADBRunTimeJobsTable.returnHJob = pointToTransform.Schedule(pointTransformsList, ADBRunTimeJobsTable.returnHJob);
         }
 
-        public void Dispose()
+        public void Dispose(bool isReset)
         {
-            collidersReadList.Dispose();
-            collidersReadWriteList.Dispose();
-            colliderTransformsList.Dispose();
+            ADBRunTimeJobsTable.returnHJob.Complete();
             pointReadList.Dispose();
             pointReadWriteList.Dispose();
             pointTransformsList.Dispose();
@@ -230,6 +228,21 @@ namespace ADBRuntime
             {
                 constraintReadList[i].Dispose();
             }
+            if (isReset)
+            {
+                pointTransformsList = new TransformAccessArray(0);
+                m_constraintList = new List<ConstraintRead[]>();
+                m_pointReadList = new List<PointRead>();
+                m_pointReadWriteList = new List<PointReadWrite>();
+            }
+            else
+            {
+                collidersReadList.Dispose();
+                collidersReadWriteList.Dispose();
+                colliderTransformsList.Dispose();
+            }
+            
+
         }
     }
 }

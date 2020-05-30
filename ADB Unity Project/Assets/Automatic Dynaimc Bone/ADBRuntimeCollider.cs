@@ -59,8 +59,8 @@ namespace ADBRuntime
             return colliderReadWrite;
         }
 
-        public virtual void OnDrawGizmos()
-        { }
+        public virtual void OnDrawGizmos() { }
+        
 
         public void DrawWireArc(float radius, float angle)
         {

@@ -13,13 +13,13 @@ MonoBehaviour:
   m_Name: MikuGloabalSetting
   m_EditorClassIdentifier: 
   settings:
-  - setting: {fileID: 11400000, guid: 27cf1b38658f2ac48a72e759eefc18f4, type: 2}
+  - setting: {fileID: 11400000, guid: 2d311e4820291e24d8671b6ae3fd22e5, type: 2}
     keyWord:
     - hair
   - setting: {fileID: 11400000, guid: 37e715f94be6ef5449995eb7babb2f17, type: 2}
     keyWord:
     - bang
-  - setting: {fileID: 11400000, guid: 29fd404f89e42b04f90cd194b5619949, type: 2}
+  - setting: {fileID: 11400000, guid: e0704258c643a0b41b40a213439b275a, type: 2}
     keyWord:
     - skirt
   defaultKeyWord: []

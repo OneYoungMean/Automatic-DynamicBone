@@ -19,15 +19,17 @@ namespace ADBRuntime
         {
             serializedObject.Update();
             Titlebar("Point Setting", Color.green);
-            controller.useGlobal= EditorGUILayout.Toggle("Use One Global Setting", controller.useGlobal);
+            controller.useGlobal= EditorGUILayout.Toggle("figure mode", controller.useGlobal);
             if (!controller.useGlobal)
             {
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("frictionCurve"), new GUIContent("Friction Curve"), true);
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("windScaleCurve"), new GUIContent("WindScale Curve"), true);
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("gravityScaleCurve"), new GUIContent("GravityScale Curve"), true);
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("airResistanceCurve"), new GUIContent("Air Resistance Curve"), true);
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("moveByFixedPointCurve"), new GUIContent("Move By Fixed PointCurve"), true);
+               // EditorGUILayout.PropertyField(serializedObject.FindProperty("moveByPrePointCurve"), new GUIContent("Move By PrePoint Curve"), true);
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("distanceCompensationCurve"), new GUIContent("Distance Compensation Curve"), true); 
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("massCurve"), new GUIContent("Mass Curve"), true);
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("lazyCurve"), new GUIContent("Lazy Curve"), true);
+
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("freezeCurve"), new GUIContent("Freeze Curve"), true);
                 GUILayout.Space(10);
                 showConstraintGlobal = EditorGUILayout.Foldout(showConstraintGlobal,"Constraint Scale");
@@ -52,9 +54,10 @@ namespace ADBRuntime
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("frictionGlobal"), new GUIContent("Friction Global"), true);
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("windScaleGlobal"), new GUIContent("WindScale Global"), true);
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("gravityScaleGlobal"), new GUIContent("GravityScale Global"), true);
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("airResistanceGlobal"), new GUIContent("Air Resistance Global"), true);
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("moveByFixedPointGlobal"), new GUIContent("Move By Fixed Point Global"), true);
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("massGlobal"), new GUIContent("Mass Global"), true);
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("lazyGlobal"), new GUIContent("Lazy Global"), true);
+              //  EditorGUILayout.PropertyField(serializedObject.FindProperty("moveByPrePointGlobal"), new GUIContent("Move By PrePoint Global"), true);
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("distanceCompensationGlobal"), new GUIContent("Distance Compensation Global"), true);
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("freezeGlobal"), new GUIContent("Freeze Global"), true);
                 GUILayout.Space(10);
                 showConstraintGlobal = EditorGUILayout.Foldout(showConstraintGlobal, "Constraint Scale");
@@ -110,8 +113,13 @@ namespace ADBRuntime
             {
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("virtualPointRate"), new GUIContent("Virtual Point Rate"), true);
             }
+
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("isAutoComputeWeight"), new GUIContent("is Auto Compute Weight"), true);
+            if (!controller.isAutoComputeWeight)
+            {
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("weightCurve"), new GUIContent("weight Curve"), true);
+            }
             EditorGUILayout.PropertyField(serializedObject.FindProperty("gravity"), new GUIContent("Gravity"), true);
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("isComputeQuantityByArea"), new GUIContent("Is Compute Quantity By Area"), true);
             controller.colliderChoice =(ColliderChoice) EditorGUILayout.EnumFlagsField("Colider Choice",controller.colliderChoice);
             serializedObject.ApplyModifiedProperties();
         }

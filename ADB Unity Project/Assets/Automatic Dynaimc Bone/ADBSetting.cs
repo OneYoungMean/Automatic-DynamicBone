@@ -8,12 +8,13 @@ namespace ADBRuntime
     {
         public bool useGlobal = false;
         //高级情况下用这一套
-            public AnimationCurve frictionCurve = new AnimationCurve(new Keyframe[] { new Keyframe(0.0f, 0.0f), new Keyframe(1.0f, 0.0f) });
+        public AnimationCurve frictionCurve = new AnimationCurve(new Keyframe[] { new Keyframe(0.0f, 0.0f), new Keyframe(1.0f, 0.0f) });
         public AnimationCurve windScaleCurve = new AnimationCurve(new Keyframe[] { new Keyframe(0.0f, 1.0f), new Keyframe(1.0f, 1.0f) });
         public AnimationCurve gravityScaleCurve = new AnimationCurve(new Keyframe[] { new Keyframe(0.0f, 1.0f), new Keyframe(1.0f, 1.0f) });
-        public AnimationCurve airResistanceCurve = new AnimationCurve(new Keyframe[] { new Keyframe(0.0f, 1.0f), new Keyframe(1.0f, 1.0f) });
+        public AnimationCurve moveByFixedPointCurve = new AnimationCurve(new Keyframe[] { new Keyframe(0.0f, 1.0f), new Keyframe(1.0f, 1.0f) });
         public AnimationCurve massCurve = new AnimationCurve(new Keyframe[] { new Keyframe(0.0f, 1.0f), new Keyframe(1.0f, 1f) });
-        public AnimationCurve lazyCurve = new AnimationCurve(new Keyframe[] { new Keyframe(0.0f, 0.0f), new Keyframe(1.0f, 0.0f) });
+        public AnimationCurve moveByPrePointCurve = new AnimationCurve(new Keyframe[] { new Keyframe(0.0f, 0.0f), new Keyframe(1.0f, 0.0f) });
+        public AnimationCurve distanceCompensationCurve = new AnimationCurve(new Keyframe[] { new Keyframe(0.0f, 0.0f), new Keyframe(1.0f, 0.0f) });
         public AnimationCurve freezeCurve = new AnimationCurve(new Keyframe[] { new Keyframe(0.0f, 0.0f), new Keyframe(1.0f, 1.0f) });
         public AnimationCurve structuralShrinkVerticalScaleCurve = new AnimationCurve(new Keyframe[] { new Keyframe(0.0f, 1.0f), new Keyframe(1.0f, 1.0f) });
         public AnimationCurve structuralStretchVerticalScaleCurve = new AnimationCurve(new Keyframe[] { new Keyframe(0.0f, 1.0f), new Keyframe(1.0f, 1.0f) });
@@ -33,10 +34,10 @@ namespace ADBRuntime
 
         public float windScaleGlobal =1f;
         public float gravityScaleGlobal = 1f;
-        public float airResistanceGlobal = 1f;
-
+        public float moveByFixedPointGlobal = 1f;
+        public float distanceCompensationGlobal = 1f;
         public float massGlobal = 1f;
-        public float lazyGlobal = 0f;
+        public float moveByPrePointGlobal = 0f;
         public float freezeGlobal = 0f;
 
 
@@ -71,7 +72,10 @@ namespace ADBRuntime
         //各种设定
         public bool isComputeVirtual = true;//OYM：计算虚拟
         public float virtualPointRate=0.5f;
-
+        //质量
+        public bool isAutoComputeWeight = true;//OYM：算质量
+        public AnimationCurve weightCurve = new AnimationCurve(new Keyframe[] { new Keyframe(0.0f, 0.0f), new Keyframe(1.0f, 10.0f) });
+        
         public bool isComputeStructuralVertical = true;//OYM：要计算垂直
         public bool isComputeStructuralHorizontal = false;//OYM：要计算水平
         public bool isComputeShear = false;//OYM：要计算剪切
@@ -85,7 +89,6 @@ namespace ADBRuntime
 
         public bool isDebugDraw;
         public Vector3 gravity = new Vector3(0.0f, -9.81f, 0.0f);//OYM：重力
-        public bool isComputeQuantityByArea = false;
         public ColliderChoice colliderChoice = (ColliderChoice)(1 << 9 - 1);
     }
 

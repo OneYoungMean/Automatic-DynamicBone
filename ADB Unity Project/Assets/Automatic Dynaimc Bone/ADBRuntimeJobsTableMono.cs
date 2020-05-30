@@ -23,7 +23,7 @@ namespace ADBRuntime.Internal
                 Unity.Jobs.LowLevel.Unsafe.JobsUtility.JobDebuggerEnabled = jobsDebug;
             }
             computeCount = aDBRunTimeJobsTable.computeCount;
-            aDBRunTimeJobsTable.computeCount = 0;
+            aDBRunTimeJobsTable.returnHJob.Complete();
         }
     }
 }

@@ -77,7 +77,7 @@ namespace ADBRuntime
         /// <summary>
         /// 风阻，默认为1
         /// </summary>);
-        public float airResistance;
+        public float moveByFixedPoint;
         /// <summary>
         /// 摩擦力大小(对于collider来说)
         /// </summary>);
@@ -85,7 +85,7 @@ namespace ADBRuntime
         /// <summary>
         ///  惰性,防止头发末梢跟美杜莎一样到处乱动
         /// </summary>
-        public float lazy;
+        public float moveByPrePoint;
         /// <summary>
         /// Collider选择性对撞
         /// </summary>
@@ -109,6 +109,7 @@ namespace ADBRuntime
 
         public float freeze;
         internal float windScale;
+        internal float distanceCompensation;
     }
 
     //OYM：写入系统
