@@ -7,7 +7,7 @@
 基于https://github.com/SPARK-inc/SPCRJointDynamics ,一个可以根据骨骼布料,自动生成具有物理效果头发和裙子的插件.  
 **ADB目前更新到0.2版本,请还在0.1的同学记得更新哦.**
 ## 新功能说明
-~ 修改了setting文件的选项,详情参考setting文件说明书.  
+~ 修改了setting文件的选项,详情参考setting文件说明书. **注意,更新前请备份你已经设置好的setting文件!** 
 ~ 增加了实时调试功能,现在你可以在调试中使用force fresh point 功能强制更新所有点的数据,这意味着你可以实施调试setting文件的效果了.
 ~ 删除了一些开倒车的功能,增加了自定义的weight.  
 ~ 重置了所有的setting文件,现在它们不会再坑爹了!  
