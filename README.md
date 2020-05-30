@@ -3,7 +3,9 @@
 如果您实在翻不了墙,下载还贼慢,你可以选择在[此处下载](https://pan.baidu.com/s/1Gb7lKFFqKpjqfD9InBA2tA 
 )提取码：92ks
 
+[English version manual](https://github.com/OneYoungMean/Automatic-DynamicBone/wiki/English-version-manual)  
 # AutomaticDynamicBone
+
 基于https://github.com/SPARK-inc/SPCRJointDynamics ,一个可以根据骨骼布料,自动生成具有物理效果头发和裙子的插件.  
 **ADB目前更新到0.2版本,请还在0.1的同学记得更新哦.**
 ## 新功能说明
