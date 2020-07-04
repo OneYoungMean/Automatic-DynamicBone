@@ -1,8 +1,8 @@
 写在开头:**您可能需要科学上网才能看到GIF图!**  
 预告一下，即将憋一波更新XD  
-如果您实在翻不了墙，下载还贼慢，你可以选择在[此处下载] （https://gitee.com/OneYoungMean/Automatic-DynamicBone）
+如果您实在翻不了墙，下载还贼慢，你可以选择在[此处下载](https://gitee.com/OneYoungMean/Automatic-DynamicBone)
 
-[English version manual](https://github.com/OneYoungMean/Automatic-DynamicBone/wiki/English-version-manual)  
+[English version manual](https://github.com/OneYoungMean/Automatic-DynamicBone/wiki/English-version-manual )  
 # AutomaticDynamicBone
 
 基于https://github.com/SPARK-inc/SPCRJointDynamics ,一个可以根据骨骼布料,自动生成具有物理效果头发和裙子的插件.  
