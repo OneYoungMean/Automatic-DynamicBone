@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Unity.Collections;
 using System;
+using Unity.Mathematics;
 
 namespace ADBRuntime
 {
@@ -11,7 +12,8 @@ namespace ADBRuntime
         public PointReadWrite pointReadWrite;
         public float pointDepthRateMaxPointDepth;
 
-        public Transform trans { get; set; }
+        public Transform trans { get;private set; }
+        public ADBRuntimePoint parent { get;private set; }
         public List<ADBRuntimePoint> childNode { get; set; }//OYM：子节点 
         public bool isFixed { get; private set; }//OYM：是否固定
         public string keyWord { get; private set; }//OYM：匹配的关键词
@@ -48,9 +50,14 @@ namespace ADBRuntime
             Gizmos.color = Color.black;
             Gizmos.DrawSphere(trans.position, 0.005f);//OYM：都说了画点用的
         }
+        public void SetParent(ADBRuntimePoint point)
+        {
+            pointRead.parent = point.index;
+            this.parent = point;
+    }
     }
 
-    public unsafe struct PointRead
+    public struct PointRead
     {
         public bool isVirtual;
         public int fixedIndex;
@@ -129,6 +136,9 @@ namespace ADBRuntime
             } }*/
 
         public Vector3 velocity;
-
+        
+        public Quaternion rotation;
+        public Quaternion oldRotation;
+        
     }
 }

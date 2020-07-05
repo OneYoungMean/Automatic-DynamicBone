@@ -127,6 +127,7 @@ namespace ADBRuntime.Internal
                 else if (pReadPoint->fixedIndex == index)
                 {
                     (pReadWritePoints + index)->position = transform.position;
+                    pReadWritePoint->rotation = pReadWritePoint->rotation = transform.rotation;
                 }
                 else
                 {
@@ -167,23 +168,28 @@ namespace ADBRuntime.Internal
                 PointRead* pFixedPointRead = (pReadPoints + pReadPoint->fixedIndex);
                 PointReadWrite* pReadWritePoint = pReadWritePoints + index;
                 PointReadWrite* pFixedPointReadWrite = (pReadWritePoints + pReadPoint->fixedIndex);
-                (pReadWritePoint)->velocity *= pReadPoint->mass;
+
 
                 if (pReadPoint->fixedIndex == index)//OYM：fixedpoint
                 {
-                    pReadWritePoint->velocity = transform.position - (pReadWritePoints + index)->position;
+                    pReadWritePoint->velocity = transform.position - (pReadWritePoints + index)->position;//OYM：实际上这个值是固定的,就是上一次位移的距离
                     pReadWritePoint->position = transform.position;
+                    pReadWritePoint->oldRotation = pReadWritePoint->rotation;
+                    pReadWritePoint->rotation = transform.rotation;
                 }
                 else
                 {
-                
-                    Vector3 move = pFixedPointReadWrite->velocity * pReadPoint->moveByFixedPoint;
-                    pReadWritePoint->position += pFixedPointReadWrite->velocity * pReadPoint->distanceCompensation;
-                    Vector3 freezeVector = ( pReadWritePoint->position- pFixedPointReadWrite->position)-pReadPoint->initialPosition;
-                    pReadWritePoint->position += pFixedPointRead->freeze* freezeVector;
-                    pReadWritePoint->velocity -= move;
+                    pReadWritePoint->position += pFixedPointReadWrite->velocity * pReadPoint->distanceCompensation;//OYM：移动时候的距离补偿,为1时完全补偿到原位,你怎么拖角色都没用
+                    pReadWritePoint->velocity *= pReadPoint->mass;//OYM：降速大法,处理上一次的速度
+                    pReadWritePoint->velocity -= pFixedPointReadWrite->velocity * pReadPoint->moveByFixedPoint;//OYM：从fixedpoint会获取到一个相反的速度,直接1太大了
+                    pReadWritePoint->velocity +=0.01f* pReadPoint->freeze * (pReadPoint->initialPosition - (pReadWritePoint->position - pFixedPointReadWrite->position));//OYM：给与其一个迫使回到原位置上的速度   
+                    if (pReadPoint->fixedIndex == pReadPoint->parent&&!pReadPoint->isVirtual)
+                    {
+                        pReadWritePoint->velocity += 0.9f * (pFixedPointReadWrite->oldRotation * (pReadWritePoint->position - pFixedPointReadWrite->position) - pFixedPointReadWrite->rotation * (pReadWritePoint->position - pFixedPointReadWrite->position));//OYM：离心力,给所有的杆件加离心力效果不理想
+                    }
+
                 }
-            }
+             }
             float Lerp(float a, float b, float t)
             {
                 t = t < 0 ? 0 : (t > 1 ? 1 : t);
@@ -290,11 +296,12 @@ namespace ADBRuntime.Internal
                 if (pReadPoint->fixedIndex != index)
                 {
                     PointReadWrite* pReadWritePoint = pReadWritePoints + index;
-                    PointReadWrite* pParentReadWritePoint = pReadWritePoints + (pReadPoint->parent);
 
                     pReadWritePoint->velocity += pReadPoint->gravity * scale * (0.5f * deltaTime * deltaTime) / iteration;//OYM：重力(要计算iteration次所以除以个iteration)
-                    pReadWritePoint->velocity += windForcePower*pReadPoint->windScale / (iteration * pReadPoint->weight);
-                    pReadWritePoint->position += pReadWritePoint->velocity / iteration;
+                    pReadWritePoint->velocity += windForcePower * pReadPoint->windScale / (iteration * pReadPoint->weight);//OYM：风力
+                    Vector3 divideVelocity= pReadWritePoint->velocity / iteration;//OYM：迭代修改速度的位置
+                    pReadWritePoint->position += divideVelocity;
+
                 }
             }
         }

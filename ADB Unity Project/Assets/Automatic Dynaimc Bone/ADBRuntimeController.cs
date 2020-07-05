@@ -273,6 +273,20 @@ namespace ADBRuntime
                 isGenerateColliderAutomaitc = false;
             }
         }
-
+        public bool GetConstraintByKey(string key, ConstraintType constraintType, ref ADBConstraintRead[] returnConstraint)
+        {
+            List<ADBConstraintRead> constraints = new List<ADBConstraintRead>();
+            bool isFind = false;
+            for (int i = 0; i < jointAndPointControlls.Length; i++)
+            {
+                if (jointAndPointControlls[i].keyWord == key)
+                {
+                    constraints.AddRange( jointAndPointControlls[i].GetConstraint(constraintType));
+                    isFind = true;
+                }
+            }
+            returnConstraint = constraints.ToArray();
+            return isFind;
+        }
     }
 }
