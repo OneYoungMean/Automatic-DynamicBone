@@ -14,7 +14,7 @@
 - **修改了重力的作用方式,常规的重力会显得比较夸张,请酌情调整**
 - **提供了一种全新的计算方式-freeze属性,具体参见属性wiki**
 - **处理了数不胜数的bug,以及即将到来的骨骼细分黑科技**
-- **作者先去吃个中饭,待会再回来更新**
+- **添加了一个新的免费示例模型,感谢Kafuji,以及[在此处获取更多的模型](https://fantia.jp/fanclubs/3967)**
 ## 特性
 
 - 采用 unity Job System + Burst compiler,采用指针写的物理底层,拥有着**极其强悍的优化程度!**[详情](https://github.com/OneYoungMean/AutomaticDynamicBone/wiki/Q&A#q%E6%80%A7%E8%83%BD%E6%96%B9%E9%9D%A2%E5%85%B7%E4%BD%93%E6%80%8E%E4%B9%88%E6%A0%B7)  
