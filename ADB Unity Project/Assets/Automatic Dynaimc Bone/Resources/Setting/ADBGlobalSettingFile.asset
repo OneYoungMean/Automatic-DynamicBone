@@ -17,6 +17,8 @@ MonoBehaviour:
     keyWord:
     - hair
     - bang
+    - bow
   - setting: {fileID: 11400000, guid: e0704258c643a0b41b40a213439b275a, type: 2}
     keyWord:
     - skirt
+  defaultKeyWord: []

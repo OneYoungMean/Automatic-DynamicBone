@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 15b93a3a2ef1bab4583f2d024dfcff47, type: 3}
   m_Name: hair-4
   m_EditorClassIdentifier: 
-  useGlobal: 0
+  useGlobal: 1
   frictionCurve:
     serializedVersion: 2
     m_Curve:
@@ -27,7 +27,7 @@ MonoBehaviour:
       outWeight: 0
     - serializedVersion: 3
       time: 1
-      value: 0
+      value: 1
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -66,7 +66,7 @@ MonoBehaviour:
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 2
+      value: 0
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -75,7 +75,7 @@ MonoBehaviour:
       outWeight: 0
     - serializedVersion: 3
       time: 1
-      value: 2
+      value: 0.5
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -90,7 +90,7 @@ MonoBehaviour:
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 0.1
+      value: 0
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -98,8 +98,8 @@ MonoBehaviour:
       inWeight: 0
       outWeight: 0
     - serializedVersion: 3
-      time: 0.4937439
-      value: 0.14930725
+      time: 1
+      value: 0
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -114,7 +114,7 @@ MonoBehaviour:
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 0.9002342
+      value: 0.95046616
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -186,13 +186,22 @@ MonoBehaviour:
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 0
-      inSlope: -0.046905953
-      outSlope: -0.046905953
+      value: 0.9
+      inSlope: 0
+      outSlope: 0
       tangentMode: 0
       weightedMode: 0
       inWeight: 0
-      outWeight: 0.22222188
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 0.1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
@@ -476,13 +485,13 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   frictionGlobal: 0
-  windScaleGlobal: 0.5
-  gravityScaleGlobal: 1
+  windScaleGlobal: 0
+  gravityScaleGlobal: 0
   moveByFixedPointGlobal: 0
   distanceCompensationGlobal: 0
   massGlobal: 0.9
   moveByPrePointGlobal: 0
-  freezeGlobal: 0
+  freezeGlobal: 0.5
   structuralShrinkVerticalScaleGlobal: 1.5
   structuralStretchVerticalScaleGlobal: 1
   structuralShrinkHorizontalScaleGlobal: 1
@@ -507,7 +516,7 @@ MonoBehaviour:
   bendingStretchHorizontal: 1
   circumferenceShrink: 1
   circumferenceStretch: 1
-  isComputeVirtual: 0
+  isComputeVirtual: 1
   virtualPointRate: 1
   isAutoComputeWeight: 1
   weightCurve:
@@ -515,7 +524,7 @@ MonoBehaviour:
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 0
+      value: 1.0465088
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -540,7 +549,7 @@ MonoBehaviour:
   isComputeBendingVertical: 1
   isComputeBendingHorizontal: 0
   isComputeCircumference: 0
-  isCollideStructuralVertical: 0
+  isCollideStructuralVertical: 1
   isCollideStructuralHorizontal: 0
   isCollideShear: 0
   isLoopRootPoints: 0

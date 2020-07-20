@@ -12,6 +12,8 @@ namespace ADBRuntime
     {
 
         ADBRuntimeController controller;
+        private bool isDeleteCollider;
+
         public void OnEnable()
         {
             controller = target as ADBRuntimeController;
@@ -20,8 +22,9 @@ namespace ADBRuntime
         {
             serializedObject.Update();
             //OYM：更新表现形式;
-            GUILayout.Space(8);
-            EditorGUILayout.TextField("Name", controller.transform.name);
+            GUILayout.Space(4);
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("settings"), new GUIContent("Global Setting"), true);
+            GUILayout.Space(4);
             if (!Application.isPlaying)
             {
                 Titlebar("EditorMode", new Color(0.7f, 1.0f, 0.7f));
@@ -44,25 +47,38 @@ namespace ADBRuntime
 
             if (controller.allPointTrans != null)
             {
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("allPointTrans"), new GUIContent("All point list"), true);
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("allPointTrans"), new GUIContent("All point list :"+controller.allPointTrans?.Count), true);
                 GUILayout.Space(5);
             }
+
             EditorGUILayout.LabelField("=============== Collider");
             if (GUILayout.Button("Generate Collider", GUILayout.Height(22.0f)))
             {
-                controller.initializeCollider(true,controller. isGenerateByFixedPoint);
+                controller.initializeCollider();
                 controller.isDebug = true;
             }
+            controller.isGenerateColliderAutomaitc = EditorGUILayout.Toggle("Is Generate Body Collider Automatic ", controller.isGenerateColliderAutomaitc);
+            if (controller.isGenerateColliderAutomaitc)
+            {
+                controller.isGenerateByFixedPoint = EditorGUILayout.Toggle("┗━Is Generate By Fixed Point ", controller.isGenerateByFixedPoint);
+            }
+
             if (GUILayout.Button("Remove All Collider", GUILayout.Height(22.0f)))
             {
                 if (controller.editorColliderList == null) return;
-                for (int i = 0; i < controller.editorColliderList.Count; i++)
+                if (isDeleteCollider)
                 {
-                    DestroyImmediate(controller.editorColliderList[i]);
+                    for (int i = 0; i < controller.editorColliderList.Count; i++)
+                    {
+                        DestroyImmediate(controller.editorColliderList[i]);
+                    }
+                    isDeleteCollider = false;
                 }
                 controller.editorColliderList = null;
             }
-            if( Application.isPlaying)
+            isDeleteCollider = EditorGUILayout.Toggle("is Delete Collider Script", isDeleteCollider);
+
+            if ( Application.isPlaying)
             {
                 EditorGUILayout.LabelField("=============== Runtime Debug");
 
@@ -76,18 +92,14 @@ namespace ADBRuntime
                 }
             }
 
-            controller.isGenerateColliderAutomaitc = EditorGUILayout.Toggle("Is Generate Body Collider Automatic ", controller.isGenerateColliderAutomaitc);
-            if (controller.isGenerateColliderAutomaitc)
+
+            if (controller.editorColliderList != null)
             {
-               controller.isGenerateByFixedPoint= EditorGUILayout.Toggle("Is Generate By Fixed Point ", controller.isGenerateByFixedPoint);
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("editorColliderList"), new GUIContent("All Collider List :" + controller.editorColliderList?.Count), true);
             }
 
-
-                if (controller.editorColliderList!=null)
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("editorColliderList"), new GUIContent("Collider"), true);
-
             Titlebar("physical setting", new Color(0.7f, 1.0f, 0.7f));
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("settings"), new GUIContent("Global Setting"), true);
+
             controller. isDebug = EditorGUILayout.Toggle("isDebug", controller.isDebug);
             if (controller.isDebug)
             {
@@ -103,7 +115,7 @@ namespace ADBRuntime
 
             if (GUILayout.Button("test", GUILayout.Height(22.0f)))
             {
-                BoneSubdivision();
+                //controller.isTest = true;
             }
 
             serializedObject.ApplyModifiedProperties();
@@ -123,20 +135,6 @@ namespace ADBRuntime
             GUI.backgroundColor = backgroundColor;
 
             GUILayout.Space(3);
-        }
-
-        void BoneSubdivision()
-        {
-            SkinnedMeshRenderer[] renders = controller.gameObject.GetComponentsInChildren<SkinnedMeshRenderer>();
-            int meshCount = renders.Length;
-            BoneWeight[][] weights = new BoneWeight[meshCount][];
-            List<Transform> bones = new List<Transform>();
-            for (int i = 0; i <meshCount; i++)
-            {
-              //  bones.AddRange(renders[i].bones);
-                weights[i]  =renders[i].sharedMesh.boneWeights;
-            }
-
         }
     }
 }

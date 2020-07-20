@@ -52,7 +52,7 @@ namespace ADBRuntime
         }
         public void SetParent(ADBRuntimePoint point)
         {
-            pointRead.parent = point.index;
+            pointRead.parentIndex = point.index;
             this.parent = point;
     }
     }
@@ -64,7 +64,7 @@ namespace ADBRuntime
         /// <summary>
         /// 父节点序号
         /// </summary>
-        public int parent;
+        public int parentIndex;
         /// <summary>
         /// 子节点开头编号
         /// </summary>
@@ -136,9 +136,7 @@ namespace ADBRuntime
             } }*/
 
         public Vector3 velocity;
-        
-        public Quaternion rotation;
-        public Quaternion oldRotation;
-        
+        public Quaternion parentRotation;
+        public Quaternion oldParentRotation;
     }
 }

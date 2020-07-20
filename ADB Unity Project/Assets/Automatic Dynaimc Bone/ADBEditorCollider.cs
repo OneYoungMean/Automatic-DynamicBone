@@ -1,5 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
+using System;
+using System.ComponentModel;
 
 namespace ADBRuntime
 {
@@ -12,7 +14,8 @@ namespace ADBRuntime
         [SerializeField]
         public bool isGlobal;
 
-        private ADBRuntimeCollider aDBRuntimeCollider;
+        private ADBRuntimeCollider runner;        //OYM：这里怎么整都不好好访问,只能这么弄了
+
         public static List<ADBRuntimeCollider> globalColliderList;
 
 
@@ -22,31 +25,24 @@ namespace ADBRuntime
             {
                 globalColliderList = new List<ADBRuntimeCollider>();
             }
-
-            if (aDBRuntimeCollider == null)
+            if (runner == null)
             {
                 initialize();
             }
 
-            if (aDBRuntimeCollider.appendTransform == null)
-            {
-                aDBRuntimeCollider.appendTransform = transform;
-            }
 
-            if (isGlobal && Application.isPlaying)
+
+            if (isGlobal && Application.isPlaying&& !globalColliderList.Contains(runner))
             {
-                globalColliderList.Add(aDBRuntimeCollider);
+                globalColliderList.Add(runner);
             }
             isDraw = false;
         }
-        public static List<ADBEditorCollider> RuntimeCollider2Editor(ADBRuntimeCollider runtime, ref List<ADBEditorCollider> result)
+        public static void RuntimeCollider2Editor(ADBRuntimeCollider runtime)
         {
             var editor = runtime.appendTransform.gameObject.AddComponent<ADBEditorCollider>();
             editor.editor = runtime;
             editor.editor.colliderRead.isOpen = true;
-            result.Add(editor);
-            return result;
-
         }
 
         public ADBRuntimeCollider GetCollider()
@@ -54,44 +50,48 @@ namespace ADBRuntime
             if (isGlobal) return null;
 
             initialize();
-            return aDBRuntimeCollider;
+            return runner;
         }
         public void initialize()
         {
-            if (aDBRuntimeCollider?.colliderRead == null || !aDBRuntimeCollider.colliderRead.Equals(editor.colliderRead))
+            if (editor.appendTransform == null)//OYM：不允許為空
+            {
+                editor.appendTransform = transform;
+            }
+            if (runner?.colliderRead == null || !runner.colliderRead.Equals(editor.colliderRead))
             {
                 editor.colliderRead.CheckValue();
 
                 switch (editor.colliderRead.colliderType)
                 {
                     case ColliderType.Sphere:
-                        aDBRuntimeCollider = new SphereCollider(editor.colliderRead, editor.appendTransform);
+                        runner = new SphereCollider(editor.colliderRead, editor.appendTransform);
                         break;
                     case ColliderType.Capsule:
-                        aDBRuntimeCollider = new CapsuleCollider(editor.colliderRead, editor.appendTransform);
+                        runner = new CapsuleCollider(editor.colliderRead, editor.appendTransform);
                         break;
                     case ColliderType.OBB:
-                        aDBRuntimeCollider = new OBBBox(editor.colliderRead, editor.appendTransform);
+                        runner = new OBBBox(editor.colliderRead, editor.appendTransform);
                         break;
                 }
             }
 
         }
-
+        
         private void OnDrawGizmosSelected()
         {
 
             initialize();
 
-            if (isDraw && aDBRuntimeCollider != null)
+            if (!Application.isPlaying&& isDraw && runner != null)
             {
-            aDBRuntimeCollider.OnDrawGizmos();
+            runner.OnDrawGizmos();
             }
 
         }
         public override string ToString()
         {
-            return aDBRuntimeCollider.colliderRead.colliderType.ToString();
+            return runner.colliderRead.colliderType.ToString();
         }
     }
 }
