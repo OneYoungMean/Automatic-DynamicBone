@@ -61,12 +61,13 @@ namespace ADBRuntime
         private float initializeScale;
         private float scale;
         private Vector3 windForce;
+
         private void Start()//OYM：滚回来自己来趟这趟屎山
         {
             if (!isInitialize)
             {
                 initializePoint();
-                initializeCollider(false, isGenerateByFixedPoint);
+                initializeCollider();
             }
 
             if (jointAndPointControlls == null) return;
@@ -145,8 +146,8 @@ namespace ADBRuntime
                 isResetPoint = false;
                 return;
             }
-             deltaTime = Mathf.Min(Time.deltaTime, 0.016f);
-            scale = transform.lossyScale.x / initializeScale;
+            deltaTime = Time.deltaTime;
+            scale = transform.lossyScale.x ;
 
             windForce = ADBWindZone.getWindForce(transform.position, deltaTime * windScale) * windScale;
                 UpdateDataPakage();
@@ -231,48 +232,49 @@ namespace ADBRuntime
             }
         }
 
-        public void initializeCollider(bool generateScript, bool isFixedPoint)
+        public void initializeCollider()
         {
-            List<ADBRuntimePoint> list = null;
+            List<ADBRuntimePoint> pointList = null;
             if (jointAndPointControlls == null || jointAndPointControlls.Length == 0)
             {
-                Debug.Log("use <generate Point> to get higher accuate collider");
+                Debug.Log("Can't find the point data! try to use <generate Point> Buttom again !");
             }
             else
             {
-                list = new List<ADBRuntimePoint>();
+                pointList = new List<ADBRuntimePoint>();
                 for (int i = 0; i < jointAndPointControlls.Length; i++)
                 {
-                    if (isFixedPoint)
+                    if (isGenerateByFixedPoint)
                     {
-                        list.AddRange(jointAndPointControlls[i].fixedNodeList);
+                        pointList.AddRange(jointAndPointControlls[i].fixedNodeList);
                     }
                     else
                     {
-                        list.AddRange(jointAndPointControlls[i].allNodeList);
+                        pointList.AddRange(jointAndPointControlls[i].allNodeList);
                     }
                 }
             }
-
-            colliderControll = new ADBRuntimeColliderControll(gameObject, list, isGenerateColliderAutomaitc);//OYM：在这里获取collider
-            if (generateScript)
+            colliderControll = new ADBRuntimeColliderControll(gameObject, pointList, isGenerateColliderAutomaitc,!(Application.isPlaying),out editorColliderList);//OYM：在这里获取collider
+            for (int i = 0; i < editorColliderList.Count; i++)
             {
-                editorColliderList = new List<ADBEditorCollider>();
-                var OtheerColliderList = gameObject.GetComponentsInChildren<ADBEditorCollider>();
-                for (int i = 0; i < colliderControll.runtimeColliderList.Count; i++)
-                {
-                    if (colliderControll.runtimeColliderList[i].appendTransform == null) continue;
-
-                    ADBEditorCollider.RuntimeCollider2Editor(colliderControll.runtimeColliderList[i],ref editorColliderList);
-                }
-                editorColliderList.AddRange(OtheerColliderList);
-                for (int i = 0; i < editorColliderList.Count; i++)
-                {
-                    editorColliderList[i].isDraw = true;
-                }
-                isGenerateColliderAutomaitc = false;
+                editorColliderList[i].isDraw = true;
             }
+            isGenerateColliderAutomaitc = false;
         }
-
+        public bool GetConstraintByKey(string key, ConstraintType constraintType, ref ADBConstraintRead[] returnConstraint)
+        {
+            List<ADBConstraintRead> constraints = new List<ADBConstraintRead>();
+            bool isFind = false;
+            for (int i = 0; i < jointAndPointControlls.Length; i++)
+            {
+                if (jointAndPointControlls[i].keyWord == key)
+                {
+                    constraints.AddRange( jointAndPointControlls[i].GetConstraint(constraintType));
+                    isFind = true;
+                }
+            }
+            returnConstraint = constraints.ToArray();
+            return isFind;
+        }
     }
 }

@@ -19,20 +19,19 @@ namespace ADBRuntime
         {
             serializedObject.Update();
             Titlebar("Point Setting", Color.green);
-            controller.useGlobal= EditorGUILayout.Toggle("figure mode", controller.useGlobal);
+            controller.useGlobal=! EditorGUILayout.Toggle("AdvanceMode", !controller.useGlobal);
             if (!controller.useGlobal)
             {
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("frictionCurve"), new GUIContent("Friction Curve"), true);
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("windScaleCurve"), new GUIContent("WindScale Curve"), true);
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("gravityScaleCurve"), new GUIContent("GravityScale Curve"), true);
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("freezeCurve"), new GUIContent("Freeze Curve"), true);
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("massCurve"), new GUIContent("Mass Curve"), true);
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("moveByFixedPointCurve"), new GUIContent("Move By Fixed PointCurve"), true);
                // EditorGUILayout.PropertyField(serializedObject.FindProperty("moveByPrePointCurve"), new GUIContent("Move By PrePoint Curve"), true);
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("distanceCompensationCurve"), new GUIContent("Distance Compensation Curve"), true); 
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("massCurve"), new GUIContent("Mass Curve"), true);
-
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("freezeCurve"), new GUIContent("Freeze Curve"), true);
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("frictionCurve"), new GUIContent("Friction Curve"), true);
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("windScaleCurve"), new GUIContent("WindScale Curve"), true);
                 GUILayout.Space(10);
-                showConstraintGlobal = EditorGUILayout.Foldout(showConstraintGlobal,"Constraint Scale");
+                showConstraintGlobal = EditorGUILayout.Foldout(showConstraintGlobal,"Point-Constraint Scale Curve");
                 if (showConstraintGlobal)
                 {
                     EditorGUILayout.PropertyField(serializedObject.FindProperty("structuralShrinkVerticalScaleCurve"), new GUIContent("Structural Vertical Shrink Scale Curve"), true);
@@ -51,30 +50,32 @@ namespace ADBRuntime
             }
             else
             {
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("frictionGlobal"), new GUIContent("Friction Global"), true);
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("windScaleGlobal"), new GUIContent("WindScale Global"), true);
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("gravityScaleGlobal"), new GUIContent("GravityScale Global"), true);
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("moveByFixedPointGlobal"), new GUIContent("Move By Fixed Point Global"), true);
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("massGlobal"), new GUIContent("Mass Global"), true);
-              //  EditorGUILayout.PropertyField(serializedObject.FindProperty("moveByPrePointGlobal"), new GUIContent("Move By PrePoint Global"), true);
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("distanceCompensationGlobal"), new GUIContent("Distance Compensation Global"), true);
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("freezeGlobal"), new GUIContent("Freeze Global"), true);
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("gravityScaleGlobal"), new GUIContent("GravityScale Float"), true);
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("freezeGlobal"), new GUIContent("Freeze Float"), true);
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("massGlobal"), new GUIContent("Mass Float"), true);
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("moveByFixedPointGlobal"), new GUIContent("Move By Fixed Point Float"), true);
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("distanceCompensationGlobal"), new GUIContent("Distance Compensation Float"), true);
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("frictionGlobal"), new GUIContent("Friction Float"), true);
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("windScaleGlobal"), new GUIContent("WindScale Float"), true);
+              //  EditorGUILayout.PropertyField(serializedObject.FindProperty("moveByPrePointGlobal"), new GUIContent("Move By PrePoint Float"), true);
+
+
                 GUILayout.Space(10);
-                showConstraintGlobal = EditorGUILayout.Foldout(showConstraintGlobal, "Constraint Scale");
+                showConstraintGlobal = EditorGUILayout.Foldout(showConstraintGlobal, "Point-Constraint Scale Float");
                 if (showConstraintGlobal)
                 {
-                    EditorGUILayout.PropertyField(serializedObject.FindProperty("structuralShrinkVerticalScaleGlobal"), new GUIContent("Structural Vertical Shrink Scale Global"), true);
-                    EditorGUILayout.PropertyField(serializedObject.FindProperty("structuralStretchVerticalScaleGlobal"), new GUIContent("Structural Vertical Stretch Scale Global"), true);
-                    EditorGUILayout.PropertyField(serializedObject.FindProperty("structuralShrinkHorizontalScaleGlobal"), new GUIContent("Structural Horizontal Shrink Scale Global"), true);
-                    EditorGUILayout.PropertyField(serializedObject.FindProperty("structuralStretchHorizontalScaleGlobal"), new GUIContent("Structural Horizontal Stretch Scale Global"), true);
-                    EditorGUILayout.PropertyField(serializedObject.FindProperty("shearShrinkScaleGlobal"), new GUIContent("Shear Shrink Scale Global"), true);
-                    EditorGUILayout.PropertyField(serializedObject.FindProperty("shearStretchScaleGlobal"), new GUIContent("Shear Stretch Scale Global"), true);
-                    EditorGUILayout.PropertyField(serializedObject.FindProperty("bendingShrinkVerticalScaleGlobal"), new GUIContent("Bengding Vertical Shrink Scale Global"), true);
-                    EditorGUILayout.PropertyField(serializedObject.FindProperty("bendingStretchVerticalScaleGlobal"), new GUIContent("Bengding Vertical Stretch Scale Global"), true);
-                    EditorGUILayout.PropertyField(serializedObject.FindProperty("bendingShrinkHorizontalScaleGlobal"), new GUIContent("Bengding Horizontal Shrink Scale Global"), true);
-                    EditorGUILayout.PropertyField(serializedObject.FindProperty("bendingStretchHorizontalScaleGlobal"), new GUIContent("Bengding Horizontal Stretch Scale Global"), true);
-                    EditorGUILayout.PropertyField(serializedObject.FindProperty("circumferenceShrinkScaleGlobal"), new GUIContent("Circumference Shrink Scale Global"), true);
-                    EditorGUILayout.PropertyField(serializedObject.FindProperty("circumferenceStretchScaleGlobal"), new GUIContent("Circumference Stretch Scale Global"), true);
+                    EditorGUILayout.PropertyField(serializedObject.FindProperty("structuralShrinkVerticalScaleGlobal"), new GUIContent("Structural Vertical Shrink Scale Float"), true);
+                    EditorGUILayout.PropertyField(serializedObject.FindProperty("structuralStretchVerticalScaleGlobal"), new GUIContent("Structural Vertical Stretch Scale Float"), true);
+                    EditorGUILayout.PropertyField(serializedObject.FindProperty("structuralShrinkHorizontalScaleGlobal"), new GUIContent("Structural Horizontal Shrink Scale Float"), true);
+                    EditorGUILayout.PropertyField(serializedObject.FindProperty("structuralStretchHorizontalScaleGlobal"), new GUIContent("Structural Horizontal Stretch Scale Float"), true);
+                    EditorGUILayout.PropertyField(serializedObject.FindProperty("shearShrinkScaleGlobal"), new GUIContent("Shear Shrink Scale Float"), true);
+                    EditorGUILayout.PropertyField(serializedObject.FindProperty("shearStretchScaleGlobal"), new GUIContent("Shear Stretch Scale Float"), true);
+                    EditorGUILayout.PropertyField(serializedObject.FindProperty("bendingShrinkVerticalScaleGlobal"), new GUIContent("Bengding Vertical Shrink Scale Float"), true);
+                    EditorGUILayout.PropertyField(serializedObject.FindProperty("bendingStretchVerticalScaleGlobal"), new GUIContent("Bengding Vertical Stretch Scale Float"), true);
+                    EditorGUILayout.PropertyField(serializedObject.FindProperty("bendingShrinkHorizontalScaleGlobal"), new GUIContent("Bengding Horizontal Shrink Scale Float"), true);
+                    EditorGUILayout.PropertyField(serializedObject.FindProperty("bendingStretchHorizontalScaleGlobal"), new GUIContent("Bengding Horizontal Stretch Scale Float"), true);
+                    EditorGUILayout.PropertyField(serializedObject.FindProperty("circumferenceShrinkScaleGlobal"), new GUIContent("Circumference Shrink Scale Float"), true);
+                    EditorGUILayout.PropertyField(serializedObject.FindProperty("circumferenceStretchScaleGlobal"), new GUIContent("Circumference Stretch Scale Float"), true);
                 }
             }
             Titlebar("Constraint Setting", Color.green);
@@ -95,29 +96,55 @@ namespace ADBRuntime
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("circumferenceStretch"), new GUIContent("Circumference Stretch"), true);
             }
             EditorGUILayout.PropertyField(serializedObject.FindProperty("isComputeStructuralVertical"), new GUIContent("Is Compute Structural Vertical"), true);
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("isComputeStructuralHorizontal"), new GUIContent("Is Compute Structural Horizontal"), true);
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("isComputeShear"), new GUIContent("Is Compute Shear"), true);
+            if (controller.isComputeStructuralVertical)
+            {       
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("isCollideStructuralVertical"), new GUIContent("┗━Is Collide Structural Vertical"), true);
+            }
             EditorGUILayout.PropertyField(serializedObject.FindProperty("isComputeBendingVertical"), new GUIContent("Is Compute Bending Vertical"), true);
+            GUILayout.Space(5);
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("isComputeStructuralHorizontal"), new GUIContent("Is Compute Structural Horizontal"), true);
+            if(controller.isComputeStructuralHorizontal)
+            {
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("isCollideStructuralHorizontal"), new GUIContent("┗━Is Collide StructuralHorizontal"), true);
+            }
+            if (controller.isComputeStructuralHorizontal)
+            {
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("isLoopRootPoints"), new GUIContent("┗━isLoopRootPoints"), true);
+            }
             EditorGUILayout.PropertyField(serializedObject.FindProperty("isComputeBendingHorizontal"), new GUIContent("Is Compute Bending Horizontal"), true);
+            if (controller.isComputeBendingHorizontal)
+            {
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("isLoopRootPoints"), new GUIContent("┗━isLoopRootPoints"), true);
+            }
+            GUILayout.Space(5);
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("isComputeShear"), new GUIContent("Is Compute Shear"), true);
+            if (controller.isComputeShear)
+            {
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("isCollideShear"), new GUIContent("┗━Is Collide Shear"), true);
+            }
+            GUILayout.Space(5);
             EditorGUILayout.PropertyField(serializedObject.FindProperty("isComputeCircumference"), new GUIContent("Is Compute Circumference"), true);
             GUILayout.Space(10);
 
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("isCollideStructuralVertical"), new GUIContent("Is Collide Structural Vertical"), true);
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("isCollideStructuralHorizontal"), new GUIContent("Is Collide StructuralHorizontal"), true);
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("isCollideShear"), new GUIContent("Is Collide Shear"), true);
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("isLoopRootPoints"), new GUIContent("isLoopRootPoints"), true);
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("isDebugDraw"), new GUIContent("isDebugDraw"), true);
+
+
+
+
+
+
             Titlebar("Other Setting", Color.green);
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("isDebugDraw"), new GUIContent("isDebugDraw"), true);
             EditorGUILayout.PropertyField(serializedObject.FindProperty("isComputeVirtual"), new GUIContent("Is Compute Virtual"), true);
+            
             if (controller.isComputeVirtual)
             {
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("virtualPointRate"), new GUIContent("Virtual Point Rate"), true);
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("virtualPointRate"), new GUIContent("┗━Virtual Point Rate"), true);
             }
 
             EditorGUILayout.PropertyField(serializedObject.FindProperty("isAutoComputeWeight"), new GUIContent("is Auto Compute Weight"), true);
             if (!controller.isAutoComputeWeight)
             {
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("weightCurve"), new GUIContent("weight Curve"), true);
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("weightCurve"), new GUIContent("┗━weight Curve"), true);
             }
             EditorGUILayout.PropertyField(serializedObject.FindProperty("gravity"), new GUIContent("Gravity"), true);
             controller.colliderChoice =(ColliderChoice) EditorGUILayout.EnumFlagsField("Colider Choice",controller.colliderChoice);

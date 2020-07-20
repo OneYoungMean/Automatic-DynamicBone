@@ -34,7 +34,7 @@ namespace ADBRuntime
             CheckLength();
             constraintRead.rotationFreeAngle =freeAngle;
             constraintRead.rotationConstraintNormal = freeAngle == 0?Vector3.zero:(Vector3)normal ;
-            constraintRead.isCollider = (type == ConstraintType.Structural_Vertical || type == ConstraintType.Structural_Horizontal || type == ConstraintType.Shear);
+            constraintRead.isCollider = isCollide;
         }
         public void CheckLength()
         {

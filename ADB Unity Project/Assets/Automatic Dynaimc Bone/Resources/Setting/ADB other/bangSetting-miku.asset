@@ -467,10 +467,10 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   frictionGlobal: 0
-  windScaleGlobal: 1
-  gravityScaleGlobal: 10
-  moveByFixedPointGlobal: 0.05
-  distanceCompensationGlobal: 1
+  windScaleGlobal: 0
+  gravityScaleGlobal: 1
+  moveByFixedPointGlobal: 0
+  distanceCompensationGlobal: 0
   massGlobal: 0.9
   moveByPrePointGlobal: 0
   freezeGlobal: 0

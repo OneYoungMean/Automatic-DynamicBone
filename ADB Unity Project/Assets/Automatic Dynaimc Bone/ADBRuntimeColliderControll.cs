@@ -71,19 +71,35 @@ namespace ADBRuntime
         public float headToRootHigh;
         #endregion
 
-        public ADBRuntimeColliderControll(GameObject character, List<ADBRuntimePoint> allPointTrans, bool isGenerateBodyRuntimeCollider)
+        public ADBRuntimeColliderControll(GameObject character, List<ADBRuntimePoint> allPointTrans, bool isGenerateBodyRuntimeCollider,bool isGenerateScript, out List<ADBEditorCollider> editorColliderList )
         {
             runtimeColliderList = new List<ADBRuntimeCollider>();
+            editorColliderList = new List<ADBEditorCollider>();
 
             initialized = false;
-            bool iniA = false, iniB, iniC; 
+            bool iniA = false, iniB=false, iniC=false; 
             if (isGenerateBodyRuntimeCollider)
             {
                 iniA = GenerateBodyCollidersData(ref runtimeColliderList, character, allPointTrans);
             }
+            if (isGenerateScript)
+            {
+                for (int i = 0; i < runtimeColliderList.Count; i++)
+                {
+                    if (runtimeColliderList[i].appendTransform == null) continue;
+               
+                    ADBEditorCollider.RuntimeCollider2Editor(runtimeColliderList[i]);
+                }
+            }
+            iniB = GenerateOtherCollidersData(ref runtimeColliderList,ref editorColliderList, character);
+            
+            for (int i = 0; i < runtimeColliderList.Count; i++)
+            {
+                runtimeColliderList[i].colliderRead.isConnectWithBody = true;
+            }
 
-            iniB =  GenerateOtherCollidersData(ref runtimeColliderList, character) ;
-            iniC = GenerateGlobalCollidersData(ref runtimeColliderList) ;
+            iniC = GenerateGlobalCollidersData(ref runtimeColliderList);
+
             initialized = iniA || iniB || iniC;
 
             if (initialized && Application.isPlaying)
@@ -132,10 +148,14 @@ namespace ADBRuntime
                 return true;
 
             }
+            else
+            {
+                Debug.Log("Avatar is lost or isn't Human!");
+            }
             return false;
         }
 
-        private bool GenerateOtherCollidersData(ref List<ADBRuntimeCollider> runtimeColliderList, GameObject character)
+        private bool GenerateOtherCollidersData(ref List<ADBRuntimeCollider> runtimeColliderList, ref List<ADBEditorCollider> editorColliderList, GameObject character)
         {
             ADBEditorCollider[] colliderList = character.GetComponentsInChildren<ADBEditorCollider>(true);
             foreach (var collider in colliderList)
@@ -147,6 +167,10 @@ namespace ADBRuntime
                     runtimeColliderList.Add(co);
                     collider.isDraw = false;
                 }
+            }
+            if (editorColliderList != null)
+            {
+                editorColliderList.AddRange(colliderList);
             }
             return true;
         }
