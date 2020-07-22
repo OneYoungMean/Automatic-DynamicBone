@@ -150,7 +150,7 @@ namespace ADBRuntime
             }
             else
             {
-                Debug.Log("Avatar is lost or isn't Human!");
+                Debug.Log(character.name+"'s Avatar is lost or isn't Human!");
             }
             return false;
         }

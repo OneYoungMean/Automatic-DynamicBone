@@ -112,12 +112,12 @@ namespace ADBRuntime
             controller.delayTime = EditorGUILayout.FloatField("delayTime", controller.delayTime);
             controller.windScale=EditorGUILayout.Slider("windForcePower",controller.windScale, 0, 1); 
             controller.colliderCollisionType= (ColliderCollisionType)EditorGUILayout.EnumPopup("Collision Quantity",controller.colliderCollisionType);
-            /*
+
             if (GUILayout.Button("test", GUILayout.Height(22.0f)))
             {
                 //controller.isTest = true;
             }
-            */
+
             serializedObject.ApplyModifiedProperties();
         }
 

@@ -13,14 +13,14 @@ namespace ADBRuntime
         Circumference,
         Virtual
     }
-    public class ADBConstraintRead
+    public class ADBRuntimeConstraint
     {
         public ConstraintRead constraintRead;
         public ADBRuntimePoint pointA { get; private set; }//OYM：父节点
         public ADBRuntimePoint pointB { get; private set; }//OYM：子节点
         public Vector3 direction { get; private set; }
         
-        public ADBConstraintRead(ConstraintType type, ADBRuntimePoint pointA, ADBRuntimePoint pointB,float shrink,float stretch,bool isCollide, float freeAngle=0,Vector3? normal=null)
+        public ADBRuntimeConstraint(ConstraintType type, ADBRuntimePoint pointA, ADBRuntimePoint pointB,float shrink,float stretch,bool isCollide, float freeAngle=0,Vector3? normal=null)
             //OYM：说实话这个v3我一点都不想携程这样,但是不这么写直接赋值vector3.zero又报错
         {
             constraintRead.type = type;

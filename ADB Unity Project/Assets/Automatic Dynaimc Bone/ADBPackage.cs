@@ -11,6 +11,10 @@ namespace ADBRuntime
     using Internal;
     public unsafe class DataPackage
     {
+        //private const bool isRunning = true;
+        private const bool isTryExcute = false;
+        private const bool isDebug = false;
+
         //OYM：先把主要功能恢复
         private ADBRunTimeJobsTable ADBRunTimeJobsTable;
 
@@ -18,8 +22,8 @@ namespace ADBRuntime
         private ADBRunTimeJobsTable.PointGetTransform pointGet;
         private ADBRunTimeJobsTable.PointUpdate pointUpdate;
         private ADBRunTimeJobsTable.ColliderUpdate colliderUpdate;
-        private ADBRunTimeJobsTable.JobConstraintUpdate[] constraintUpdates;
-        private ADBRunTimeJobsTable.JobConstraintUpdate constraintUpdates1;
+        private ADBRunTimeJobsTable.ConstraintUpdate[] constraintUpdates;
+        private ADBRunTimeJobsTable.ConstraintUpdate constraintUpdates1;
         private ADBRunTimeJobsTable.JobPointToTransform pointToTransform;
 
         private NativeArray<int> iterationArray;
@@ -37,9 +41,7 @@ namespace ADBRuntime
         // private NativeArray<PointReadWrite> pointReadWriteListCopy;
         private TransformAccessArray pointTransformsList;
 
-        private const bool isRunning = true;
-        private const bool isTryExcute = false;
-        private const bool isDebug = false;
+
         public DataPackage()
         {
             ADBRunTimeJobsTable = ADBRunTimeJobsTable.GetRunTimeJobsTable(isDebug);
@@ -50,12 +52,17 @@ namespace ADBRuntime
             pointTransformsList = new TransformAccessArray(0);
             colliderTransformsList = new TransformAccessArray(0);
         }
-        internal void SetRuntimeData(float deltaTime, float scale, int iteration, Vector3 windForce, ColliderCollisionType colliderCollisionType)
+        internal bool SetRuntimeData(float deltaTime, float scale, int iteration, Vector3 windForce, ColliderCollisionType colliderCollisionType)
         {
             int batchLength = isTryExcute ? 1 : 64;
             iteration = isTryExcute ? 1 : iteration;
 
             JobHandle Hjob = ADBRunTimeJobsTable.returnHJob;
+            if (!Hjob.IsCompleted)
+            {
+                return false;
+            }
+
             *pIteration = iteration;
             pointGet.scale = scale;
             pointGet.deltaTime = deltaTime;
@@ -107,8 +114,9 @@ namespace ADBRuntime
             }
             Hjob = pointToTransform.Schedule(pointTransformsList);
 
-            //pointToTransform.TryExecute(pointTransformsList, Hjob);
+            // pointToTransform.TryExecute(pointTransformsList, Hjob);
 
+            return true;
         }
 
         public void SetColliderPackage(ColliderRead[] collidersReadList, ColliderReadWrite[] collidersReadWriteList, Transform[] collidersTransList)
@@ -169,8 +177,8 @@ namespace ADBRuntime
             pointGet = new ADBRunTimeJobsTable.PointGetTransform();
             pointUpdate = new ADBRunTimeJobsTable.PointUpdate();
             colliderUpdate = new ADBRunTimeJobsTable.ColliderUpdate();
-            constraintUpdates = new ADBRunTimeJobsTable.JobConstraintUpdate[m_constraintList.Count];
-            constraintUpdates1 = new ADBRunTimeJobsTable.JobConstraintUpdate();
+            constraintUpdates = new ADBRunTimeJobsTable.ConstraintUpdate[m_constraintList.Count];
+            constraintUpdates1 = new ADBRunTimeJobsTable.ConstraintUpdate();
             pointToTransform = new ADBRunTimeJobsTable.JobPointToTransform();
 
             colliderGet.pReadColliders = (ColliderRead*)collidersReadList.GetUnsafePtr();

@@ -42,6 +42,7 @@ namespace ADBRuntime.Internal
         // private int complexHJobBatchCount=8;
         //先预留在这里看下性能
         private const float EPSILON = 0.001f;
+        private const float SQRT_2 = 1.41421356f;
         public int computeCount = 0;
         public void Add(int count = 1)
         {
@@ -86,7 +87,7 @@ namespace ADBRuntime.Internal
 
                 pReadWriteCollider->position = pReadWriteCollider->positionForward = transform.position + transform.rotation * pReadCollider->positionOffset;
                 pReadWriteCollider->direction = pReadWriteCollider->directionForward = transform.rotation * pReadCollider->staticDirection;
-                pReadWriteCollider->normal = pReadWriteCollider->normalForward = transform.rotation * pReadCollider->staticNormal;
+                pReadWriteCollider->rotation = pReadWriteCollider->rotationForward = transform.rotation * pReadCollider->staticRotation;
             }
         }
         /// <summary>
@@ -122,9 +123,9 @@ namespace ADBRuntime.Internal
                 var pReadWritePoint = pReadWritePoints + index;
                 var pReadPoint = pReadPoints + index;
 
-                 if (pReadPoint->fixedIndex == index)
+                if (pReadPoint->fixedIndex == index)
                 {
-                    pReadWritePoint->oldParentRotation =   pReadWritePoint->parentRotation = transform.rotation * Quaternion.Inverse(transform.localRotation);
+                    pReadWritePoint->parentRotation = pReadWritePoint->oldParentRotation = Quaternion.Euler(0, transform.rotation.eulerAngles.y, 0);
                     pReadWritePoint->position = transform.position;
                 }
                 else
@@ -164,10 +165,10 @@ namespace ADBRuntime.Internal
                     Execute(i, transforms[i]);
                 }
             }
-                
+                       
             public void Execute(int index, Transform transform)
             {
-              */
+                   */
                 PointRead* pReadPoint = pReadPoints + index;
                 PointRead* pFixedPointRead = (pReadPoints + pReadPoint->fixedIndex);
                 PointReadWrite* pReadWritePoint = pReadWritePoints + index;
@@ -192,7 +193,7 @@ namespace ADBRuntime.Internal
 
                     Vector3 back = pFixedPointReadWrite->parentRotation * pReadPoint->initialPosition * scale - direction;//OYM：返回的向量
 
-                    pReadWritePoint->velocity +=(pReadPoint->freeze>1? pReadPoint->freeze:1) * deltaTime * Vector3.ClampMagnitude(back, pReadPoint->freeze);//OYM：给与其一个迫使回到原位置上的速度   
+                    pReadWritePoint->velocity += (pReadPoint->freeze > 1 ? pReadPoint->freeze : 1) * deltaTime * Vector3.ClampMagnitude(back, pReadPoint->freeze);//OYM：给与其一个迫使回到原位置上的速度   
 
                     Vector3 centrifugalforce = direction - pFixedPointReadWrite->oldParentRotation * Quaternion.Inverse(pFixedPointReadWrite->parentRotation) * direction;//OYM：离心力(理想状态
                     pReadWritePoint->velocity += deltaTime * centrifugalforce;
@@ -224,7 +225,7 @@ namespace ADBRuntime.Internal
                         break;
                     case ColliderType.OBB:
                         pReadWriteCollider->positionForward = transform.position + transform.rotation * pReadCollider->positionOffset;
-                        pReadWriteCollider->normalForward = transform.rotation * pReadCollider->staticNormal;
+                        pReadWriteCollider->rotationForward = transform.rotation * pReadCollider->staticRotation;
                         break;
                     default:
                         break;
@@ -251,7 +252,7 @@ namespace ADBRuntime.Internal
                 switch (pReadCollider->colliderType)
                 {
                     case ColliderType.Sphere:
-                        pReadWriteCollider->position = Vector3.Lerp(pReadWriteCollider->position, pReadWriteCollider->positionForward, 1.0f/ *iteration);
+                        pReadWriteCollider->position = Vector3.Lerp(pReadWriteCollider->position, pReadWriteCollider->positionForward, 1.0f / *iteration);
                         break;
                     case ColliderType.Capsule:
                         pReadWriteCollider->position = Vector3.Lerp(pReadWriteCollider->position, pReadWriteCollider->positionForward, 1.0f / *iteration);
@@ -259,13 +260,13 @@ namespace ADBRuntime.Internal
                         break;
                     case ColliderType.OBB:
                         pReadWriteCollider->position = Vector3.Lerp(pReadWriteCollider->position, pReadWriteCollider->positionForward, 1.0f / *iteration);
-                        pReadWriteCollider->normal = Quaternion.Lerp(pReadWriteCollider->normal, pReadWriteCollider->normalForward, 1.0f / *iteration);
+                        pReadWriteCollider->rotation = Quaternion.Lerp(pReadWriteCollider->rotation, pReadWriteCollider->rotationForward, 1.0f / *iteration);
                         break;
                     default:
                         break;
 
                 }
-                if (index == length&& *iteration>1)
+                if (index == length && *iteration > 1)
                 {
                     (*iteration)--;
                 }
@@ -340,6 +341,7 @@ namespace ADBRuntime.Internal
 
                     if (isCollision)
                     {
+
                         for (int i = 0; i < colliderCount; ++i)
                         {
                             ColliderRead* pReadCollider = pReadColliders + i;
@@ -355,7 +357,7 @@ namespace ADBRuntime.Internal
             }
             private void EvaluatePosition(PointRead* pReadPoint, PointReadWrite* pReadWritePoint)
             {
-                pReadWritePoint->velocity += pReadPoint->gravity * globalScale *(0.5f * deltaTime) / iteration;//OYM：重力(要计算iteration次所以除以个iteration)
+                pReadWritePoint->velocity += pReadPoint->gravity * globalScale * (0.5f * deltaTime) / iteration;//OYM：重力,太大了先乘以个0.5(要计算iteration次所以除以个iteration)
                 pReadWritePoint->velocity += windForcePower * pReadPoint->windScale / (iteration * pReadPoint->weight);//OYM：风力
                 Vector3 divideVelocity = pReadWritePoint->velocity / iteration;//OYM：迭代修改速度的位置
                 pReadWritePoint->position += divideVelocity;
@@ -368,18 +370,18 @@ namespace ADBRuntime.Internal
                 float throwTemp;   //OYM：有些c#比较低级,不允许使用丢弃
                 Vector3 pushout;
                 float sqrPushout;
-                float scale = pReadCollider->isConnectWithBody ? globalScale:1;
+                float scale = pReadCollider->isConnectWithBody ? globalScale : 1;
                 switch (pReadCollider->colliderType)
                 {
                     case ColliderType.Sphere:
-                        if (QuickCheck(pReadCollider, pReadWriteCollider, pReadWritePoint,  scale))
+                        if (QuickCheck(pReadCollider, pReadWriteCollider, pReadWritePoint, scale))
                         {
                             pushout = pReadWritePoint->position - pReadWriteCollider->position;
                             sqrPushout = pushout.sqrMagnitude;
 
-                            if (sqrPushout < pReadCollider->radius * pReadCollider->radius* scale*scale)
+                            if (sqrPushout < pReadCollider->radius * pReadCollider->radius * scale * scale)
                             {
-                                pushout = pushout * (pReadCollider->radius* scale / Mathf.Sqrt(sqrPushout) - 1);
+                                pushout = pushout * (pReadCollider->radius * scale / Mathf.Sqrt(sqrPushout) - 1);
                                 pReadWritePoint->position += pushout;
                                 pReadWritePoint->velocity += pushout;
                             }
@@ -389,11 +391,11 @@ namespace ADBRuntime.Internal
                     case ColliderType.Capsule:
                         if (QuickCheck(pReadCollider, pReadWriteCollider, pReadWritePoint, scale))
                         {
-                            pushout = pReadWritePoint->position - ConstrainToSegment(pReadWritePoint->position, pReadWriteCollider->position, pReadWriteCollider->direction* scale, out throwTemp);
+                            pushout = pReadWritePoint->position - ConstrainToSegment(pReadWritePoint->position, pReadWriteCollider->position, pReadWriteCollider->direction * scale, out throwTemp);
                             sqrPushout = pushout.sqrMagnitude;
-                            if (sqrPushout < pReadCollider->radius * pReadCollider->radius* scale*scale)
+                            if (sqrPushout < pReadCollider->radius * pReadCollider->radius * scale * scale)
                             {
-                                pushout = pushout * (pReadCollider->radius* scale / Mathf.Sqrt(sqrPushout) - 1);
+                                pushout = pushout * (pReadCollider->radius * scale / Mathf.Sqrt(sqrPushout) - 1);
                                 pReadWritePoint->position += pushout;
                                 pReadWritePoint->velocity += pushout;
                             }
@@ -402,28 +404,28 @@ namespace ADBRuntime.Internal
                     case ColliderType.OBB:
                         if (QuickCheck(pReadCollider, pReadWriteCollider, pReadWritePoint, scale))
                         {
-                            pushout = Quaternion.Inverse(pReadWriteCollider->normal) * (pReadWritePoint->position - pReadWriteCollider->position);
-                            if (-scale*pReadCollider->boxSize.x < pushout.x && pushout.x < scale*pReadCollider->boxSize.x &&
-                                -scale*pReadCollider->boxSize.y < pushout.y && pushout.y < scale*pReadCollider->boxSize.y &&
-                                -scale*pReadCollider->boxSize.z < pushout.z && pushout.z < scale*pReadCollider->boxSize.z
+                            pushout = Quaternion.Inverse(pReadWriteCollider->rotation) * (pReadWritePoint->position - pReadWriteCollider->position);
+                            if (-scale * pReadCollider->boxSize.x < pushout.x && pushout.x < scale * pReadCollider->boxSize.x &&
+                                -scale * pReadCollider->boxSize.y < pushout.y && pushout.y < scale * pReadCollider->boxSize.y &&
+                                -scale * pReadCollider->boxSize.z < pushout.z && pushout.z < scale * pReadCollider->boxSize.z
                                 )
                             {
-                                float pushoutX = pushout.x > 0 ? scale*pReadCollider->boxSize.x - pushout.x : -scale*pReadCollider->boxSize.x - pushout.x;
-                                float pushoutY = pushout.y > 0 ? scale*pReadCollider->boxSize.y - pushout.y : -scale*pReadCollider->boxSize.y - pushout.y;
-                                float pushoutZ = pushout.z > 0 ? scale*pReadCollider->boxSize.z - pushout.z : -scale*pReadCollider->boxSize.z - pushout.z;
+                                float pushoutX = pushout.x > 0 ? scale * pReadCollider->boxSize.x - pushout.x : -scale * pReadCollider->boxSize.x - pushout.x;
+                                float pushoutY = pushout.y > 0 ? scale * pReadCollider->boxSize.y - pushout.y : -scale * pReadCollider->boxSize.y - pushout.y;
+                                float pushoutZ = pushout.z > 0 ? scale * pReadCollider->boxSize.z - pushout.z : -scale * pReadCollider->boxSize.z - pushout.z;
 
                                 if (Abs(pushoutZ) < Abs(pushoutY) && Abs(pushoutZ) < Abs(pushoutX))
                                 {
-                                    pushout = pReadWriteCollider->normal * new Vector3(0, 0, pushoutZ);
+                                    pushout = pReadWriteCollider->rotation * new Vector3(0, 0, pushoutZ);
 
                                 }
                                 else if (Abs(pushoutY) < Abs(pushoutX) && Abs(pushoutY) < Abs(pushoutZ))
                                 {
-                                    pushout = pReadWriteCollider->normal * new Vector3(0, pushoutY, 0);
+                                    pushout = pReadWriteCollider->rotation * new Vector3(0, pushoutY, 0);
                                 }
                                 else
                                 {
-                                    pushout = pReadWriteCollider->normal * new Vector3(pushoutX, 0, 0);
+                                    pushout = pReadWriteCollider->rotation * new Vector3(pushoutX, 0, 0);
                                 }
                                 pReadWritePoint->position += pushout;
                                 pReadWritePoint->velocity += pushout;
@@ -441,9 +443,9 @@ namespace ADBRuntime.Internal
                 {
                     case ColliderType.Sphere:
                         {
-                            return Abs(pReadWriteCollider->position.y - pReadWritePoint->position.y) <  pReadCollider->radius*scale &&
-                                       Abs(pReadWriteCollider->position.x - pReadWritePoint->position.x) <  pReadCollider->radius*scale &&
-                                       Abs(pReadWriteCollider->position.z - pReadWritePoint->position.z) < pReadCollider->radius*scale;
+                            return Abs(pReadWriteCollider->position.y - pReadWritePoint->position.y) < pReadCollider->radius * scale &&
+                                       Abs(pReadWriteCollider->position.x - pReadWritePoint->position.x) < pReadCollider->radius * scale &&
+                                       Abs(pReadWriteCollider->position.z - pReadWritePoint->position.z) < pReadCollider->radius * scale;
                         }
 
                     case ColliderType.Capsule:
@@ -454,13 +456,13 @@ namespace ADBRuntime.Internal
                                        Abs(centerA.x - pReadWritePoint->position.x) < Abs(pReadWriteCollider->direction.x) * 0.5f + pReadCollider->radius * scale &&
                                        Abs(centerA.z - pReadWritePoint->position.z) < Abs(pReadWriteCollider->direction.z) * 0.5f + pReadCollider->radius * scale;
                         }
-                        
+
                     case ColliderType.OBB:
                         {
-
-                            return Abs(pReadWriteCollider->position.x - pReadWritePoint->position.x) < ( scale*pReadCollider->boxSize.x)*1.414f &&
-                                       Abs(pReadWriteCollider->position.y - pReadWritePoint->position.y) < (scale*pReadCollider->boxSize.y) * 1.414f &&
-                                       Abs(pReadWriteCollider->position.z - pReadWritePoint->position.z) < ( scale*pReadCollider->boxSize.z) * 1.414f;
+                            float MaxLength = Max(pReadCollider->boxSize.x, pReadCollider->boxSize.y, pReadCollider->boxSize.z) * scale * SQRT_2;
+                            return Abs(pReadWriteCollider->position.x - pReadWritePoint->position.x) < MaxLength &&
+                                       Abs(pReadWriteCollider->position.y - pReadWritePoint->position.y) < MaxLength &&
+                                       Abs(pReadWriteCollider->position.z - pReadWritePoint->position.z) < MaxLength;
                         }
 
                     default:
@@ -511,7 +513,7 @@ namespace ADBRuntime.Internal
             }
         }
         [BurstCompile]
-        public struct JobConstraintUpdate : IJobParallelFor
+        public struct ConstraintUpdate : IJobParallelFor
         {
             /// <summary>
             /// 指向所有可读的点
@@ -661,16 +663,16 @@ namespace ADBRuntime.Internal
                             ComputeCollider(
                                 pReadCollider, pReadWriteCollider,
                                 pReadWritePointA, pReadWritePointB,
-                                WeightProportion, 
+                                WeightProportion,
                                 pPointReadA->friction, pPointReadB->friction,
-                                pReadCollider->isConnectWithBody?GlobalScale:1);
+                                pReadCollider->isConnectWithBody ? GlobalScale : 1);
                         }
                     }
                 }
             }
 
             private void ComputeCollider(ColliderRead* pReadCollider, ColliderReadWrite* pReadWriteCollider, PointReadWrite* pReadWritePointA, PointReadWrite* pReadWritePointB, float WeightProportion,
-                float frictionA, float frictionB,float scale)
+                float frictionA, float frictionB, float scale)
             {
                 float throwTemp;
                 float t;
@@ -681,7 +683,7 @@ namespace ADBRuntime.Internal
                             if (QuickCheck(pReadCollider, pReadWriteCollider, pReadWritePointA, pReadWritePointB, scale))
                             {
                                 Vector3 pointOnLine = ConstrainToSegment(pReadWriteCollider->position, pReadWritePointA->position, pReadWritePointB->position - pReadWritePointA->position, out t);
-                                DistributionPower(pointOnLine - pReadWriteCollider->position, pReadCollider->radius* scale, pReadWritePointA, pReadWritePointB, WeightProportion, t, frictionA, frictionB, pReadCollider->collideFunc);
+                                DistributionPower(pointOnLine - pReadWriteCollider->position, pReadCollider->radius * scale, pReadWritePointA, pReadWritePointB, WeightProportion, t, frictionA, frictionB, pReadCollider->collideFunc);
                             }
                         }
 
@@ -692,8 +694,8 @@ namespace ADBRuntime.Internal
                             if (QuickCheck(pReadCollider, pReadWriteCollider, pReadWritePointA, pReadWritePointB, scale))
                             {
                                 Vector3 pointOnCollider, pointOnLine;
-                                SqrComputeNearestPoints(pReadWriteCollider->position, pReadWriteCollider->direction* scale, pReadWritePointA->position, pReadWritePointB->position - pReadWritePointA->position, out throwTemp, out t, out pointOnCollider, out pointOnLine);
-                                DistributionPower(pointOnLine - pointOnCollider, pReadCollider->radius* scale, pReadWritePointA, pReadWritePointB, WeightProportion, t, frictionA, frictionB, pReadCollider->collideFunc);
+                                SqrComputeNearestPoints(pReadWriteCollider->position, pReadWriteCollider->direction * scale, pReadWritePointA->position, pReadWritePointB->position - pReadWritePointA->position, out throwTemp, out t, out pointOnCollider, out pointOnLine);
+                                DistributionPower(pointOnLine - pointOnCollider, pReadCollider->radius * scale, pReadWritePointA, pReadWritePointB, WeightProportion, t, frictionA, frictionB, pReadCollider->collideFunc);
                             }
 
                         }
@@ -705,7 +707,7 @@ namespace ADBRuntime.Internal
                             {
                                 float t1, t2;
                                 //OYM：这个方法可以求出直线与obbbox的两个交点
-                                SegmentToOBB(pReadWritePointA->position, pReadWritePointB->position, pReadWriteCollider->position, scale * pReadCollider->boxSize, Quaternion.Inverse(pReadWriteCollider->normal), out t1, out t2);
+                                SegmentToOBB(pReadWritePointA->position, pReadWritePointB->position, pReadWriteCollider->position, scale * pReadCollider->boxSize, Quaternion.Inverse(pReadWriteCollider->rotation), out t1, out t2);
 
                                 t1 = Clamp01(t1);
                                 t2 = Clamp01(t2);
@@ -717,7 +719,7 @@ namespace ADBRuntime.Internal
                                     t = (t1 + t2) * 0.5f;
                                     Vector3 dir = pReadWritePointB->position - pReadWritePointA->position;
                                     Vector3 nearestPoint = pReadWritePointA->position + dir * t;
-                                    Vector3 pushout = Quaternion.Inverse(pReadWriteCollider->normal) * (nearestPoint - pReadWriteCollider->position);
+                                    Vector3 pushout = Quaternion.Inverse(pReadWriteCollider->rotation) * (nearestPoint - pReadWriteCollider->position);
                                     float pushoutX = pushout.x > 0 ? scale * pReadCollider->boxSize.x - pushout.x : -scale * pReadCollider->boxSize.x - pushout.x;
                                     float pushoutY = pushout.y > 0 ? scale * pReadCollider->boxSize.y - pushout.y : -scale * pReadCollider->boxSize.y - pushout.y;
                                     float pushoutZ = pushout.z > 0 ? scale * pReadCollider->boxSize.z - pushout.z : -scale * pReadCollider->boxSize.z - pushout.z;
@@ -725,16 +727,16 @@ namespace ADBRuntime.Internal
                                     //OYM：这里是选推出点离的最近的位置,然后推出
                                     if (Abs(pushoutZ) < Abs(pushoutY) && Abs(pushoutZ) < Abs(pushoutX))
                                     {
-                                        pushout = pReadWriteCollider->normal * new Vector3(0, 0, pushoutZ);
+                                        pushout = pReadWriteCollider->rotation * new Vector3(0, 0, pushoutZ);
 
                                     }
                                     else if (Abs(pushoutY) < Abs(pushoutX) && Abs(pushoutY) < Abs(pushoutZ))
                                     {
-                                        pushout = pReadWriteCollider->normal * new Vector3(0, pushoutY, 0);
+                                        pushout = pReadWriteCollider->rotation * new Vector3(0, pushoutY, 0);
                                     }
                                     else
                                     {
-                                        pushout = pReadWriteCollider->normal * new Vector3(pushoutX, 0, 0);
+                                        pushout = pReadWriteCollider->rotation * new Vector3(pushoutX, 0, 0);
                                     }
                                     if (pushout.sqrMagnitude != 0)
                                     {
@@ -767,16 +769,17 @@ namespace ADBRuntime.Internal
 
                 }
             }
-            private bool QuickCheck(ColliderRead* pReadCollider, ColliderReadWrite* pReadWriteCollider, PointReadWrite* pReadWritePointA, PointReadWrite* pReadWritePointB,float scale)
+            private bool QuickCheck(ColliderRead* pReadCollider, ColliderReadWrite* pReadWriteCollider, PointReadWrite* pReadWritePointA, PointReadWrite* pReadWritePointB, float scale)
             {
+                //OYM：原理很简单,用到了AABB盒相交算法,两个物体中心坐标的间隔的vector3与包裹其的AABBbox大小之和的vector3作比较,如果前者的x,y,z中任意一个大于后者,那么这两个AABB盒不想交,及两个碰撞体不想交
                 switch (pReadCollider->colliderType)
                 {
                     case ColliderType.Sphere:
                         {
                             Vector3 centerB = (pReadWritePointA->position + pReadWritePointB->position) * 0.5f;
-                            return Abs(pReadWriteCollider->position.y - centerB.y) < (Abs(pReadWritePointA->position.y - centerB.y) + scale*pReadCollider->radius) &&
-                                       Abs(pReadWriteCollider->position.x - centerB.x) < (Abs(pReadWritePointA->position.x - centerB.x) + scale*pReadCollider->radius) &&
-                                       Abs(pReadWriteCollider->position.z - centerB.z) < (Abs(pReadWritePointA->position.z - centerB.z) + scale*pReadCollider->radius);
+                            return Abs(pReadWriteCollider->position.y - centerB.y) < (Abs(pReadWritePointA->position.y - centerB.y) + scale * pReadCollider->radius) &&
+                                       Abs(pReadWriteCollider->position.x - centerB.x) < (Abs(pReadWritePointA->position.x - centerB.x) + scale * pReadCollider->radius) &&
+                                       Abs(pReadWriteCollider->position.z - centerB.z) < (Abs(pReadWritePointA->position.z - centerB.z) + scale * pReadCollider->radius);
                         }
 
                     case ColliderType.Capsule:
@@ -784,16 +787,17 @@ namespace ADBRuntime.Internal
                             Vector3 centerA = pReadWriteCollider->position + pReadWriteCollider->direction * 0.5f;
                             Vector3 centerB = (pReadWritePointA->position + pReadWritePointB->position) * 0.5f;
 
-                            return Abs(centerA.y - centerB.y) < (Abs(pReadWriteCollider->direction.y) * 0.5f + Abs(pReadWritePointA->position.y - centerB.y) + scale*pReadCollider->radius) &&
-                                       Abs(centerA.x - centerB.x) < (Abs(pReadWriteCollider->direction.x) * 0.5f + Abs(pReadWritePointA->position.x - centerB.x) + scale*pReadCollider->radius) &&
-                                       Abs(centerA.z - centerB.z) < (Abs(pReadWriteCollider->direction.z) * 0.5f + Abs(pReadWritePointA->position.z - centerB.z) + scale*pReadCollider->radius);
+                            return Abs(centerA.y - centerB.y) < (Abs(pReadWriteCollider->direction.y) * 0.5f + Abs(pReadWritePointA->position.y - centerB.y) + scale * pReadCollider->radius) &&
+                                       Abs(centerA.x - centerB.x) < (Abs(pReadWriteCollider->direction.x) * 0.5f + Abs(pReadWritePointA->position.x - centerB.x) + scale * pReadCollider->radius) &&
+                                       Abs(centerA.z - centerB.z) < (Abs(pReadWriteCollider->direction.z) * 0.5f + Abs(pReadWritePointA->position.z - centerB.z) + scale * pReadCollider->radius);
                         }
                     case ColliderType.OBB:
                         {
                             Vector3 centerB = (pReadWritePointA->position + pReadWritePointB->position) * 0.5f;
-                            return Abs(pReadWriteCollider->position.x - centerB.x) < (Abs(pReadWritePointA->position.x - centerB.x) + scale * pReadCollider->boxSize.x*1.414f) &&
-                                       Abs(pReadWriteCollider->position.y - centerB.y) < (Abs(pReadWritePointA->position.y - centerB.y) +scale * pReadCollider->boxSize.y * 1.414f) &&
-                                       Abs(pReadWriteCollider->position.z - centerB.z) < (Abs(pReadWritePointA->position.z - centerB.z) + scale * pReadCollider->boxSize.z * 1.414f);//OYM：这里的1.42是根号二的值
+                            float MaxLength = Max(pReadCollider->boxSize.x, pReadCollider->boxSize.y, pReadCollider->boxSize.z) * scale * SQRT_2;
+                            return Abs(pReadWriteCollider->position.x - centerB.x) < Abs(pReadWritePointA->position.x - centerB.x) + MaxLength &&
+                                       Abs(pReadWriteCollider->position.y - centerB.y) < Abs(pReadWritePointA->position.y - centerB.y) + MaxLength &&
+                                       Abs(pReadWriteCollider->position.z - centerB.z) < Abs(pReadWritePointA->position.z - centerB.z) + MaxLength;
                         }
 
                     default:
@@ -869,7 +873,7 @@ out float tP, out float tQ, out Vector3 pointOnP, out Vector3 pointOnQ)
                 t = Clamp01(t);
                 return pos + dir * t;
             }
-            void SegmentToOBB(Vector3 start, Vector3 end, Vector3 center,Vector3 size, Quaternion InverseNormal, out float t1, out float t2)
+            void SegmentToOBB(Vector3 start, Vector3 end, Vector3 center, Vector3 size, Quaternion InverseNormal, out float t1, out float t2)
             {
                 Vector3 startP = InverseNormal * (center - start);
                 Vector3 endP = InverseNormal * (center - end);
@@ -907,6 +911,7 @@ out float tP, out float tQ, out Vector3 pointOnP, out Vector3 pointOnQ)
                 return A > B ? A : B;
             }
         }
+
         [BurstCompile]
         public struct JobPointToTransform : IJobParallelForTransform
         //OYM：把job的点转换成实际的点
@@ -935,7 +940,7 @@ out float tP, out float tQ, out Vector3 pointOnP, out Vector3 pointOnQ)
              }
              public void Execute(int index, Transform transform)
              {
-                 */
+                */
                 PointReadWrite* pReadWritePoint = pReadWritePoints + index;//OYM：获取每个读写点
                 PointRead* pReadPoint = pReadPoints + index;//OYM：获取每个只读点
 
@@ -947,7 +952,6 @@ out float tP, out float tQ, out Vector3 pointOnP, out Vector3 pointOnQ)
 
                 if (pReadPoint->childFirstIndex > -1)
                 {
-
                     transform.localRotation = pReadPoint->localRotation;
                     var child = pReadWritePoints + pReadPoint->childFirstIndex;
                     var parent = pReadWritePoints + pReadPoint->parentIndex;
@@ -960,6 +964,7 @@ out float tP, out float tQ, out Vector3 pointOnP, out Vector3 pointOnQ)
                         Vector3 FromDirection = transform.rotation * childRead->boneAxis;//OYM：将BoneAxis按照transform.rotation进行旋转
 
                         Quaternion AimRotation = Quaternion.FromToRotation(FromDirection, ToDirection);//OYM：我仔细考虑了下,fromto用在这里不一定是最好,但是一定是最快
+
                         transform.rotation = AimRotation * transform.rotation;
                     }
                 }

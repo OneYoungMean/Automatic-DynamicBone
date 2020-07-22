@@ -477,12 +477,12 @@ MonoBehaviour:
     m_RotationOrder: 4
   frictionGlobal: 0
   windScaleGlobal: 0
-  gravityScaleGlobal: 4
+  gravityScaleGlobal: 0
   moveByFixedPointGlobal: 0
   distanceCompensationGlobal: 0
-  massGlobal: 0.8
+  massGlobal: 0.95
   moveByPrePointGlobal: 0
-  freezeGlobal: 0
+  freezeGlobal: 1
   structuralShrinkVerticalScaleGlobal: 1
   structuralStretchVerticalScaleGlobal: 1
   structuralShrinkHorizontalScaleGlobal: 1
@@ -509,7 +509,7 @@ MonoBehaviour:
   circumferenceStretch: 1
   isComputeVirtual: 1
   virtualPointRate: 1
-  isAutoComputeWeight: 1
+  isAutoComputeWeight: 0
   weightCurve:
     serializedVersion: 2
     m_Curve:
@@ -537,10 +537,10 @@ MonoBehaviour:
   isComputeStructuralVertical: 1
   isComputeStructuralHorizontal: 0
   isComputeShear: 0
-  isComputeBendingVertical: 1
+  isComputeBendingVertical: 0
   isComputeBendingHorizontal: 0
   isComputeCircumference: 0
-  isCollideStructuralVertical: 0
+  isCollideStructuralVertical: 1
   isCollideStructuralHorizontal: 0
   isCollideShear: 0
   isLoopRootPoints: 0

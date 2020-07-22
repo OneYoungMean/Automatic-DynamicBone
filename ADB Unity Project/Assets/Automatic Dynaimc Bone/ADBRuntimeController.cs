@@ -45,19 +45,22 @@ namespace ADBRuntime
         public List<string> generateKeyWordBlackList = new List<string> { "ik" };
         [SerializeField]
         public List<Transform> blackListOfGenerateTransform=new List<Transform>();
+        [SerializeField]
+        public bool isAdvance;
 
         public Transform generateTransform;
         public List<Transform> allPointTrans;
         [SerializeField]
         public List<ADBEditorCollider> editorColliderList;
 
-        public float deltaTime { get; private set; }
+
         public ADBRuntimeWind windForcePower { get; private set; }
 
         private ADBRuntimeColliderControll colliderControll;
         private ADBConstraintReadAndPointControll[] jointAndPointControlls;
         private DataPackage dataPackage;
         private bool isInitialize = false;
+        private float deltaTime=0;
         private float initializeScale;
         private float scale;
         private Vector3 windForce;
@@ -146,7 +149,7 @@ namespace ADBRuntime
                 isResetPoint = false;
                 return;
             }
-            deltaTime = Time.deltaTime;
+            deltaTime += Time.deltaTime;
             scale = transform.lossyScale.x ;
 
             windForce = ADBWindZone.getWindForce(transform.position, deltaTime * windScale) * windScale;
@@ -159,8 +162,12 @@ namespace ADBRuntime
         }
         private void OnDestroy()
         {
-            RestorePoint();
-            dataPackage.Dispose(false);
+            if (dataPackage != null)
+            {
+                RestorePoint();
+                dataPackage.Dispose(false);
+            }
+
         }
         public void RestorePoint()
         {
@@ -173,7 +180,11 @@ namespace ADBRuntime
         }
         private void UpdateDataPakage()
         {
-            dataPackage.SetRuntimeData(deltaTime, scale / initializeScale, iteration, windForce, colliderCollisionType);
+            bool isSuccessfulRun = dataPackage.SetRuntimeData(deltaTime, scale / initializeScale, iteration, windForce, colliderCollisionType);
+            if (isSuccessfulRun)
+            {
+                deltaTime = 0;
+            }
         }
 
         public void initializeList()
@@ -261,9 +272,9 @@ namespace ADBRuntime
             }
             isGenerateColliderAutomaitc = false;
         }
-        public bool GetConstraintByKey(string key, ConstraintType constraintType, ref ADBConstraintRead[] returnConstraint)
+        public bool GetConstraintByKey(string key, ConstraintType constraintType, ref ADBRuntimeConstraint[] returnConstraint)
         {
-            List<ADBConstraintRead> constraints = new List<ADBConstraintRead>();
+            List<ADBRuntimeConstraint> constraints = new List<ADBRuntimeConstraint>();
             bool isFind = false;
             for (int i = 0; i < jointAndPointControlls.Length; i++)
             {

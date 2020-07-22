@@ -1,8 +1,5 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
-using Unity.Collections;
-using System;
-using Unity.Mathematics;
 
 namespace ADBRuntime
 {
@@ -27,8 +24,7 @@ namespace ADBRuntime
             if (keyWord == null )//OYM：root点(只起一个逻辑点的作用)
             {
                 this.trans = trans;
-                this.depth = -1;
-                isVirtual = true;
+                this.depth = depth;
             }
             else
             {

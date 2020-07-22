@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 15b93a3a2ef1bab4583f2d024dfcff47, type: 3}
   m_Name: skirt-2
   m_EditorClassIdentifier: 
-  useGlobal: 0
+  useGlobal: 1
   frictionCurve:
     serializedVersion: 2
     m_Curve:
@@ -468,12 +468,12 @@ MonoBehaviour:
     m_RotationOrder: 4
   frictionGlobal: 0
   windScaleGlobal: 1
-  gravityScaleGlobal: 1
-  moveByFixedPointGlobal: 1
-  distanceCompensationGlobal: 1
-  massGlobal: 1
+  gravityScaleGlobal: 0
+  moveByFixedPointGlobal: 0
+  distanceCompensationGlobal: 0
+  massGlobal: 0.95
   moveByPrePointGlobal: 0
-  freezeGlobal: 0
+  freezeGlobal: 2
   structuralShrinkVerticalScaleGlobal: 1
   structuralStretchVerticalScaleGlobal: 1
   structuralShrinkHorizontalScaleGlobal: 1
@@ -526,9 +526,9 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   isComputeStructuralVertical: 1
-  isComputeStructuralHorizontal: 0
-  isComputeShear: 1
-  isComputeBendingVertical: 0
+  isComputeStructuralHorizontal: 1
+  isComputeShear: 0
+  isComputeBendingVertical: 1
   isComputeBendingHorizontal: 0
   isComputeCircumference: 0
   isCollideStructuralVertical: 1

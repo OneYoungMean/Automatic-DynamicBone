@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 15b93a3a2ef1bab4583f2d024dfcff47, type: 3}
-  m_Name: bangSetting-miku
+  m_Name: unitychanskirt
   m_EditorClassIdentifier: 
   useGlobal: 1
   frictionCurve:
@@ -42,7 +42,7 @@ MonoBehaviour:
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 0
+      value: 1
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -66,7 +66,7 @@ MonoBehaviour:
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 2
+      value: 1
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -74,8 +74,8 @@ MonoBehaviour:
       inWeight: 0
       outWeight: 0
     - serializedVersion: 3
-      time: 0.9874878
-      value: 2
+      time: 1
+      value: 1
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -89,8 +89,17 @@ MonoBehaviour:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
       time: 1
-      value: 0
+      value: 1
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -105,7 +114,7 @@ MonoBehaviour:
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 0.5
+      value: 1
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -113,8 +122,8 @@ MonoBehaviour:
       inWeight: 0
       outWeight: 0
     - serializedVersion: 3
-      time: 0.9874878
-      value: 0.9494171
+      time: 1
+      value: 1
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -153,7 +162,7 @@ MonoBehaviour:
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 0.8
+      value: 0
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -177,13 +186,22 @@ MonoBehaviour:
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 0.00351288
-      inSlope: -0.046905953
-      outSlope: -0.046905953
+      value: 0
+      inSlope: 0
+      outSlope: 0
       tangentMode: 0
       weightedMode: 0
       inWeight: 0
-      outWeight: 0.22222188
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
@@ -336,7 +354,7 @@ MonoBehaviour:
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 0
+      value: 1
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -345,7 +363,7 @@ MonoBehaviour:
       outWeight: 0
     - serializedVersion: 3
       time: 1
-      value: 2
+      value: 1
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -360,7 +378,16 @@ MonoBehaviour:
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -467,13 +494,13 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   frictionGlobal: 0
-  windScaleGlobal: 0
-  gravityScaleGlobal: 0.5
+  windScaleGlobal: 1
+  gravityScaleGlobal: 0
   moveByFixedPointGlobal: 0
-  distanceCompensationGlobal: 0
-  massGlobal: 0.9
+  distanceCompensationGlobal: 0.5
+  massGlobal: 0.95
   moveByPrePointGlobal: 0
-  freezeGlobal: 0
+  freezeGlobal: 5
   structuralShrinkVerticalScaleGlobal: 1
   structuralStretchVerticalScaleGlobal: 1
   structuralShrinkHorizontalScaleGlobal: 1
@@ -489,7 +516,7 @@ MonoBehaviour:
   structuralShrinkVertical: 1
   structuralStretchVertical: 1
   structuralShrinkHorizontal: 1
-  structuralStretchHorizontal: 1
+  structuralStretchHorizontal: 0
   shearShrink: 1
   shearStretch: 1
   bendingShrinkVertical: 1
@@ -498,8 +525,8 @@ MonoBehaviour:
   bendingStretchHorizontal: 1
   circumferenceShrink: 1
   circumferenceStretch: 1
-  isComputeVirtual: 1
-  virtualPointRate: 0
+  isComputeVirtual: 0
+  virtualPointRate: 0.5
   isAutoComputeWeight: 1
   weightCurve:
     serializedVersion: 2
@@ -533,8 +560,8 @@ MonoBehaviour:
   isComputeCircumference: 0
   isCollideStructuralVertical: 1
   isCollideStructuralHorizontal: 0
-  isCollideShear: 0
+  isCollideShear: 1
   isLoopRootPoints: 0
-  isDebugDraw: 1
+  isDebugDraw: 0
   gravity: {x: 0, y: -9.81, z: 0}
-  colliderChoice: 1
+  colliderChoice: 12

@@ -47,6 +47,7 @@ namespace ADBRuntime
             }
             return mirror;
         }
+        /*
         public ColliderReadWrite GetColliderReadWrite()
         {
             if (appendTransform)
@@ -65,7 +66,7 @@ namespace ADBRuntime
 
             return colliderReadWrite;
         }
-
+        */
         public virtual void OnDrawGizmos() { }
         
 
@@ -227,14 +228,14 @@ namespace ADBRuntime
             this.colliderRead = colliderRead;
             this.appendTransform = appendtTransform;
             OBBposition = colliderRead.positionOffset;
-            OBBRotation = colliderRead.staticNormal;
+            OBBRotation = colliderRead.staticRotation;
         }
         public OBBBox(Vector3 center, Vector3 range, Vector3 direction, ColliderChoice colliderChoice, Transform appendTransform = null, CollideFunc collideFunc = CollideFunc.Outside)
         {
             OBBposition = appendTransform ? appendTransform.InverseTransformPoint(center) : center;
             OBBRotation = appendTransform ? appendTransform.rotation * Quaternion.FromToRotation(Vector3.up, direction) : Quaternion.FromToRotation(Vector3.up, direction);
             this.appendTransform = appendTransform;
-            colliderRead.staticNormal = OBBRotation;
+            colliderRead.staticRotation = OBBRotation;
             colliderRead.positionOffset = OBBposition;
             colliderRead.boxSize = new Vector3(Mathf.Abs(range.x * 0.5f), Mathf.Abs(range.y * 0.5f), Mathf.Abs(range.z * 0.5f));
             colliderRead.colliderType = ColliderType.OBB;
@@ -269,7 +270,7 @@ namespace ADBRuntime
         public CollideFunc collideFunc;
         public ColliderChoice colliderChoice;
         public Vector3 positionOffset;
-        public Quaternion staticNormal;
+        public Quaternion staticRotation;
         public Vector3 staticDirection;
 
         public Vector3 boxSize;
@@ -293,7 +294,7 @@ namespace ADBRuntime
             length = length < 0 ? 0 : length;
             boxSize = boxSize.normalized * boxSize.magnitude;
             staticDirection = staticDirection == Vector3.zero ? Vector3.up : staticDirection;
-            staticNormal = Quaternion.FromToRotation(Vector3.up, staticDirection);
+            staticRotation = Quaternion.FromToRotation(Vector3.up, staticDirection);
             if (((int)colliderChoice) == 0)
             {
                 colliderChoice = ColliderChoice.Other;
@@ -304,10 +305,10 @@ namespace ADBRuntime
     {
         public Vector3 position;
         public Vector3 direction;
-        public Quaternion normal;
+        public Quaternion rotation;
         public Vector3 positionForward;
         public Vector3 directionForward;
-        public Quaternion normalForward;
+        public Quaternion rotationForward;
     }
 }//OYM：写死我了....历时四个月有余
 /*

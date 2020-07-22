@@ -1,7 +1,5 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
-using System;
-using System.ComponentModel;
 
 namespace ADBRuntime
 {
@@ -13,7 +11,7 @@ namespace ADBRuntime
         public bool isDraw;
         [SerializeField]
         public bool isGlobal;
-
+        private bool needRefresh = true;//OYM：有时候重置脚本会导致不刷新的局面
         private ADBRuntimeCollider runner;        //OYM：这里怎么整都不好好访问,只能这么弄了
 
         public static List<ADBRuntimeCollider> globalColliderList;
@@ -27,7 +25,7 @@ namespace ADBRuntime
             }
             if (runner == null)
             {
-                initialize();
+                Refresh();
             }
 
 
@@ -49,17 +47,18 @@ namespace ADBRuntime
         {
             if (isGlobal) return null;
 
-            initialize();
+            Refresh();
             return runner;
         }
-        public void initialize()
+        public void Refresh()
         {
             if (editor.appendTransform == null)//OYM：不允許為空
             {
                 editor.appendTransform = transform;
             }
-            if (runner?.colliderRead == null || !runner.colliderRead.Equals(editor.colliderRead))
+            if (needRefresh||runner?.colliderRead == null || !runner.colliderRead.Equals(editor.colliderRead))
             {
+                needRefresh = false;
                 editor.colliderRead.CheckValue();
 
                 switch (editor.colliderRead.colliderType)
@@ -81,13 +80,22 @@ namespace ADBRuntime
         private void OnDrawGizmosSelected()
         {
 
-            initialize();
+            Refresh();
 
-            if (!Application.isPlaying&& isDraw && runner != null)
+            if (!Application.isPlaying&& isDraw && editor != null)
             {
             runner.OnDrawGizmos();
             }
 
+        }
+
+        private void OnDrawGizmos()
+        {
+            if (!Application.isPlaying && isDraw && editor != null&& isGlobal)
+            {
+                Refresh();
+                runner.OnDrawGizmos();
+            }
         }
         public override string ToString()
         {
