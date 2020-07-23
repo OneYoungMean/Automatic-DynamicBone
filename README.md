@@ -1,4 +1,4 @@
-写在开头:**您可能需要科学上网才能看到GIF图!**  
+写在开头:**当前为preview为不稳定状态,请耐心等待作者修复bug!;您可能需要科学上网才能看到GIF图!**  
 目前尚未进入稳定版本,请选择性参考本插件XD
 如果您实在翻不了墙，下载还贼慢，你可以选择在[此处下载](https://gitee.com/OneYoungMean/Automatic-DynamicBone)
 
