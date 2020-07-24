@@ -310,7 +310,7 @@ namespace ADBRuntime
                     {
                         childPoint.pointRead.fixedIndex =  point.pointRead.fixedIndex;
                          var fixedPoint = allPointList[childPoint.pointRead.fixedIndex];
-                        childPoint.pointRead.initialPosition = Quaternion.FromToRotation(Vector3.down, aDBSetting.gravity) * Quaternion.Euler(0,- fixedPoint.trans.rotation.eulerAngles.y, 0) * (childPoint.trans.position - fixedPoint.trans.position);
+                        childPoint.pointRead.initialPosition = Quaternion.FromToRotation(Vector3.down, aDBSetting.gravity) * Quaternion.Inverse(fixedPoint.trans.parent.rotation) * (childPoint.trans.position - fixedPoint.trans.position);
                         //OYM：这里有点啰嗦,是固定位置乘以固定点Y轴的逆向旋转(相当等于回归初试角度)
                     }
 
