@@ -52,15 +52,17 @@ namespace ADBRuntime
             }
 
             EditorGUILayout.LabelField("=============== Collider");
-            if (GUILayout.Button("Generate Collider", GUILayout.Height(22.0f)))
+            string key = controller.isGenerateColliderAutomaitc?"Generate":"Refresh";
+
+                if (GUILayout.Button(key+"Collider", GUILayout.Height(22.0f)))
             {
                 controller.initializeCollider();
                 controller.isDebug = true;
             }
-            controller.isGenerateColliderAutomaitc = EditorGUILayout.Toggle("Is Generate Body Collider Automatic ", controller.isGenerateColliderAutomaitc);
+            controller.isGenerateColliderAutomaitc = EditorGUILayout.Toggle("┗━Is Generate Body Collider Automatic ", controller.isGenerateColliderAutomaitc);
             if (controller.isGenerateColliderAutomaitc)
             {
-                controller.isGenerateByFixedPoint = EditorGUILayout.Toggle("┗━Is Generate By Fixed Point ", controller.isGenerateByFixedPoint);
+                controller.isGenerateByFixedPoint = EditorGUILayout.Toggle("   ┗━Is Generate By Fixed Point ", controller.isGenerateByFixedPoint);
             }
 
             if (GUILayout.Button("Remove All Collider", GUILayout.Height(22.0f)))
@@ -107,7 +109,7 @@ namespace ADBRuntime
             }
             else
             {
-                controller.iteration = EditorGUILayout.IntSlider("Iterations number", controller.iteration, 4, 256);
+                controller.iteration = EditorGUILayout.IntSlider("Iterations number", controller.iteration, 1, 256);
             }
             controller.delayTime = EditorGUILayout.FloatField("delayTime", controller.delayTime);
             controller.windScale=EditorGUILayout.Slider("windForcePower",controller.windScale, 0, 1); 

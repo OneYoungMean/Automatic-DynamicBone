@@ -285,7 +285,17 @@ namespace ADBRuntime
         //OYM：too more exprience
         public bool Equals(ColliderRead other)
         {
-            return other.GetHashCode() == GetHashCode();
+            return other.isOpen == isOpen &&
+                other.colliderType == colliderType &&
+                other.collideFunc == collideFunc &&
+                other.colliderChoice == colliderChoice &&
+                other.positionOffset == positionOffset &&
+                other.staticRotation == staticRotation &&
+                other.staticDirection == staticDirection &&
+                other.boxSize == boxSize &&
+                other.radius == radius &&
+                other.length == length &&
+                other.isConnectWithBody == isConnectWithBody;
         }
 
         public void CheckValue()
@@ -306,9 +316,9 @@ namespace ADBRuntime
         public Vector3 position;
         public Vector3 direction;
         public Quaternion rotation;
-        public Vector3 positionForward;
-        public Vector3 directionForward;
-        public Quaternion rotationForward;
+        public Vector3 deltaPosition;
+        public Vector3 deltaDirection;
+        public Quaternion deltaRotation;
     }
 }//OYM：写死我了....历时四个月有余
 /*

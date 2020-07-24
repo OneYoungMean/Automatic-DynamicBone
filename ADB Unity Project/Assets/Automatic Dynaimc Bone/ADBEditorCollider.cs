@@ -50,13 +50,13 @@ namespace ADBRuntime
             Refresh();
             return runner;
         }
-        public void Refresh()
+        public void Refresh(bool isForce =false)
         {
             if (editor.appendTransform == null)//OYM：不允許為空
             {
                 editor.appendTransform = transform;
             }
-            if (needRefresh||runner?.colliderRead == null || !runner.colliderRead.Equals(editor.colliderRead))
+            if (isForce||needRefresh || runner?.colliderRead == null || !runner.colliderRead.Equals(editor.colliderRead))
             {
                 needRefresh = false;
                 editor.colliderRead.CheckValue();
@@ -93,7 +93,7 @@ namespace ADBRuntime
         {
             if (!Application.isPlaying && isDraw && editor != null&& isGlobal)
             {
-                Refresh();
+                Refresh(true);
                 runner.OnDrawGizmos();
             }
         }

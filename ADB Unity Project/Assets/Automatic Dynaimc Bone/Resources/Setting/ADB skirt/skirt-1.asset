@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 15b93a3a2ef1bab4583f2d024dfcff47, type: 3}
   m_Name: skirt-1
   m_EditorClassIdentifier: 
-  useGlobal: 0
+  useGlobal: 1
   frictionCurve:
     serializedVersion: 2
     m_Curve:
@@ -66,7 +66,7 @@ MonoBehaviour:
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 4
+      value: 8
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -98,8 +98,8 @@ MonoBehaviour:
       inWeight: 0
       outWeight: 0
     - serializedVersion: 3
-      time: 0.9874878
-      value: 0.09988403
+      time: 1
+      value: 0
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -114,7 +114,7 @@ MonoBehaviour:
     m_Curve:
     - serializedVersion: 3
       time: 1
-      value: 1
+      value: 0.95
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -153,7 +153,7 @@ MonoBehaviour:
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 0
+      value: 1
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -162,7 +162,7 @@ MonoBehaviour:
       outWeight: 0
     - serializedVersion: 3
       time: 1
-      value: 0
+      value: 1
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -476,13 +476,13 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   frictionGlobal: 0
-  windScaleGlobal: 1
-  gravityScaleGlobal: 1
-  moveByFixedPointGlobal: 1
+  windScaleGlobal: 0
+  gravityScaleGlobal: 0
+  moveByFixedPointGlobal: 0
   distanceCompensationGlobal: 1
-  massGlobal: 1
+  massGlobal: 0.95
   moveByPrePointGlobal: 0
-  freezeGlobal: 0
+  freezeGlobal: 2
   structuralShrinkVerticalScaleGlobal: 1
   structuralStretchVerticalScaleGlobal: 1
   structuralShrinkHorizontalScaleGlobal: 1
@@ -540,10 +540,10 @@ MonoBehaviour:
   isComputeBendingVertical: 0
   isComputeBendingHorizontal: 1
   isComputeCircumference: 0
-  isCollideStructuralVertical: 0
+  isCollideStructuralVertical: 1
   isCollideStructuralHorizontal: 0
   isCollideShear: 0
   isLoopRootPoints: 1
   isDebugDraw: 1
   gravity: {x: 0, y: -9.81, z: 0}
-  colliderChoice: 12
+  colliderChoice: 8

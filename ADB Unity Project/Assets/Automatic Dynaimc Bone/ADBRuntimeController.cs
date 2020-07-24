@@ -88,25 +88,47 @@ namespace ADBRuntime
                 initializeScale = transform.lossyScale.x;
                 isInitialize = true;
             }
-            delayTime = delayTime < 0.001f ? 0.001f : delayTime;
+            delayTime = delayTime < 0.017f ? 0.017f : delayTime;
         }
 
-        public void Reset()
+        private void Update()
         {
-            if (Application.isPlaying)
+            if (jointAndPointControlls == null) return;
+
+            if (delayTime - Time.deltaTime > 0)
+            {
+                delayTime -= Time.deltaTime;
+
+                return;
+            }
+            else if ((delayTime > 0 && delayTime - Time.deltaTime < 0) || isResetPoint)
+            {
+                delayTime -= Time.deltaTime;
+                isResetPoint = false;
+                RestorePoint();
+                return;
+            }
+
+            deltaTime += 0.0166f;
+            scale = transform.lossyScale.x;
+
+            windForce = ADBWindZone.getWindForce(transform.position, deltaTime * windScale) * windScale;
+            UpdateDataPakage();
+
+        }
+        private void OnDisable()
+        {
+            RestorePoint();
+        }
+        private void OnDestroy()
+        {
+            if (dataPackage != null)
             {
                 RestorePoint();
-                initializePoint();
-                dataPackage.Dispose(true);
-                for (int i = 0; i < jointAndPointControlls.Length; i++)
-                {
-                    jointAndPointControlls[i].GetData(dataPackage);//OYM：在这里对各种joint和point进行分类与编号
-                }
-                dataPackage.SetNativeArray();
-                delayTime = delayTime < 0.017f ? 0.017f : delayTime;
+                dataPackage.Dispose(false);
             }
-        }
 
+        }
 
         private void OnDrawGizmos()
         {       
@@ -127,48 +149,22 @@ namespace ADBRuntime
                     colliderControll.OnDrawGizmos();
                 }
         }
-
-        private void Update()
+        public void Reset()
         {
-            if (jointAndPointControlls == null) return;
-
-            if (delayTime - Time.deltaTime > 0)
-            {
-                delayTime -= Time.deltaTime;
-                return;
-            }
-            else if (( delayTime > 0 && delayTime - Time.deltaTime < 0)|| isResetPoint)
-            {
-                delayTime -= Time.deltaTime;
-                RestorePoint();
-                return;
-            }
-            if(isResetPoint)
+            if (Application.isPlaying)
             {
                 RestorePoint();
-                isResetPoint = false;
-                return;
+                initializePoint();
+                dataPackage.Dispose(true);
+                for (int i = 0; i < jointAndPointControlls.Length; i++)
+                {
+                    jointAndPointControlls[i].GetData(dataPackage);//OYM：在这里对各种joint和point进行分类与编号
+                }
+                dataPackage.SetNativeArray();
+                delayTime = delayTime < 0.017f ? 0.017f : delayTime;
             }
-            deltaTime += Time.deltaTime;
-            scale = transform.lossyScale.x ;
+        }
 
-            windForce = ADBWindZone.getWindForce(transform.position, deltaTime * windScale) * windScale;
-                UpdateDataPakage();
- 
-        }
-        private void OnDisable()
-        {
-            RestorePoint();
-        }
-        private void OnDestroy()
-        {
-            if (dataPackage != null)
-            {
-                RestorePoint();
-                dataPackage.Dispose(false);
-            }
-
-        }
         public void RestorePoint()
         {
             if (!Application.isPlaying)
@@ -248,7 +244,7 @@ namespace ADBRuntime
             List<ADBRuntimePoint> pointList = null;
             if (jointAndPointControlls == null || jointAndPointControlls.Length == 0)
             {
-                Debug.Log("Can't find the point data! try to use <generate Point> Buttom again !");
+                Debug.Log("If you want to generate body Collider,try to use <generate Point> Buttom again !");
             }
             else
             {
@@ -268,6 +264,7 @@ namespace ADBRuntime
             colliderControll = new ADBRuntimeColliderControll(gameObject, pointList, isGenerateColliderAutomaitc,!(Application.isPlaying),out editorColliderList);//OYM：在这里获取collider
             for (int i = 0; i < editorColliderList.Count; i++)
             {
+                editorColliderList[i].Refresh(true);
                 editorColliderList[i].isDraw = true;
             }
             isGenerateColliderAutomaitc = false;

@@ -20,14 +20,13 @@ namespace ADBRuntime
 
         private ADBRunTimeJobsTable.ColliderGetTransform colliderGet;
         private ADBRunTimeJobsTable.PointGetTransform pointGet;
+        private ADBRunTimeJobsTable.FixedPointUpdate fixedPointUpdate;
         private ADBRunTimeJobsTable.PointUpdate pointUpdate;
         private ADBRunTimeJobsTable.ColliderUpdate colliderUpdate;
         private ADBRunTimeJobsTable.ConstraintUpdate[] constraintUpdates;
         private ADBRunTimeJobsTable.ConstraintUpdate constraintUpdates1;
         private ADBRunTimeJobsTable.JobPointToTransform pointToTransform;
 
-        private NativeArray<int> iterationArray;
-        private int* pIteration;
         private NativeArray<ColliderRead> collidersReadList;
         private NativeArray<ColliderReadWrite> collidersReadWriteList;
         private TransformAccessArray colliderTransformsList;
@@ -55,7 +54,7 @@ namespace ADBRuntime
         internal bool SetRuntimeData(float deltaTime, float scale, int iteration, Vector3 windForce, ColliderCollisionType colliderCollisionType)
         {
             int batchLength = isTryExcute ? 1 : 64;
-            iteration = isTryExcute ? 1 : iteration;
+            //iteration = isTryExcute ? 1 : iteration;
 
             JobHandle Hjob = ADBRunTimeJobsTable.returnHJob;
             if (!Hjob.IsCompleted)
@@ -63,25 +62,22 @@ namespace ADBRuntime
                 return false;
             }
 
-            *pIteration = iteration;
-            pointGet.scale = scale;
-            pointGet.deltaTime = deltaTime;
+             pointUpdate.oneDivideIteration = colliderGet.oneDivideIteration = pointGet.oneDivideIteration = 1.0f / iteration;
+
             pointUpdate.deltaTime = deltaTime;
             pointUpdate.globalScale = scale;
-            pointUpdate.iteration = iteration;
             pointUpdate.windForcePower = windForce;
             pointUpdate.isCollision = (colliderCollisionType == ColliderCollisionType.Fast);
 
             for (int i = 0; i < constraintUpdates.Length; i++)
             {
-                constraintUpdates[i].GlobalScale = scale;
-
+                constraintUpdates[i].globalScale = scale;
                 constraintUpdates[i].isCollision = (colliderCollisionType == ColliderCollisionType.Accuate);
             }
-            constraintUpdates1.GlobalScale = scale;
+            constraintUpdates1.globalScale = scale;
             constraintUpdates1.isCollision = (colliderCollisionType == ColliderCollisionType.Accuate);
 
-
+            #region LifeCycle
             Hjob = colliderGet.Schedule(colliderTransformsList);
             Hjob = pointGet.Schedule(pointTransformsList);
 
@@ -91,17 +87,9 @@ namespace ADBRuntime
             {
                 if (isTryExcute)
                 {
+                    colliderUpdate.TryExecute(collidersReadList.Length, batchLength, Hjob);
+                    fixedPointUpdate.TryExecute(pointReadList.Length,batchLength, Hjob);
                     pointUpdate.TryExecute(pointReadList.Length, batchLength, Hjob);
-                }
-                else
-                {
-                    Hjob = pointUpdate.Schedule(pointReadList.Length, batchLength);
-                }
-
-                Hjob = colliderUpdate.Schedule(collidersReadList.Length, batchLength);
-
-                if (isTryExcute)
-                {
                     for (int j0 = 0; j0 < constraintUpdates.Length; j0++)
                     {
                         constraintUpdates[j0].TryExecute(constraintReadList[j0].Length, batchLength, Hjob);
@@ -109,11 +97,15 @@ namespace ADBRuntime
                 }
                 else
                 {
+                    Hjob = colliderUpdate.Schedule(collidersReadList.Length, batchLength);
+                    //Hjob = fixedPointUpdate.Schedule(pointReadList.Length, batchLength);
+                    Hjob =pointUpdate.Schedule(pointReadList.Length, batchLength);
                     Hjob = constraintUpdates1.Schedule(constraintReadList1.Length, batchLength);
                 }
             }
-            Hjob = pointToTransform.Schedule(pointTransformsList);
 
+            Hjob = pointToTransform.Schedule(pointTransformsList);
+            #endregion
             // pointToTransform.TryExecute(pointTransformsList, Hjob);
 
             return true;
@@ -159,9 +151,6 @@ namespace ADBRuntime
         }
         public void SetNativeArray()
         {
-            iterationArray = new NativeArray<int>(new int[] { 0 }, Allocator.Persistent);
-            pIteration =(int*) iterationArray.GetUnsafePtr ();
-
             pointReadList = new NativeArray<PointRead>(m_pointReadList.ToArray(), Allocator.Persistent);
             pointReadWriteList = new NativeArray<PointReadWrite>(m_pointReadWriteList.ToArray(), Allocator.Persistent);
             constraintReadList = new NativeArray<ConstraintRead>[m_constraintList.Count];
@@ -175,6 +164,7 @@ namespace ADBRuntime
 
             colliderGet = new ADBRunTimeJobsTable.ColliderGetTransform();
             pointGet = new ADBRunTimeJobsTable.PointGetTransform();
+            fixedPointUpdate = new ADBRunTimeJobsTable.FixedPointUpdate();
             pointUpdate = new ADBRunTimeJobsTable.PointUpdate();
             colliderUpdate = new ADBRunTimeJobsTable.ColliderUpdate();
             constraintUpdates = new ADBRunTimeJobsTable.ConstraintUpdate[m_constraintList.Count];
@@ -186,8 +176,9 @@ namespace ADBRuntime
 
             colliderUpdate.pReadColliders = (ColliderRead*)collidersReadList.GetUnsafePtr();
             colliderUpdate.pReadWriteColliders = (ColliderReadWrite*)collidersReadWriteList.GetUnsafePtr();
-            colliderUpdate.length = collidersReadList.Length-1;
-            colliderUpdate.iteration = pIteration;
+
+            fixedPointUpdate.pReadPoints = (PointRead*)pointReadList.GetUnsafePtr();
+            fixedPointUpdate.pReadWritePoints = (PointReadWrite*)pointReadWriteList.GetUnsafePtr();
 
             pointGet.pReadPoints = (PointRead*)pointReadList.GetUnsafePtr();
             pointGet.pReadWritePoints = (PointReadWrite*)pointReadWriteList.GetUnsafePtr();

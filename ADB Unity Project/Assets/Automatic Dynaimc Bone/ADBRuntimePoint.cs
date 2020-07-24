@@ -119,6 +119,7 @@ namespace ADBRuntime
     public struct PointReadWrite
     {
         public Vector3 position;
+        public Quaternion rotation;
         /* { get { return Position; }
             set {
                 if (float.IsNaN(value.x))
@@ -131,8 +132,8 @@ namespace ADBRuntime
                 }
             } }*/
 
-        public Vector3 velocity;
-        public Quaternion parentRotation;
-        public Quaternion oldParentRotation;
+        public Vector3 deltaPosition;
+        public Quaternion deltaRotation;
+
     }
 }

@@ -479,7 +479,7 @@ MonoBehaviour:
   windScaleGlobal: 0
   gravityScaleGlobal: 0
   moveByFixedPointGlobal: 0
-  distanceCompensationGlobal: 0
+  distanceCompensationGlobal: 1
   massGlobal: 0.95
   moveByPrePointGlobal: 0
   freezeGlobal: 1
@@ -509,13 +509,13 @@ MonoBehaviour:
   circumferenceStretch: 1
   isComputeVirtual: 1
   virtualPointRate: 1
-  isAutoComputeWeight: 0
+  isAutoComputeWeight: 1
   weightCurve:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 0
+      value: 10
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -524,7 +524,7 @@ MonoBehaviour:
       outWeight: 0
     - serializedVersion: 3
       time: 1
-      value: 10
+      value: 0
       inSlope: 0
       outSlope: 0
       tangentMode: 0

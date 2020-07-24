@@ -191,26 +191,36 @@ namespace ADBRuntime
 
             float[] HorizontalVector = new float[allNodeList.Count];
             float[] VerticalVector = new float[allNodeList.Count];
+            if (aDBSetting.isComputeStructuralHorizontal)
+            {
                 for (int i = 0; i < constraintsStructuralHorizontal.Count; i++)
                 {
                     HorizontalVector[constraintsStructuralHorizontal[i].pointA.index] += constraintsStructuralHorizontal[i].direction.magnitude;
                     HorizontalVector[constraintsStructuralHorizontal[i].pointB.index] += constraintsStructuralHorizontal[i].direction.magnitude;
                 }
+            }
+            if (aDBSetting.isComputeStructuralVertical)
+            {
                 for (int i = 0; i < constraintsStructuralVertical.Count; i++)
                 {
                     VerticalVector[constraintsStructuralVertical[i].pointA.index] += constraintsStructuralVertical[i].direction.magnitude;
                     VerticalVector[constraintsStructuralVertical[i].pointB.index] += constraintsStructuralVertical[i].direction.magnitude;
                 }
+            }
+            if (aDBSetting.isComputeVirtual)
+            {
                 for (int i = 0; i < constraintsVirtual.Count; i++)
                 {
                     VerticalVector[constraintsVirtual[i].pointA.index] += constraintsVirtual[i].direction.magnitude;
                     VerticalVector[constraintsVirtual[i].pointB.index] += constraintsVirtual[i].direction.magnitude;
                 }
-                for (int i = 0; i < nodeWeight.Length; i++)
-                {
-                nodeWeight[i] = (HorizontalVector[i] + VerticalVector[i]) * 0.5f;
-                }
-                ComputeWeight(nodeWeight, allNodeList);
+            }
+
+            for (int i = 0; i < nodeWeight.Length; i++)
+            {
+            nodeWeight[i] = (HorizontalVector[i] + VerticalVector[i]) * 0.5f;
+            }
+            ComputeWeight(nodeWeight, allNodeList);
             
         }
          
@@ -227,7 +237,6 @@ namespace ADBRuntime
                 }
                 else
                 {
-                    
                     float weight = nodeWeight[i];
 
                     if (weight <= 0.001f)
