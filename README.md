@@ -1,22 +1,22 @@
 写在开头:**您可能需要科学上网才能看到GIF图!**  
-目前尚未进入稳定版本,请选择性参考本插件XD
-如果您实在翻不了墙，下载还贼慢，你可以选择在[此处下载](https://gitee.com/OneYoungMean/Automatic-DynamicBone)
+如果您实在翻不了墙，下载还贼慢，你可以选择在[此处下载](https://gitee.com/OneYoungMean/Automatic-DynamicBone)  
+[English version manual](https://github.com/OneYoungMean/Automatic-DynamicBone/wiki/English-version-manual)  
 
-[English version manual](https://github.com/OneYoungMean/Automatic-DynamicBone/wiki/English-version-manual )  
 # AutomaticDynamicBone
 
 基于https://github.com/SPARK-inc/SPCRJointDynamics ,一个可以根据骨骼布料,自动生成具有物理效果头发和裙子的插件.  
-- **当前版本:0.5preview 最后更新日期:20/7/24**
-- **注意,更新前请备份你已经设置好的setting文件!** 
+- **当前版本:0.5preview 最后更新日期:20/7/24**  
+- **注意,更新前请备份你已经设置好的setting文件!**   
 
 ## 新功能说明
-- **更新了示例,调试了大部分功能,基本上确认项目暂时稳定**
-- **重新写了一遍底层,效果提升4倍,现在允许你只迭代一次就能获得比较完整的效果**
-- **为了达到尽可能高效率的性能,脚本只能通过命名添加骨骼,该操作暂时有些反人类,我会尽快解决这个问题**
-- 	<s>修改了重力的作用方式</s>**又改回去了**
-- **修改了freeze属性的作用方式,你可以通过调整重力来修改freeze的位置方向了**
-- **处理了数不胜数的bug,以及即将到来的骨骼细分黑科技**
-- **添加了一个新的免费示例模型,感谢Kafuji,以及[在此处获取更多的模型](https://fantia.jp/fanclubs/3967)**
+
+- **更新了示例,调试了大部分功能,基本上确认项目暂时稳定**  
+- **重新写了一遍底层,效果提升4倍,现在允许你只迭代一次就能获得比较完整的效果**  
+- **为了达到尽可能高效率的性能,脚本只能通过命名添加骨骼,该操作暂时有些反人类,我会尽快解决这个问题**  
+- 	<s>修改了重力的作用方式</s>**又改回去了**  
+- **修改了freeze属性的作用方式,你可以通过调整重力来修改freeze的位置方向了**  
+- **处理了数不胜数的bug,以及即将到来的骨骼细分黑科技**  
+- **添加了一个新的免费示例模型,感谢Kafuji,以及[在此处获取更多的模型](https://fantia.jp/fanclubs/3967)**  
 
 ## 概述   
 
@@ -74,6 +74,7 @@ AutomaticDynamicBone(ADB)是作者由于被dynamic bone坑走了**15美刀**一�
 - Unity2018.4及以上,除webGL外所有支持unity jobs的平台.  
 
 ## 快速入门
+
 如果你并不想下载项目附带的example压缩包,你可以按以下操作快速查看运行效果!  
 
 1. 在脚本中找到**ADBRuntimeController**,添加到你想要添加的目标/目标父物体上.
@@ -84,11 +85,8 @@ AutomaticDynamicBone(ADB)是作者由于被dynamic bone坑走了**15美刀**一�
 ![3](https://github.com/OneYoungMean/Automatic-DynamicBone/blob/master/Manual%20GIF/A3.gif)   
 
 ### 原理
-大部分原理来自于[这里](https://github.com/SPARK-inc/SPCRJointDynamics),我基于这个脚本给出了一些优化:  
-· 不存在实际创建的point,constraint,collider等物体,减少了对于mono的调用.  
-· 用计算速度和空气阻力的方式代替了原本的计算oldposition的方式,现在只需要迭代4次就能够获得仿真的效果.  
-· 分离了点碰撞与杆件碰撞并作为选项,渐进的迭代collider.  
 
+大部分原理来自于[这里](https://github.com/SPARK-inc/SPCRJointDynamics),详情可以参考[核心部分代码](https://github.com/OneYoungMean/Automatic-DynamicBone/blob/master/ADB%20Unity%20Project/Assets/Automatic%20Dynaimc%20Bone/ADBRunTimeJobsTable.cs)
 
 ### 如果你喜欢本项目记得给本项目star!
 
