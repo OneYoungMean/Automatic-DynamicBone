@@ -40,7 +40,9 @@
 - **完整的内部源码**不打包dll,提供所有的运行细节以及大量的注释!你可以任意定修改某一部分,已获得想要的物理效果与特殊性质,并且大可不必担心随之而来的耦合问题!  
 
 - **免费**以及**作者被dynaimc bone坑走了15美刀.** 并且<s>作者是MMD模型白嫖怪</s>MMD友好程度**极高!**
--
+
+- **作者长期在线**有issue必回!包君满意!
+
 ![2](https://github.com/OneYoungMean/AutomaticDynamicBone/blob/master/Manual%20GIF/A0.gif)  
  
 ![2](https://s2.ax1x.com/2020/02/29/3yRc8g.gif)
