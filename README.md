@@ -41,7 +41,7 @@
 
 - **免费!** 以及作者被dynaimc bone坑走了15美刀.** 并且<s>作者是MMD模型白嫖怪</s>MMD友好程度**极高!**
 
-- **作者长期在线!**有issue必回!包君满意!
+- **作者长期在线!** 有issue必回!包君满意!
 
 ![2](https://github.com/OneYoungMean/AutomaticDynamicBone/blob/master/Manual%20GIF/A0.gif)  
  
