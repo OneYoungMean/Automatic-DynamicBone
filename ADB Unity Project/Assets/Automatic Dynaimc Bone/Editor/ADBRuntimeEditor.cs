@@ -115,11 +115,6 @@ namespace ADBRuntime
             controller.windForceScale = EditorGUILayout.Slider("windForcePower",controller.windForceScale, 0, 1); 
             controller.colliderCollisionType= (ColliderCollisionType)EditorGUILayout.EnumPopup("Collision Quantity",controller.colliderCollisionType);
 
-            if (GUILayout.Button("test", GUILayout.Height(22.0f)))
-            {
-                //controller.isTest = true;
-            }
-
             serializedObject.ApplyModifiedProperties();
         }
 
