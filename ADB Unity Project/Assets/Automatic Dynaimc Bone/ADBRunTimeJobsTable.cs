@@ -346,14 +346,14 @@ namespace ADBRuntime.Internal
             /// 风力
             /// </summary>
             [ReadOnly]
-            internal Vector3 windForcePower;
+            internal Vector3 addForceForcePower;
             /// <summary>
             /// 大小
             /// </summary>
             [ReadOnly]
             internal float globalScale;
             /// <summary>
-            /// 迭代次数
+            /// 1/迭代次数,为什么不用int,因为除法比乘法慢
             /// </summary>
             [ReadOnly]
             internal float oneDivideIteration;
@@ -416,10 +416,10 @@ namespace ADBRuntime.Internal
                 pReadWritePoint->position +=pFixedPointReadWrite->deltaPosition * pReadPoint->distanceCompensation;
                 Vector3 positionB = pReadWritePoint->position;
                 //OYM：重力
-                pReadWritePoint->deltaPosition += oneDivideIteration * pReadPoint->gravity * globalScale * (0.5f * deltaTime * deltaTime);
+                pReadWritePoint->deltaPosition += oneDivideIteration * pReadPoint->gravity* (0.5f * deltaTime * deltaTime)* globalScale ;
                 //OYM：风力
-                pReadWritePoint->deltaPosition += oneDivideIteration* windForcePower * pReadPoint->windScale  / pReadPoint->weight;
-                //OYM：当前的向量114
+                pReadWritePoint->deltaPosition += oneDivideIteration* addForceForcePower * pReadPoint->addForceScale  / pReadPoint->weight;
+                //OYM：当前相对fixed的向量
                 Vector3 direction = pReadWritePoint->position - pFixedPointReadWrite->position;
                 //OYM：归位的向量
                 Vector3 back = pFixedPointReadWrite->rotation * pReadPoint->initialPosition * globalScale - direction;
@@ -429,12 +429,11 @@ namespace ADBRuntime.Internal
                 pReadWritePoint->deltaPosition += deltaTime *( direction - (pReadWritePoint->deltaRotation * direction));
 
                 //OYM：以fixed位移进行为参考进行速度补偿
-                pReadWritePoint->deltaPosition -= pFixedPointReadWrite->deltaPosition * pReadPoint->moveByFixedPoint;
+                pReadWritePoint->deltaPosition -= pFixedPointReadWrite->deltaPosition * pReadPoint->moveByFixedPoint * 0.2f;//OYM：测试了一下,0.2是个恰到好处的值,不会显得太大也不会太小
                 //OYM：将速度赋值给距离
                 pReadWritePoint->position += oneDivideIteration * pReadWritePoint->deltaPosition;//OYM：这里我想了很久,应该是这样,如果是迭代n次的话,那么deltaposition将会被加上n次,正规应该是只加一次
 
                 //Debug.Log(index + " : " + pFixedPointReadWrite->position + " " + positionA + " " + pFixedPointReadWrite->deltaPosition * pReadPoint->distanceCompensation + "  " + positionB);
-
 
             }
 

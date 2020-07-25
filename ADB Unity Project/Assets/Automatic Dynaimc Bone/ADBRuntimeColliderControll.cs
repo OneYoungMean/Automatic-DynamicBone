@@ -110,7 +110,6 @@ namespace ADBRuntime
 
                 for (int i = 0; i < runtimeColliderList.Count; i++)
                 {
-                    runtimeColliderList[i].colliderRead.isOpen = true;
                     collidersReadTable[i] = runtimeColliderList[i].GetColliderRead();
                     colliderTransform[i] = runtimeColliderList[i].appendTransform;
                 }
@@ -150,7 +149,19 @@ namespace ADBRuntime
             }
             else
             {
-                Debug.Log(character.name+"'s Avatar is lost or isn't Human!");
+                var animators = character.GetComponentsInChildren<Animator>();
+                if (animators != null && animators.Length != 0)
+                {
+                    bool isFind = false;
+                    for (int i = 0; i < animators.Length; i++)
+                    {
+                        isFind = isFind || GenerateBodyCollidersData(ref runtimeColliderList, animators[i].gameObject, allPointTrans);
+                    }
+                }
+                else
+                {
+                    Debug.Log(character.name + "'s Avatar is lost or isn't Human!");
+                }
             }
             return false;
         }
@@ -181,9 +192,11 @@ namespace ADBRuntime
 
             for (int i = 0; i < runtimeColliderList.Count; i++)
             {
-                runtimeColliderList[i].OnDrawGizmos();
+                if (runtimeColliderList[i].appendTransform)
+                {
+                    runtimeColliderList[i].OnDrawGizmos();
+                }
             }
-
         }
 
 

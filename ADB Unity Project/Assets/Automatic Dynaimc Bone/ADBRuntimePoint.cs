@@ -108,11 +108,12 @@ namespace ADBRuntime
         public Vector3 gravity;
         public Vector3 boneAxis;
         public Vector3 initialPosition;
-        public Quaternion localRotation;
+        public Quaternion initialLocalRotation;
 
         public float freeze;
-        internal float windScale;
+        internal float addForceScale;
         internal float distanceCompensation;
+        internal Quaternion localRotation;
     }
 
     //OYM：写入系统

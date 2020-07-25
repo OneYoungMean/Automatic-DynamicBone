@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: MikuGloabalSetting
   m_EditorClassIdentifier: 
   settings:
-  - setting: {fileID: 11400000, guid: e290d290f2d26054088c83a7ae916d9e, type: 2}
+  - setting: {fileID: 11400000, guid: adca319c3979e60478b5adda5a198d8e, type: 2}
     keyWord:
     - hair
   - setting: {fileID: 11400000, guid: ca7cd362f42d23c46a1acb4d930e2524, type: 2}

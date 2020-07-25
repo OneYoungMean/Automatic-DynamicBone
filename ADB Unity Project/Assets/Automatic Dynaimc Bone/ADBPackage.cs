@@ -51,7 +51,7 @@ namespace ADBRuntime
             pointTransformsList = new TransformAccessArray(0);
             colliderTransformsList = new TransformAccessArray(0);
         }
-        internal bool SetRuntimeData(float deltaTime, float scale, int iteration, Vector3 windForce, ColliderCollisionType colliderCollisionType)
+        internal bool SetRuntimeData(float deltaTime, float scale, int iteration, Vector3 addForceForce, ColliderCollisionType colliderCollisionType)
         {
             int batchLength = isTryExcute ? 1 : 64;
             //iteration = isTryExcute ? 1 : iteration;
@@ -66,7 +66,7 @@ namespace ADBRuntime
 
             pointUpdate.deltaTime = deltaTime;
             pointUpdate.globalScale = scale;
-            pointUpdate.windForcePower = windForce;
+            pointUpdate.addForceForcePower = addForceForce;
             pointUpdate.isCollision = (colliderCollisionType == ColliderCollisionType.Fast);
 
             for (int i = 0; i < constraintUpdates.Length; i++)

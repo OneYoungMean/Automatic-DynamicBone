@@ -562,6 +562,6 @@ MonoBehaviour:
   isCollideStructuralHorizontal: 0
   isCollideShear: 1
   isLoopRootPoints: 0
-  isDebugDraw: 0
+  isDebugDraw: 1
   gravity: {x: 0, y: -9.81, z: 0}
   colliderChoice: 12

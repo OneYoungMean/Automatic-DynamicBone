@@ -33,7 +33,7 @@ namespace ADBRuntime
         [SerializeField]
         public int iteration=4;
         [SerializeField]
-        public float windScale=0.5f;
+        public float windForceScale=0.5f;
         public bool isDebug;
         public bool isResetPoint;
         [SerializeField]
@@ -53,9 +53,6 @@ namespace ADBRuntime
         [SerializeField]
         public List<ADBEditorCollider> editorColliderList;
 
-
-        public ADBRuntimeWind windForcePower { get; private set; }
-
         private ADBRuntimeColliderControll colliderControll;
         private ADBConstraintReadAndPointControll[] jointAndPointControlls;
         private DataPackage dataPackage;
@@ -63,7 +60,7 @@ namespace ADBRuntime
         private float deltaTime=0;
         private float initializeScale;
         private float scale;
-        private Vector3 windForce;
+        private Vector3 addForce;
 
         private void Start()//OYM：滚回来自己来趟这趟屎山
         {
@@ -109,16 +106,20 @@ namespace ADBRuntime
                 return;
             }
 
-            deltaTime += 0.0166f;
+            deltaTime += 0.0166f;//OYM：用time.deltaTime并不理想,或许是我笔记本太烂的缘故?
             scale = transform.lossyScale.x;
 
-            windForce = ADBWindZone.getWindForce(transform.position, deltaTime * windScale) * windScale;
+            addForce = ADBWindZone.getaddForceForce(transform.position ) * windForceScale* deltaTime;
             UpdateDataPakage();
+
 
         }
         private void OnDisable()
         {
-            RestorePoint();
+            if (dataPackage != null)
+            {
+                RestorePoint();
+            }
         }
         private void OnDestroy()
         {
@@ -129,25 +130,14 @@ namespace ADBRuntime
             }
 
         }
-
-        private void OnDrawGizmos()
-        {       
-            if(!isDebug) return;
-
-            if (jointAndPointControlls != null)
+        private void UpdateDataPakage()
+        {
+            bool isSuccessfulRun = dataPackage.SetRuntimeData(deltaTime, scale / initializeScale, iteration, addForce, colliderCollisionType);
+            if (isSuccessfulRun)
             {
-                foreach (var controll in jointAndPointControlls)
-                {
-                    controll.OnDrawGizmos();
-                }
+                deltaTime = 0;
+                addForce = Vector3.zero;
             }
-
-
-                if (colliderControll != null&&Application.isPlaying)
-                {
-                    Gizmos.color = Color.red;
-                    colliderControll.OnDrawGizmos();
-                }
         }
         public void Reset()
         {
@@ -164,7 +154,6 @@ namespace ADBRuntime
                 delayTime = delayTime < 0.017f ? 0.017f : delayTime;
             }
         }
-
         public void RestorePoint()
         {
             if (!Application.isPlaying)
@@ -174,15 +163,6 @@ namespace ADBRuntime
             }
             dataPackage.restorePoint();
         }
-        private void UpdateDataPakage()
-        {
-            bool isSuccessfulRun = dataPackage.SetRuntimeData(deltaTime, scale / initializeScale, iteration, windForce, colliderCollisionType);
-            if (isSuccessfulRun)
-            {
-                deltaTime = 0;
-            }
-        }
-
         public void initializeList()
         {//OYM：一个简单的防报错和把关键词tolower的方法
 
@@ -215,7 +195,6 @@ namespace ADBRuntime
                 settings = Resources.Load("Setting/ADBGlobalSettingFile") as ADBGlobalSetting;
             }
         }
-
         public void initializePoint()
         {
             initializeList();
@@ -238,7 +217,6 @@ namespace ADBRuntime
                 Debug.Log( "no point found , check the white key word");
             }
         }
-
         public void initializeCollider()
         {
             List<ADBRuntimePoint> pointList = null;
@@ -249,25 +227,32 @@ namespace ADBRuntime
             else
             {
                 pointList = new List<ADBRuntimePoint>();
-                for (int i = 0; i < jointAndPointControlls.Length; i++)
+                if (isGenerateColliderAutomaitc)
                 {
-                    if (isGenerateByFixedPoint)
+                    for (int i = 0; i < jointAndPointControlls.Length; i++)
                     {
-                        pointList.AddRange(jointAndPointControlls[i].fixedNodeList);
-                    }
-                    else
-                    {
-                        pointList.AddRange(jointAndPointControlls[i].allNodeList);
+                        if (isGenerateByFixedPoint)
+                        {
+                            pointList.AddRange(jointAndPointControlls[i].fixedNodeList);
+                        }
+                        else
+                        {
+                            pointList.AddRange(jointAndPointControlls[i].allNodeList);
+                        }
                     }
                 }
             }
-            colliderControll = new ADBRuntimeColliderControll(gameObject, pointList, isGenerateColliderAutomaitc,!(Application.isPlaying),out editorColliderList);//OYM：在这里获取collider
+            colliderControll = new ADBRuntimeColliderControll(generateTransform.gameObject, pointList, isGenerateColliderAutomaitc,!(Application.isPlaying),out editorColliderList);//OYM：在这里获取collider
             for (int i = 0; i < editorColliderList.Count; i++)
             {
                 editorColliderList[i].Refresh(true);
                 editorColliderList[i].isDraw = true;
             }
             isGenerateColliderAutomaitc = false;
+        }
+        public void AddForce(Vector3 force)
+        {
+            addForce += force;
         }
         public bool GetConstraintByKey(string key, ConstraintType constraintType, ref ADBRuntimeConstraint[] returnConstraint)
         {
@@ -283,6 +268,26 @@ namespace ADBRuntime
             }
             returnConstraint = constraints.ToArray();
             return isFind;
+        }
+
+        private void OnDrawGizmos()
+        {
+            if (!isDebug) return;
+
+            if (jointAndPointControlls != null)
+            {
+                foreach (var controll in jointAndPointControlls)
+                {
+                    controll.OnDrawGizmos();
+                }
+            }
+
+
+            if (colliderControll != null && Application.isPlaying)
+            {
+                Gizmos.color = Color.red;
+                colliderControll.OnDrawGizmos();
+            }
         }
     }
 }

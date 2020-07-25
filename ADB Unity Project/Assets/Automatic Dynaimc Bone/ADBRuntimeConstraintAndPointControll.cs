@@ -121,7 +121,7 @@ namespace ADBRuntime
                 {
 
                     rate = Mathf.Clamp01(rate);
-                    point.pointRead.windScale = aDBSetting.windScaleCurve.Evaluate(rate);
+                    point.pointRead.addForceScale = aDBSetting.addForceScaleCurve.Evaluate(rate);
                     point.pointRead.friction = aDBSetting.frictionCurve.Evaluate(rate);
                     point.pointRead.moveByFixedPoint = aDBSetting.moveByFixedPointCurve.Evaluate(rate);
                     point.pointRead.mass = aDBSetting.massCurve.Evaluate(rate);
@@ -144,7 +144,7 @@ namespace ADBRuntime
                 }
                 else
                 {
-                    point.pointRead.windScale = aDBSetting.windScaleGlobal;
+                    point.pointRead.addForceScale = aDBSetting.addForceScaleGlobal;
                     point.pointRead.friction = aDBSetting.frictionGlobal;
                     point.pointRead.moveByFixedPoint = aDBSetting.moveByFixedPointGlobal;
                     point.pointRead.mass = aDBSetting.massGlobal;

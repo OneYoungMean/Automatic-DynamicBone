@@ -27,7 +27,8 @@ namespace ADBRuntime
                     }                       
                 }
             }
-            Debug.Log("You dont add the keyword In ADBSetting!check the Automatic Dynamic Bone/Resource/GlobalSettingFile !");
+
+            Debug.Log("You dont add the keyword In ADBGlobalSetting!check the ADBGlobalSetting File ");
             return (ADBSetting)ScriptableObject.CreateInstance(typeof(ADBSetting));
         }
 

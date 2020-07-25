@@ -112,7 +112,7 @@ namespace ADBRuntime
                 controller.iteration = EditorGUILayout.IntSlider("Iterations number", controller.iteration, 1, 256);
             }
             controller.delayTime = EditorGUILayout.FloatField("delayTime", controller.delayTime);
-            controller.windScale=EditorGUILayout.Slider("windForcePower",controller.windScale, 0, 1); 
+            controller.windForceScale = EditorGUILayout.Slider("windForcePower",controller.windForceScale, 0, 1); 
             controller.colliderCollisionType= (ColliderCollisionType)EditorGUILayout.EnumPopup("Collision Quantity",controller.colliderCollisionType);
 
             if (GUILayout.Button("test", GUILayout.Height(22.0f)))

@@ -29,7 +29,7 @@ namespace ADBRuntime
                // EditorGUILayout.PropertyField(serializedObject.FindProperty("moveByPrePointCurve"), new GUIContent("Move By PrePoint Curve"), true);
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("distanceCompensationCurve"), new GUIContent("Distance Compensation Curve"), true); 
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("frictionCurve"), new GUIContent("Friction Curve"), true);
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("windScaleCurve"), new GUIContent("WindScale Curve"), true);
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("addForceScaleCurve"), new GUIContent("add Force Scale Curve"), true);
                 GUILayout.Space(10);
                 showConstraintGlobal = EditorGUILayout.Foldout(showConstraintGlobal,"Point-Constraint Scale Curve");
                 if (showConstraintGlobal)
@@ -56,7 +56,7 @@ namespace ADBRuntime
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("moveByFixedPointGlobal"), new GUIContent("Move By Fixed Point Float"), true);
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("distanceCompensationGlobal"), new GUIContent("Distance Compensation Float"), true);
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("frictionGlobal"), new GUIContent("Friction Float"), true);
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("windScaleGlobal"), new GUIContent("WindScale Float"), true);
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("addForceScaleGlobal"), new GUIContent("add Force Scale Float"), true);
               //  EditorGUILayout.PropertyField(serializedObject.FindProperty("moveByPrePointGlobal"), new GUIContent("Move By PrePoint Float"), true);
 
 
@@ -106,11 +106,9 @@ namespace ADBRuntime
             if(controller.isComputeStructuralHorizontal)
             {
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("isCollideStructuralHorizontal"), new GUIContent("┗━Is Collide StructuralHorizontal"), true);
-            }
-            if (controller.isComputeStructuralHorizontal)
-            {
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("isLoopRootPoints"), new GUIContent("┗━isLoopRootPoints"), true);
             }
+
             EditorGUILayout.PropertyField(serializedObject.FindProperty("isComputeBendingHorizontal"), new GUIContent("Is Compute Bending Horizontal"), true);
             if (controller.isComputeBendingHorizontal)
             {
@@ -121,6 +119,7 @@ namespace ADBRuntime
             if (controller.isComputeShear)
             {
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("isCollideShear"), new GUIContent("┗━Is Collide Shear"), true);
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("isLoopRootPoints"), new GUIContent("┗━isLoopRootPoints"), true);
             }
             GUILayout.Space(5);
             EditorGUILayout.PropertyField(serializedObject.FindProperty("isComputeCircumference"), new GUIContent("Is Compute Circumference"), true);

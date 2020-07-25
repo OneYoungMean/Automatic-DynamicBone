@@ -37,7 +37,7 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  windScaleCurve:
+  addForceScaleCurve:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
@@ -467,9 +467,9 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   frictionGlobal: 0
-  windScaleGlobal: 0
+  addForceScaleGlobal: 1
   gravityScaleGlobal: 0
-  moveByFixedPointGlobal: 0.1
+  moveByFixedPointGlobal: 0.5
   distanceCompensationGlobal: 0
   massGlobal: 0.9
   moveByPrePointGlobal: 0

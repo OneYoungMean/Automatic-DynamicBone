@@ -94,6 +94,7 @@ namespace ADBRuntime
         }
         public SphereCollider(float radius, Vector3 positionOffset,ColliderChoice colliderChoice, Transform appendTransform = null, CollideFunc collideFunc = CollideFunc.Outside)
         {
+            colliderRead.isOpen = true;
             colliderRead.radius = radius;
 
             colliderRead.colliderType = ColliderType.Sphere;
@@ -134,7 +135,7 @@ namespace ADBRuntime
         }
         public CapsuleCollider(float radius, Vector3 pointHead, Vector3 pointTail, ColliderChoice colliderChoice,Transform appendTransform = null, CollideFunc collideFunc = CollideFunc.Outside)
         {
-
+            colliderRead.isOpen = true;
             colliderRead.colliderType = ColliderType.Capsule;
             colliderRead.collideFunc = collideFunc;
             colliderRead.colliderChoice = colliderChoice;
@@ -154,7 +155,7 @@ namespace ADBRuntime
         }
         public CapsuleCollider(float radius,float length, Vector3 positionOffset,Vector3 direction, ColliderChoice colliderChoice,Transform appendTransform = null, CollideFunc collideFunc = CollideFunc.Outside)
         {
-
+            colliderRead.isOpen = true;
             colliderRead.colliderType = ColliderType.Capsule;
             colliderRead.collideFunc = collideFunc;
             colliderRead.colliderChoice = colliderChoice;
@@ -232,6 +233,7 @@ namespace ADBRuntime
         }
         public OBBBox(Vector3 center, Vector3 range, Vector3 direction, ColliderChoice colliderChoice, Transform appendTransform = null, CollideFunc collideFunc = CollideFunc.Outside)
         {
+            colliderRead.isOpen = true;
             OBBposition = appendTransform ? appendTransform.InverseTransformPoint(center) : center;
             OBBRotation = appendTransform ? appendTransform.rotation * Quaternion.FromToRotation(Vector3.up, direction) : Quaternion.FromToRotation(Vector3.up, direction);
             this.appendTransform = appendTransform;

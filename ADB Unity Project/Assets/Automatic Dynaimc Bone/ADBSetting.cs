@@ -9,7 +9,7 @@ namespace ADBRuntime
         public bool useGlobal = false;
         //高级情况下用这一套
         public AnimationCurve frictionCurve = new AnimationCurve(new Keyframe[] { new Keyframe(0.0f, 0.0f), new Keyframe(1.0f, 0.0f) });
-        public AnimationCurve windScaleCurve = new AnimationCurve(new Keyframe[] { new Keyframe(0.0f, 1.0f), new Keyframe(1.0f, 1.0f) });
+        public AnimationCurve addForceScaleCurve = new AnimationCurve(new Keyframe[] { new Keyframe(0.0f, 1.0f), new Keyframe(1.0f, 1.0f) });
         public AnimationCurve gravityScaleCurve = new AnimationCurve(new Keyframe[] { new Keyframe(0.0f, 1.0f), new Keyframe(1.0f, 1.0f) });
         public AnimationCurve moveByFixedPointCurve = new AnimationCurve(new Keyframe[] { new Keyframe(0.0f, 1.0f), new Keyframe(1.0f, 1.0f) });
         public AnimationCurve massCurve = new AnimationCurve(new Keyframe[] { new Keyframe(0.0f, 1.0f), new Keyframe(1.0f, 1f) });
@@ -32,11 +32,11 @@ namespace ADBRuntime
 
         public float frictionGlobal = 0f;
 
-        public float windScaleGlobal =1f;
+        public float addForceScaleGlobal =1f;
         public float gravityScaleGlobal = 1f;
-        public float moveByFixedPointGlobal = 1f;
-        public float distanceCompensationGlobal = 1f;
-        public float massGlobal = 1f;
+        public float moveByFixedPointGlobal = 0f;
+        public float distanceCompensationGlobal = 0f;
+        public float massGlobal = 0.99f;
         public float moveByPrePointGlobal = 0f;
         public float freezeGlobal = 0f;
 
