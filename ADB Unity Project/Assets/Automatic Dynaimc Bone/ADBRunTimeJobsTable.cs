@@ -387,10 +387,11 @@ namespace ADBRuntime.Internal
                             ColliderRead* pReadCollider = pReadColliders + i;
                             ColliderReadWrite* pReadWriteCollider = pReadWriteColliders + i;
 
-                            if (pReadCollider->isOpen && (pReadPoint->colliderChoice & pReadCollider->colliderChoice) == 0)
-                            { continue; }
+                            if (pReadCollider->isOpen && (pReadPoint->colliderChoice & pReadCollider->colliderChoice)!= 0)
+                            {
+                                ColliderCheck(pReadPoint, pReadWritePoint, pReadCollider, pReadWriteCollider);
+                            }
 
-                            ColliderCheck(pReadPoint, pReadWritePoint, pReadCollider, pReadWriteCollider);
                         }
                     }
                 }
