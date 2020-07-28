@@ -11,7 +11,6 @@ namespace ADBRuntime
         Bending_Vertical,
         Bending_Horizontal,
         Circumference,
-        Virtual,
     }
     public class ADBRuntimeConstraint
     {
@@ -20,42 +19,22 @@ namespace ADBRuntime
         public ADBRuntimePoint pointB { get; private set; }//OYM：子节点
         public Vector3 direction { get; private set; }
         
-        public ADBRuntimeConstraint(ConstraintType type, ADBRuntimePoint pointA, ADBRuntimePoint pointB,float shrink,float stretch,bool isCollide, float freeAngle=0,Vector3? normal=null)
-            //OYM：说实话这个v3我一点都不想携程这样,但是不这么写直接赋值vector3.zero又报错
+        public ADBRuntimeConstraint(ConstraintType type, ADBRuntimePoint pointA, ADBRuntimePoint pointB,float shrink,float stretch,bool isCollide)
         {
             constraintRead.type = type;
             this.pointA = pointA;
             this.pointB = pointB;
-
+           // constraintRead.radius = 0.5f*(pointA.pointRead.radius+ pointB.pointRead.radius);要用这个属性自己改,反正用起来太奇怪了=w=
             constraintRead.indexA = pointA.index;
             constraintRead.indexB = pointB.index;
             constraintRead.shrink = shrink;
             constraintRead.stretch = stretch;
-            CheckLength();
-            constraintRead.rotationFreeAngle =freeAngle;
-            constraintRead.rotationConstraintNormal = freeAngle == 0?Vector3.zero:(Vector3)normal ;
             constraintRead.isCollider = isCollide;
-        }
-        public void CheckLength()
-        {
-            if (pointB.isVirtual)
-            {
-                this.direction = Vector3.down * 0.1f;
-                constraintRead.length = 0.1f;
-            }
-            else
-            {
-                this.direction = pointA.trans.position - pointB.trans.position;
-                constraintRead.length = (this.direction).magnitude;
-            }
-
+            this.direction = pointA.trans.position - pointB.trans.position;
+            constraintRead.length = (this.direction).magnitude;
 
         }
-        public ConstraintRead GetConstraintRead()
-        {
-            //OYM：是结构体所以没必要老是引用了...
-            return constraintRead;
-        }
+
         public void OnDrawGizmos()
         {
             switch (constraintRead.type)
@@ -82,8 +61,20 @@ namespace ADBRuntime
                 default:
                     return;
             }
-
-            Gizmos.DrawLine(pointA.trans.position, pointB.trans.position);
+            if (constraintRead.radius == 0)
+            {
+                Gizmos.DrawLine(pointA.trans.position, pointB.trans.position);
+            }
+            else
+            {
+                Vector3 directionNormalize = direction.normalized;
+                Vector3 right = Vector3.Cross(Vector3.up * constraintRead.radius, directionNormalize) ;
+                Vector3 up = Vector3.Cross(right, directionNormalize) ;
+                Gizmos.DrawLine(pointA.trans.position+ right, pointB.trans.position+ right);
+                Gizmos.DrawLine(pointA.trans.position - right, pointB.trans.position - right);
+                Gizmos.DrawLine(pointA.trans.position + up, pointB.trans.position + up);
+                Gizmos.DrawLine(pointA.trans.position - up, pointB.trans.position - up);
+            }
         }
     }
 
@@ -115,13 +106,9 @@ namespace ADBRuntime
         /// </summary>
         public float stretch;
         /// <summary>
-        /// 旋转约束的法线
+        /// 半径
         /// </summary>
-        public Vector3 rotationConstraintNormal;
-        /// <summary>
-        /// 旋转约束的角度
-        /// </summary>
-        public float rotationFreeAngle;
+        public float radius;
 
         public bool Equals(ConstraintRead other)
         {

@@ -11,15 +11,20 @@ namespace ADBRuntime.Mono
         /// <summary>
         /// Accurate but slow
         /// </summary>
-        Accuate = 1,
+        Both = 1,
         /// <summary>
-        /// Route but fast
+        ///  fast but no radius
         /// </summary>
-        Fast = 2,
+        Constraint = 2,
+        /// <summary>
+        /// little faster than constraint
+        /// </summary>
+        Point = 3,
+
         /// <summary>
         /// 没有碰撞(最快)
         /// </summary>
-        Null = 3
+        Null = 4
     }
     [DisallowMultipleComponent]
     public class ADBRuntimeController : MonoBehaviour
@@ -39,7 +44,7 @@ namespace ADBRuntime.Mono
         public bool isResetPoint;
         [SerializeField]
         public ADBGlobalSetting settings;
-        public ColliderCollisionType colliderCollisionType = ColliderCollisionType.Accuate;
+        public ColliderCollisionType colliderCollisionType = ColliderCollisionType.Constraint;
         [SerializeField]
         public List<string> generateKeyWordWhiteList = new List<string> { "skirt" };// "hair", "tail", 
         [SerializeField]
@@ -106,7 +111,6 @@ namespace ADBRuntime.Mono
                 RestorePoint();
                 return;
             }
-
 
             deltaTime += 0.0166f;//OYM：用time.deltaTime并不理想,或许是我笔记本太烂的缘故?
             scale = transform.lossyScale.x;

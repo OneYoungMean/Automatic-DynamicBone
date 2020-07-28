@@ -10,15 +10,16 @@ namespace ADBRuntime
         public float pointDepthRateMaxPointDepth;
 
         public Transform trans { get;private set; }
-        public ADBRuntimePoint parent { get;private set; }
+        public ADBRuntimePoint parent { get;set; }
         public List<ADBRuntimePoint> childNode { get; set; }//OYM：子节点 
         public bool isFixed { get; private set; }//OYM：是否固定
         public string keyWord { get; private set; }//OYM：匹配的关键词
         public int depth { get; private set; }//OYM：深度
         public int index { get; set; }//OYM：序号
-        public bool isVirtual { get; private set; }
+        public bool isAllowComputeOtherConstraint
+        { get; private set; }
 
-        public ADBRuntimePoint(Transform trans, int depth, string keyWord = null, bool isVirtual = false)
+        public ADBRuntimePoint(Transform trans, int depth, string keyWord = null, bool isAllowComputeOtherConstraint = false)
         {
 
             if (keyWord == null )//OYM：root点(只起一个逻辑点的作用)
@@ -31,31 +32,30 @@ namespace ADBRuntime
                 this.trans = trans;
                 this.keyWord = keyWord;
                 this.depth = depth;
-                this.isVirtual = isVirtual;
                 this.isFixed = depth == 0;
                 pointRead = new PointRead();
                 pointReadWrite = new PointReadWrite();
             }
-            if (isVirtual)
-            {
-                pointRead.isVirtual = true;
-            }
         }
         internal void OnDrawGizmos()
         {
-            Gizmos.color = Color.black;
-            Gizmos.DrawSphere(trans.position, 0.005f);//OYM：都说了画点用的
+            Gizmos.color = isAllowComputeOtherConstraint ? Color.grey: Color.black;
+            if (pointRead.radius < 0.005f)
+            {
+                Gizmos.DrawSphere(trans.position, 0.005f);//OYM：都说了画点用的
+            }
+            else
+            {
+                Matrix4x4 temp = Gizmos.matrix;
+                Gizmos.matrix = Matrix4x4.TRS(trans.position, Quaternion.FromToRotation(Vector3.up, pointRead.initialLocalPosition) * trans.rotation, trans.lossyScale);
+                Gizmos.DrawWireSphere(Vector3.zero, pointRead.radius);
+                Gizmos.matrix = temp;
+            }
         }
-        public void SetParent(ADBRuntimePoint point)
-        {
-            pointRead.parentIndex = point.index;
-            this.parent = point;
-    }
     }
 
     public struct PointRead
     {
-        public bool isVirtual;
         public bool isFixGravityAxis;
         public int fixedIndex;
         /// <summary>
@@ -75,7 +75,7 @@ namespace ADBRuntime
         /// </summary>);
         public float weight;
         /// <summary>
-        /// 怠速，默认为1
+        /// 怠速,防止头发末梢跟美杜莎一样到处乱动，默认为1
         /// </summary>);
         public float mass;
         /// <summary>
@@ -87,9 +87,13 @@ namespace ADBRuntime
         /// </summary>);
         public float friction;
         /// <summary>
-        ///  惰性,防止头发末梢跟美杜莎一样到处乱动
+        ///  暂时不用
         /// </summary>
         public float moveByPrePoint;
+        /// <summary>
+        /// 冻结,使骨骼回到原来的位置上的力度
+        /// </summary>
+        public float freeze;
         /// <summary>
         /// Collider选择性对撞
         /// </summary>
@@ -106,11 +110,12 @@ namespace ADBRuntime
         public float bendingStretchHorizontal;
         public float circumferenceShrink;
         public float circumferenceStretch;
+        public float radius;
         public Vector3 gravity;
         public Vector3 initialLocalPosition;
-        public Vector3 initialPosition;
+        public Vector3 initialPosition;//OYM：并不是直接的position ,二是相对于fixed点的position;
 
-        public float freeze;
+
         internal float addForceScale;
         internal float distanceCompensation;
         internal Quaternion initialLocalRotation;

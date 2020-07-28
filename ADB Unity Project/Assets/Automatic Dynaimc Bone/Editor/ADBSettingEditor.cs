@@ -123,21 +123,23 @@ namespace ADBRuntime
             }
             GUILayout.Space(5);
             EditorGUILayout.PropertyField(serializedObject.FindProperty("isComputeCircumference"), new GUIContent("Is Compute Circumference"), true);
+
+            if (controller.isCollideShear|| controller.isCollideStructuralHorizontal||controller.isCollideStructuralVertical)
+            {
+                GUILayout.Space(5);
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("pointRadiuCurve"), new GUIContent("Point Radiu Curve"), true);
+            }
             GUILayout.Space(10);
 
-
-
-
-
-
-
             Titlebar("Other Setting", Color.green);
+
             EditorGUILayout.PropertyField(serializedObject.FindProperty("isDebugDraw"), new GUIContent("isDebugDraw"), true);
             EditorGUILayout.PropertyField(serializedObject.FindProperty("isComputeVirtual"), new GUIContent("Is Compute Virtual"), true);
             
             if (controller.isComputeVirtual)
             {
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("virtualPointRate"), new GUIContent("┗━Virtual Point Rate"), true);
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("isAllowComputeOtherConstraint"), new GUIContent("┗━Is Allow Compute Other Constraint"), true);
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("virtualPointAxisLength"), new GUIContent("┗━Virtual Point Axis Length"), true);
             }
 
             EditorGUILayout.PropertyField(serializedObject.FindProperty("isAutoComputeWeight"), new GUIContent("is Auto Compute Weight"), true);

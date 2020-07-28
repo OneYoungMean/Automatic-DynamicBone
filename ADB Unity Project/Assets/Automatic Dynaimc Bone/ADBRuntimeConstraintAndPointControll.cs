@@ -18,7 +18,6 @@ namespace ADBRuntime
         public List<ADBRuntimePoint> fixedNodeList;
         public List<ADBRuntimePoint> allNodeList;
 
-        private List<ADBRuntimePoint> addVirtualPointList;//OYM：add in this list if you want to add a virtual point to this
         //OYM：constraintList
         private List<ADBRuntimeConstraint> constraintsStructuralVertical;//OYM：所有的垂直拉约束
         private List<ADBRuntimeConstraint> constraintsStructuralHorizontal;//OYM：所有的水平拉约束
@@ -26,7 +25,7 @@ namespace ADBRuntime
         private List<ADBRuntimeConstraint> constraintsBendingVertical;//OYM：垂直弯曲约束
         private List<ADBRuntimeConstraint> constraintsBendingHorizontal;//OYM：水平弯曲约束
         private List<ADBRuntimeConstraint> constraintsCircumference;//OYM：圆心约束
-        private List<ADBRuntimeConstraint> constraintsVirtual;//OYM：virtual点的约束
+
         private ADBRuntimeConstraint[][] allconstraints;
         //OYM：struct list
         private ConstraintRead[][] constraintList;
@@ -46,7 +45,7 @@ namespace ADBRuntime
             this.keyWord = keyWord;
             fixedNodeList = new List<ADBRuntimePoint>();
             allNodeList = new List<ADBRuntimePoint>();
-            addVirtualPointList = new List<ADBRuntimePoint>();
+
             maxNodeDepth = 1;
             aDBSetting = setting;
         }
@@ -55,65 +54,110 @@ namespace ADBRuntime
         {
             if (isInitialize) return;
             SerializeAndSearchAllPoints(rootNode, ref allNodeList, out maxNodeDepth);//OYM：递归搜索子节点,获取所有节点的List,计算所有节点的deepRate
+            CreatePointStructList(allNodeList);//OYM：建立各种Point初始数据
+
             UpdateJointConnection(fixedNodeList);//OYM：这里是给所有的节点进行设置，同时获取所有可以搜索到的两点中间的约束并对其进行分类
-
-            SerializeVirtuaPoint(ref addVirtualPointList);//OYM：建立虚点
-
-            CreationConstraintList();//OYM：建立约束的list
-            CreatePointStructList(allNodeList);//OYM：建立各种struct供给jobs使用
-
+            CreationConstraintList();//OYM：建立constraint的struct供给jobs使用
+            ComputeWeight();//OYM：根据constraint计算质量
+            UpdatePointSrtuct();//OYM：由于weight要用到constraint的内容,所以把生成point结构体放最后
             isInitialize = true;
         }
-        #region point
-        private void SerializeVirtuaPoint(ref List<ADBRuntimePoint> PointList)//OYM：generate virtual point and a ConstraintStructuralVertical between then.
+
+        private void UpdatePointSrtuct()
         {
-            for (int i = 0; i < PointList.Count; i++)//OYM：在这里生成一个不存在的点,用于处理只有一个点控制骨骼的情况(比如前额头发),这里给它了一个oldposition加上一个Vector3.down
+            for (int i = 0; i < allNodeList.Count; i++)
             {
-                if (PointList[i].childNode == null && !PointList[i].isVirtual)
-                {
-                    var virtualPoint = new ADBRuntimePoint(PointList[i].trans, PointList[i].depth + 1, PointList[i].keyWord, true);
-                    PointList[i].childNode = new List<ADBRuntimePoint>() { virtualPoint };
-                    PointList[i].pointRead.childFirstIndex = allNodeList.Count;
-                    PointList[i].pointRead.childLastIndex = allNodeList.Count + 1;
-                    PointList[i].pointRead.initialLocalRotation = PointList[i].trans.localRotation;
-                    PointList[i].pointRead.initialRotation = PointList[i].trans.rotation;
-
-                    virtualPoint.index = allNodeList.Count;
-                    virtualPoint.pointRead.fixedIndex = PointList[i].pointRead.fixedIndex;
-                    virtualPoint.pointRead.childFirstIndex = virtualPoint.pointRead.childLastIndex = -1;
-                    virtualPoint.SetParent(PointList[i]);
-                    virtualPoint.pointDepthRateMaxPointDepth =aDBSetting.virtualPointRate;
-                    virtualPoint.pointRead.initialLocalPosition =Quaternion.Inverse(PointList[i].trans.rotation)*Vector3.down * 0.1f;
-                    virtualPoint.pointRead.initialLocalRotation = virtualPoint.pointRead.initialRotation= Quaternion.identity;
-
-                    var fixedPoint = allNodeList[virtualPoint.pointRead.fixedIndex];
-
-                    virtualPoint.pointRead.initialPosition = Quaternion.FromToRotation((fixedPoint.trans.rotation*Quaternion.Inverse(fixedPoint.trans.localRotation))* Vector3.down, aDBSetting.gravity) *Quaternion.Inverse(fixedPoint.trans.rotation) * (virtualPoint.trans.position + virtualPoint.pointRead.initialLocalPosition - fixedPoint.trans.position);
-                    
-                    
-                    //OYM：这里有点啰嗦,是固定位置乘以固定点Y轴的逆向旋转(相当等于回归y初始角度)
-                    allNodeList.Add(virtualPoint);
-                }
-            }
-            constraintsVirtual = new List<ADBRuntimeConstraint>();
-            for (int i = 0; i < PointList.Count; ++i)
-            {
-                CreateConstraintStructuralVertical(PointList[i], ref constraintsVirtual, aDBSetting.structuralShrinkVertical, aDBSetting.structuralStretchVertical);
-            }
-            for (int i = 0; i < constraintsVirtual.Count; i++)
-            {
-                constraintsVirtual[i].constraintRead.isCollider = aDBSetting.isCollideStructuralVertical;
-                constraintsVirtual[i].constraintRead.type = ConstraintType.Virtual;
+                pointReadList[i] = allNodeList[i].pointRead;
+                pointReadWriteList[i] = allNodeList[i].pointReadWrite;
+                pointTransformsList[i] = allNodeList[i].trans;
             }
         }
+        #region point
 
         //OYM：cratePointStruct
+        private void SerializeAndSearchAllPoints(ADBRuntimePoint point, ref List<ADBRuntimePoint> allPointList, out int maxPointDepth)//OYM：在这里递归搜索
+        {
+            if (point == null)
+            {
+                maxPointDepth = 0;
+                return;
+            }
+
+            if (point.childNode == null)
+            {//OYM：没有子节点
+                if (aDBSetting.isComputeVirtual && (!point.trans.name.Contains("virtual")))//OYM：创建一个延长的节点
+                {
+                    Transform childPointTrans = new GameObject(point.trans.name + " virtual").transform;
+                    childPointTrans.position = point.trans.position + ((point.parent?.depth == -1) ?
+                        Vector3.down * aDBSetting.virtualPointAxisLength :
+                        (point.trans.position - point.parent.trans.position).normalized * aDBSetting.virtualPointAxisLength);
+
+                    childPointTrans.parent = point.trans;
+
+                    ADBRuntimePoint virtualPoint = new ADBRuntimePoint(childPointTrans, point.depth + 1, point.keyWord, aDBSetting.isAllowComputeOtherConstraint);
+                    point.childNode = new List<ADBRuntimePoint>() { virtualPoint };
+                }
+                else
+                {
+                    //OYM：不是的话就当做最后一个节点处理
+                    point.pointRead.childFirstIndex = -1;
+                    point.pointRead.childLastIndex = -1;
+                    point.pointDepthRateMaxPointDepth = 1;
+                    maxPointDepth = point.depth;
+                    return;
+                }
+            }
+
+            point.pointRead.childFirstIndex = allPointList.Count;//OYM：记录第一个子节点的位置
+            point.pointRead.childLastIndex = point.pointRead.childFirstIndex + point.childNode.Count;//OYM：记录最后一个子节点的位置
+
+            maxPointDepth = point.depth;
+            //OYM：广度遍历
+
+            for (int i = 0; i < point.childNode.Count; i++)
+            {
+                ADBRuntimePoint childPoint = point.childNode[i];
+
+                childPoint.pointRead.parentIndex = point.index;
+                childPoint.pointRead.fixedIndex = point.pointRead.fixedIndex;
+                childPoint.parent = point;
+
+                childPoint.pointRead.initialLocalPosition = Quaternion.Inverse(point.trans.rotation) * (childPoint.trans.position - point.trans.position);
+                childPoint.pointRead.initialLocalRotation = childPoint.trans.localRotation;
+                childPoint.pointRead.initialRotation = childPoint.trans.rotation;
+                childPoint.index = allPointList.Count;
+
+                if (childPoint.isFixed)
+                {
+                    childPoint.pointRead.fixedIndex = childPoint.index;
+                    childPoint.pointRead.initialPosition = Vector3.zero;
+                }
+                else
+                {
+                    childPoint.pointRead.fixedIndex = point.pointRead.fixedIndex;
+                    var fixedPoint = allPointList[childPoint.pointRead.fixedIndex];
+
+                    childPoint.pointRead.initialPosition = Quaternion.FromToRotation(Vector3.down, aDBSetting.gravity) * Quaternion.Inverse(fixedPoint.trans.rotation) * (childPoint.trans.position - fixedPoint.trans.position);
+
+                }
+                allPointList.Add(childPoint);
+
+            }
+
+            for (int i = 0; i < point.childNode.Count; i++)
+            {
+                int maxDeep = point.depth;
+                SerializeAndSearchAllPoints(point.childNode[i], ref allPointList, out maxDeep);
+                if (maxDeep > maxPointDepth)
+                {
+                    maxPointDepth = maxDeep;
+                    point.pointDepthRateMaxPointDepth = point.depth / (float)maxDeep;
+                }
+            }
+        }
         private void CreatePointStructList(List<ADBRuntimePoint> allPointList)
         {
-            if (aDBSetting.isAutoComputeWeight)
-            {
-                ComputeWeight();
-            }
+
             pointReadList = new PointRead[allPointList.Count];
             pointReadWriteList = new PointReadWrite[allPointList.Count];
             pointTransformsList = new Transform[allPointList.Count];
@@ -121,13 +165,16 @@ namespace ADBRuntime
             {
                 var point = allPointList[i];
 
+                float rate = point.pointDepthRateMaxPointDepth;
+
                 point.pointRead.colliderChoice = aDBSetting.colliderChoice;
                 point.pointRead.isFixGravityAxis = aDBSetting.isFixGravityAxis;
-                float rate = point.pointDepthRateMaxPointDepth;
+                point.pointRead.radius = aDBSetting.pointRadiuCurve.Evaluate(rate);
+
                 if (!aDBSetting.useGlobal)
                 {
 
-                    rate = Mathf.Clamp01(rate);
+
                     point.pointRead.addForceScale = aDBSetting.addForceScaleCurve.Evaluate(rate);
                     point.pointRead.friction = aDBSetting.frictionCurve.Evaluate(rate);
                     point.pointRead.moveByFixedPoint = aDBSetting.moveByFixedPointCurve.Evaluate(rate);
@@ -172,66 +219,62 @@ namespace ADBRuntime
                     point.pointRead.bendingShrinkHorizontal = 0.5f * aDBSetting.bendingShrinkHorizontalScaleGlobal;
                     point.pointRead.bendingStretchHorizontal = 0.5f * aDBSetting.bendingStretchHorizontalScaleGlobal;
                 }
-                if (!aDBSetting.isAutoComputeWeight)
+            }
+        }
+
+        private void ComputeWeight()
+        {
+            //OYM：Use Area 
+            if (aDBSetting.isAutoComputeWeight)
+            {
+                float[] nodeWeight = new float[allNodeList.Count];
+
+                float[] HorizontalVector = new float[allNodeList.Count];
+                float[] VerticalVector = new float[allNodeList.Count];
+                if (aDBSetting.isComputeStructuralHorizontal)
                 {
+                    for (int i = 0; i < constraintsStructuralHorizontal.Count; i++)
+                    {
+                        HorizontalVector[constraintsStructuralHorizontal[i].pointA.index] += constraintsStructuralHorizontal[i].direction.magnitude;
+                        HorizontalVector[constraintsStructuralHorizontal[i].pointB.index] += constraintsStructuralHorizontal[i].direction.magnitude;
+                    }
+                }
+                if (aDBSetting.isComputeStructuralVertical)
+                {
+                    for (int i = 0; i < constraintsStructuralVertical.Count; i++)
+                    {
+                        VerticalVector[constraintsStructuralVertical[i].pointA.index] += constraintsStructuralVertical[i].direction.magnitude;
+                        VerticalVector[constraintsStructuralVertical[i].pointB.index] += constraintsStructuralVertical[i].direction.magnitude;
+                    }
+                }
+
+                for (int i = 0; i < nodeWeight.Length; i++)
+                {
+                    nodeWeight[i] = (HorizontalVector[i] + VerticalVector[i]) * 0.5f;
+                }
+                ComputeWeight(nodeWeight, allNodeList);
+            }
+            else
+            {
+                for (int i = 0; i < allNodeList.Count; i++)
+                {
+                    var point = allNodeList[i];
                     if (point.isFixed)
                     {
                         point.pointRead.weight = 1E10f;
                     }
                     else
                     {
-                        point.pointRead.weight = aDBSetting.weightCurve.Evaluate(rate);
+                        point.pointRead.weight = aDBSetting.weightCurve.Evaluate(point.pointDepthRateMaxPointDepth);
                         point.pointRead.weight = point.pointRead.weight < 1f ? 1f : point.pointRead.weight;
                     }
                 }
-                pointReadList[i] = point.pointRead;
-                pointReadWriteList[i] = allPointList[i].pointReadWrite;
-                pointTransformsList[i] = allPointList[i].trans;
+
             }
 
-        }
-
-        private void ComputeWeight()
-        {
-            //OYM：Use Area 
-            float[] nodeWeight = new float[allNodeList.Count];
-
-            float[] HorizontalVector = new float[allNodeList.Count];
-            float[] VerticalVector = new float[allNodeList.Count];
-            if (aDBSetting.isComputeStructuralHorizontal)
-            {
-                for (int i = 0; i < constraintsStructuralHorizontal.Count; i++)
-                {
-                    HorizontalVector[constraintsStructuralHorizontal[i].pointA.index] += constraintsStructuralHorizontal[i].direction.magnitude;
-                    HorizontalVector[constraintsStructuralHorizontal[i].pointB.index] += constraintsStructuralHorizontal[i].direction.magnitude;
-                }
-            }
-            if (aDBSetting.isComputeStructuralVertical)
-            {
-                for (int i = 0; i < constraintsStructuralVertical.Count; i++)
-                {
-                    VerticalVector[constraintsStructuralVertical[i].pointA.index] += constraintsStructuralVertical[i].direction.magnitude;
-                    VerticalVector[constraintsStructuralVertical[i].pointB.index] += constraintsStructuralVertical[i].direction.magnitude;
-                }
-            }
-            if (aDBSetting.isComputeVirtual)
-            {
-                for (int i = 0; i < constraintsVirtual.Count; i++)
-                {
-                    VerticalVector[constraintsVirtual[i].pointA.index] += constraintsVirtual[i].direction.magnitude;
-                    VerticalVector[constraintsVirtual[i].pointB.index] += constraintsVirtual[i].direction.magnitude;
-                }
-            }
-
-            for (int i = 0; i < nodeWeight.Length; i++)
-            {
-            nodeWeight[i] = (HorizontalVector[i] + VerticalVector[i]) * 0.5f;
-            }
-            ComputeWeight(nodeWeight, allNodeList);
             
         }
-         
-
+        
         private void ComputeWeight(float[] nodeWeight, List<ADBRuntimePoint> allNodeList)
         {
             float minWeight = 1000000;
@@ -257,91 +300,14 @@ namespace ADBRuntime
                     minWeight = weight < minWeight ? weight : minWeight;   
                 }
             }
+
             for (int i = allNodeList.Count - 1; i >= 0; i--)
             {
-
                 allNodeList[i].pointRead.weight /= minWeight;//OYM：平衡质量
             }
         }
-        private void SerializeAndSearchAllPoints(ADBRuntimePoint point, ref List<ADBRuntimePoint> allPointList, out int maxPointDepth)//OYM：在这里递归搜索
-        {
-            if (point == null)
-            {
-                maxPointDepth = 0;
-                return;
-            }
 
-            if (point.childNode == null)
-            {//OYM：没有子节点
-                if (point.depth == 0 || aDBSetting.isComputeVirtual)
-                {
-                    //OYM：如果只有一个节点,而且还是一个fix点
-                    addVirtualPointList.Add(point);
-                }
-                else
-                {
-                    //OYM：不是的话就当做最后一个节点处理
-                    point.pointRead.childFirstIndex = -1;
-                    point.pointRead.childLastIndex = -1;
-                }
-                point.pointDepthRateMaxPointDepth = 1;
-                maxPointDepth = point.depth;
-                return;
-            }
-            else
-            //OYM：有子节点的情况
-            {
-                point.pointRead.childFirstIndex = allPointList.Count;//OYM：记录第一个子节点的位置
-                point.pointRead.childLastIndex = point.pointRead.childFirstIndex + point.childNode.Count;//OYM：记录最后一个子节点的位置
-
-                maxPointDepth = point.depth;
-                //OYM：广度遍历
-
-                for (int i = 0; i < point.childNode.Count; i++)
-                {
-                    var childPoint = point.childNode[i];
-
-
-                    childPoint.SetParent(point);
-                    childPoint.pointRead.initialLocalPosition = Quaternion.Inverse(point.trans.rotation)*(childPoint.trans.position- point.trans.position);
-                    childPoint.pointRead.initialLocalRotation = childPoint.trans.localRotation;
-                    childPoint.pointRead.initialRotation = childPoint.trans.rotation;
-                    childPoint.index = allPointList.Count;
-
-                    if (childPoint.isFixed)
-                    {
-                        childPoint.pointRead.fixedIndex = childPoint.index;
-                        childPoint.pointRead.initialPosition = Vector3.zero;
-                    }
-                    else
-                    {
-                        childPoint.pointRead.fixedIndex =  point.pointRead.fixedIndex;
-                         var fixedPoint = allPointList[childPoint.pointRead.fixedIndex];
-
-                        childPoint.pointRead.initialPosition = Quaternion.FromToRotation(Vector3.down, aDBSetting.gravity) * Quaternion.Inverse(fixedPoint.trans.rotation) * (childPoint.trans.position - fixedPoint.trans.position);
-                        
-                    }
-
-                           //Quaternion.FromToRotation(Vector3.down, aDBSetting.gravity) * (allPointList[childPoint.pointRead.fixedIndex].trans.InverseTransformPoint(childPoint.trans.position) * allPointList[childPoint.pointRead.fixedIndex].trans.lossyScale.x);//OYM：相对于固定点的位置,注意保持大小
-
-                    allPointList.Add(childPoint);
-
-
-                }
-
-                for (int i = 0; i < point.childNode.Count; i++)
-                {
-                    int maxDeep = point.depth;
-                    SerializeAndSearchAllPoints(point.childNode[i], ref allPointList, out maxDeep);
-                    if (maxDeep > maxPointDepth)
-                    {
-                        maxPointDepth = maxDeep;
-                        point.pointDepthRateMaxPointDepth = point.depth / (float)maxDeep;
-                    }
-                }
-            }
-        }
-#endregion
+        #endregion
         #region constrain
         private void CreationConstraintList()
         {
@@ -353,7 +319,7 @@ namespace ADBRuntime
             CheckAndAddConstraint(aDBSetting.isComputeBendingVertical, ref constraintindex, constraintsBendingVertical, ref ConstraintReadList);
             CheckAndAddConstraint(aDBSetting.isComputeBendingHorizontal, ref constraintindex, constraintsBendingHorizontal, ref ConstraintReadList);
             CheckAndAddConstraint(aDBSetting.isComputeCircumference, ref constraintindex, constraintsCircumference, ref ConstraintReadList);
-            CheckAndAddConstraint(aDBSetting.isComputeVirtual, ref constraintindex, constraintsVirtual, ref ConstraintReadList);
+
             constraintList = new ConstraintRead[ConstraintReadList.Count][];
             for (int i = 0; i < ConstraintReadList.Count; i++)
             {
@@ -468,7 +434,7 @@ namespace ADBRuntime
 
             for (int i = 0; i < Point.childNode.Count; ++i)
             {
-                var constraint = new ADBRuntimeConstraint(ConstraintType.Structural_Vertical, Point, Point.childNode[i], shrink, stretch,aDBSetting.isCollideStructuralVertical);
+                ADBRuntimeConstraint constraint = new ADBRuntimeConstraint(ConstraintType.Structural_Vertical, Point, Point.childNode[i], shrink, stretch,aDBSetting.isCollideStructuralVertical);
 
                 ConstraintList.Add(constraint);
                 CreateConstraintStructuralVertical(Point.childNode[i], ref ConstraintList, shrink, stretch);
@@ -486,7 +452,7 @@ namespace ADBRuntime
 
             if ((childPointAList != null) && (childPointBList != null))
             {
-                if (childPointAList[0].isVirtual || childPointBList[0].isVirtual) return;//OYM：虚点不参与其中
+                if (childPointAList[0].isAllowComputeOtherConstraint || childPointBList[0].isAllowComputeOtherConstraint) return;//OYM：虚点不参与其中
 
                 if (childPointAList.Count >= 2)//OYM：存在多个子节点
                 {
@@ -503,7 +469,7 @@ namespace ADBRuntime
             }
             else if ((childPointAList != null) && (childPointBList == null))//OYM：为了防止互相连接,只允许向序号增大的方向进行连接
             {
-                if (childPointAList[0].isVirtual) return;//OYM：虚点不参与其中
+                if (childPointAList[0].isAllowComputeOtherConstraint) return;//OYM：虚点不参与其中
 
                 sortByDistance(PointB, ref childPointAList, false);
                 if (childPointAList.Count >= 2)//OYM：存在多个子节点
@@ -529,7 +495,7 @@ namespace ADBRuntime
 
             if (childPointAList != null && childPointBList != null)
             {
-                if (childPointAList[0].isVirtual || childPointBList[0].isVirtual) return;//OYM：虚点不参与其中
+                if (childPointAList[0].isAllowComputeOtherConstraint || childPointBList[0].isAllowComputeOtherConstraint) return;//OYM：虚点不参与其中
 
                 sortByDistance(PointB, ref childPointAList, false);
                 sortByDistance(PointA, ref childPointBList, true);
@@ -556,7 +522,7 @@ namespace ADBRuntime
                 ADBRuntimePoint existPoint = childPointAList == null ? PointA : PointB;
                 List<ADBRuntimePoint> existList = childPointAList == null ? childPointBList : childPointAList;
 
-                if (existPoint.isVirtual || existList[0].isVirtual) return;//OYM：虚点不参与其中
+                if (existPoint.isAllowComputeOtherConstraint || existList[0].isAllowComputeOtherConstraint) return;//OYM：虚点不参与其中
 
                 sortByDistance(existPoint, ref existList, false);
                 if (existList.Count >= 2)//OYM：存在多个子节点
@@ -612,7 +578,7 @@ namespace ADBRuntime
 
             for (int i = 0; i < fixedPoint.childNode.Count; i++)
             {
-                if (fixedPoint.childNode[i].isVirtual) continue;
+                if (fixedPoint.childNode[i].isAllowComputeOtherConstraint) continue;
 
                 ConstraintList.Add(new ADBRuntimeConstraint(ConstraintType.Circumference, fixedPoint, fixedPoint.childNode[i], shrink, stretch,false));
                 CreationConstraintCircumference(fixedPoint, fixedPoint.childNode[i], ref ConstraintList, shrink, stretch);//OYM：递归
@@ -654,6 +620,7 @@ namespace ADBRuntime
         #region public Func
         public void GetData(DataPackage dataPackage)
         {
+
             dataPackage.SetPointAndConstraintpackage(constraintList, pointReadList, pointReadWriteList, pointTransformsList);
         }
 
@@ -673,8 +640,6 @@ namespace ADBRuntime
                     return constraintsBendingHorizontal.ToArray();
                 case ConstraintType.Circumference:
                     return constraintsCircumference.ToArray();
-                case ConstraintType.Virtual:
-                    return constraintsVirtual.ToArray();
                 default:
                     Debug.LogError("can not find the constraint");
                     return null;

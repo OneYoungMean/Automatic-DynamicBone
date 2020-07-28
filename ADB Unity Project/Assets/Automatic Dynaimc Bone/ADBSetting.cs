@@ -28,6 +28,8 @@ namespace ADBRuntime
         public AnimationCurve bendingStretchHorizontalScaleCurve = new AnimationCurve(new Keyframe[] { new Keyframe(0.0f, 1.0f), new Keyframe(1.0f, 1.0f) });
         public AnimationCurve circumferenceShrinkScaleCurve = new AnimationCurve(new Keyframe[] { new Keyframe(0.0f, 1.0f), new Keyframe(1.0f, 1.0f) });
         public AnimationCurve circumferenceStretchScaleCurve = new AnimationCurve(new Keyframe[] { new Keyframe(0.0f, 1.0f), new Keyframe(1.0f, 1.0f) });
+
+        public AnimationCurve pointRadiuCurve = new AnimationCurve(new Keyframe[] { new Keyframe(0.0f, 0.0f), new Keyframe(1.0f, 0.0f) });
         //OYM：调试情况用这一套
 
         public float frictionGlobal = 0f;
@@ -71,7 +73,8 @@ namespace ADBRuntime
 
         //各种设定
         public bool isComputeVirtual = true;//OYM：计算虚拟
-        public float virtualPointRate=0.5f;
+        public bool isAllowComputeOtherConstraint = false;
+        public float virtualPointAxisLength =  0.1f;
         //质量
         public bool isAutoComputeWeight = true;//OYM：算质量
         public AnimationCurve weightCurve = new AnimationCurve(new Keyframe[] { new Keyframe(0.0f, 0.0f), new Keyframe(1.0f, 10.0f) });

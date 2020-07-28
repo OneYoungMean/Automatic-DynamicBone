@@ -97,20 +97,11 @@ namespace ADBRuntime.Internal
                 {
                     var pFixReadWritePoint = pReadWritePoints + (pReadPoint->fixedIndex);
                     var pFixReadPoint = pReadPoints + (pReadPoint->fixedIndex);
-                    if (!pReadPoint->isVirtual)
-                    {
-                        transform.localRotation = pReadPoint->initialLocalRotation;
-                        pReadWritePoint->position = pFixReadWritePoint->position + pFixReadWritePoint->rotation * pReadPoint->initialPosition;
-                        transform.position = pReadWritePoint->position;
-                        pReadWritePoint->deltaPosition = Vector3.zero;
-                    }
-                    else
-                    {
-                        pReadWritePoint->position = pFixReadWritePoint->position + pFixReadWritePoint->rotation * pReadPoint->initialPosition;
-                        pReadWritePoint->deltaPosition = Vector3.zero;
-                    }
+                    transform.localRotation = pReadPoint->initialLocalRotation;
+                    pReadWritePoint->position = pFixReadWritePoint->position + pFixReadWritePoint->rotation * pReadPoint->initialPosition;
+                    transform.position = pReadWritePoint->position;
+                    pReadWritePoint->deltaPosition = Vector3.zero;
                 }
-
             }
         }
         /// <summary>
@@ -442,21 +433,25 @@ namespace ADBRuntime.Internal
             {
 
                 //OYM：条件判断
-                float throwTemp;   //OYM：有些c#不允许使用丢弃
                 Vector3 pushout;
                 float sqrPushout;
                 float scale = pReadCollider->isConnectWithBody ? globalScale : 1;
+                float radius;
+
                 switch (pReadCollider->colliderType)
                 {
                     case ColliderType.Sphere:
-                        if (QuickCheck(pReadCollider, pReadWriteCollider, pReadWritePoint, scale))
+                        radius = pPointRead->radius * globalScale + pReadCollider->radius * scale;
+                        if (Abs(pReadWriteCollider->position.y - pReadWritePoint->position.y) < radius &&
+                            Abs(pReadWriteCollider->position.x - pReadWritePoint->position.x) < radius &&
+                            Abs(pReadWriteCollider->position.z - pReadWritePoint->position.z) < radius)//OYM：快速检查
                         {
                             pushout = pReadWritePoint->position - pReadWriteCollider->position;
                             sqrPushout = pushout.sqrMagnitude;
 
-                            if (sqrPushout < pReadCollider->radius * pReadCollider->radius * scale * scale)
+                            if (sqrPushout < radius* radius)
                             {
-                                pushout = pushout * (pReadCollider->radius * scale / Mathf.Sqrt(sqrPushout) - 1);
+                                pushout = pushout * (radius / Mathf.Sqrt(sqrPushout) - 1);
                                 pReadWritePoint->position += pushout;
                                 pReadWritePoint->deltaPosition += pushout;
                             }
@@ -464,30 +459,38 @@ namespace ADBRuntime.Internal
                         break;
 
                     case ColliderType.Capsule:
-                        if (QuickCheck(pReadCollider, pReadWriteCollider, pReadWritePoint, scale))
+                        radius = pPointRead->radius * globalScale + pReadCollider->radius * scale;
+                        Vector3 centerA = pReadWriteCollider->position + scale * pReadWriteCollider->direction * 0.5f;
+                        if (Abs(centerA.y - pReadWritePoint->position.y) < Abs(pReadWriteCollider->direction.y) * 0.5f + radius &&
+                            Abs(centerA.x - pReadWritePoint->position.x) < Abs(pReadWriteCollider->direction.x) * 0.5f + radius &&
+                             Abs(centerA.z - pReadWritePoint->position.z) < Abs(pReadWriteCollider->direction.z) * 0.5f + radius)//OYM：快速检查
                         {
-                            pushout = pReadWritePoint->position - ConstrainToSegment(pReadWritePoint->position, pReadWriteCollider->position, pReadWriteCollider->direction * scale, out throwTemp);
+                            pushout = pReadWritePoint->position - ConstrainToSegment(pReadWritePoint->position, pReadWriteCollider->position, pReadWriteCollider->direction * scale);
                             sqrPushout = pushout.sqrMagnitude;
-                            if (sqrPushout < pReadCollider->radius * pReadCollider->radius * scale * scale)
+                            if (sqrPushout < radius* radius)
                             {
-                                pushout = pushout * (pReadCollider->radius * scale / Mathf.Sqrt(sqrPushout) - 1);
+                                pushout = pushout * (radius / Mathf.Sqrt(sqrPushout) - 1);
                                 pReadWritePoint->position += pushout;
                                 pReadWritePoint->deltaPosition += pushout;
                             }
                         }
                         break;
                     case ColliderType.OBB:
-                        if (QuickCheck(pReadCollider, pReadWriteCollider, pReadWritePoint, scale))
+                        radius = pPointRead->radius * globalScale + Max(pReadCollider->boxSize.x, pReadCollider->boxSize.y, pReadCollider->boxSize.z) * scale * SQRT_2;
+                        if (Abs(pReadWriteCollider->position.x - pReadWritePoint->position.x) < radius &&
+                            Abs(pReadWriteCollider->position.y - pReadWritePoint->position.y) < radius &&
+                            Abs(pReadWriteCollider->position.z - pReadWritePoint->position.z) < radius)//OYM：快速检查
                         {
                             pushout = Quaternion.Inverse(pReadWriteCollider->rotation) * (pReadWritePoint->position - pReadWriteCollider->position);
-                            if (-scale * pReadCollider->boxSize.x < pushout.x && pushout.x < scale * pReadCollider->boxSize.x &&
-                                -scale * pReadCollider->boxSize.y < pushout.y && pushout.y < scale * pReadCollider->boxSize.y &&
-                                -scale * pReadCollider->boxSize.z < pushout.z && pushout.z < scale * pReadCollider->boxSize.z
+                            Vector3 boxSize = scale * pReadCollider->boxSize + new Vector3(globalScale * pPointRead->radius, globalScale * pPointRead->radius, globalScale * pPointRead->radius);
+                            if (-scale * boxSize.x < pushout.x && pushout.x < scale * pReadCollider->boxSize.x &&
+                                -scale * boxSize.y < pushout.y && pushout.y < scale * pReadCollider->boxSize.y &&
+                                -scale * boxSize.z < pushout.z && pushout.z < scale * pReadCollider->boxSize.z
                                 )
                             {
-                                float pushoutX = pushout.x > 0 ? scale * pReadCollider->boxSize.x - pushout.x : -scale * pReadCollider->boxSize.x - pushout.x;
-                                float pushoutY = pushout.y > 0 ? scale * pReadCollider->boxSize.y - pushout.y : -scale * pReadCollider->boxSize.y - pushout.y;
-                                float pushoutZ = pushout.z > 0 ? scale * pReadCollider->boxSize.z - pushout.z : -scale * pReadCollider->boxSize.z - pushout.z;
+                                float pushoutX = pushout.x > 0 ? boxSize.x - pushout.x : -scale * boxSize.x - pushout.x;
+                                float pushoutY = pushout.y > 0 ? boxSize.y - pushout.y : -scale * boxSize.y - pushout.y;
+                                float pushoutZ = pushout.z > 0 ? boxSize.z - pushout.z : -scale * boxSize.z - pushout.z;
 
                                 if (Abs(pushoutZ) < Abs(pushoutY) && Abs(pushoutZ) < Abs(pushoutX))
                                 {
@@ -511,42 +514,9 @@ namespace ADBRuntime.Internal
                         return;
                 }
             }
-
-            private bool QuickCheck(ColliderRead* pReadCollider, ColliderReadWrite* pReadWriteCollider, PointReadWrite* pReadWritePoint, float scale)
+            Vector3 ConstrainToSegment(Vector3 tag, Vector3 pos, Vector3 dir)
             {
-                switch (pReadCollider->colliderType)
-                {
-                    case ColliderType.Sphere:
-                        {
-                            return Abs(pReadWriteCollider->position.y - pReadWritePoint->position.y) < pReadCollider->radius * scale &&
-                                       Abs(pReadWriteCollider->position.x - pReadWritePoint->position.x) < pReadCollider->radius * scale &&
-                                       Abs(pReadWriteCollider->position.z - pReadWritePoint->position.z) < pReadCollider->radius * scale;
-                        }
-
-                    case ColliderType.Capsule:
-                        {
-                            Vector3 centerA = pReadWriteCollider->position + scale * pReadWriteCollider->direction * 0.5f;
-
-                            return Abs(centerA.y - pReadWritePoint->position.y) < Abs(pReadWriteCollider->direction.y) * 0.5f + pReadCollider->radius * scale &&
-                                       Abs(centerA.x - pReadWritePoint->position.x) < Abs(pReadWriteCollider->direction.x) * 0.5f + pReadCollider->radius * scale &&
-                                       Abs(centerA.z - pReadWritePoint->position.z) < Abs(pReadWriteCollider->direction.z) * 0.5f + pReadCollider->radius * scale;
-                        }
-
-                    case ColliderType.OBB:
-                        {
-                            float MaxLength = Max(pReadCollider->boxSize.x, pReadCollider->boxSize.y, pReadCollider->boxSize.z) * scale * SQRT_2;
-                            return Abs(pReadWriteCollider->position.x - pReadWritePoint->position.x) < MaxLength &&
-                                       Abs(pReadWriteCollider->position.y - pReadWritePoint->position.y) < MaxLength &&
-                                       Abs(pReadWriteCollider->position.z - pReadWritePoint->position.z) < MaxLength;
-                        }
-
-                    default:
-                        return false;
-                }
-            }
-            Vector3 ConstrainToSegment(Vector3 tag, Vector3 pos, Vector3 dir, out float t)
-            {
-                t = Vector3.Dot(tag - pos, dir) / dir.sqrMagnitude;
+                float  t = Vector3.Dot(tag - pos, dir) / dir.sqrMagnitude;
                 return pos + dir * Clamp01(t);
             }
             void SegmentToOBB(Vector3 start, Vector3 end, Vector3 center, Vector3 min, Vector3 max, Quaternion InverseNormal, out float t1, out float t2)
@@ -701,9 +671,6 @@ namespace ADBRuntime.Internal
                             ? constraint->shrink * (pPointReadA->circumferenceShrink + pPointReadB->circumferenceShrink)
                             : constraint->stretch * (pPointReadA->circumferenceStretch + pPointReadB->circumferenceStretch);
                         break;
-                    case ConstraintType.Virtual:
-                        ConstraintPower = 1;
-                        break;
                     default:
                         ConstraintPower = 0.0f;
                         break;
@@ -736,9 +703,10 @@ namespace ADBRuntime.Internal
                             ComputeCollider(
                                 pReadCollider, pReadWriteCollider,
                                 pReadWritePointA, pReadWritePointB,
+                                constraint,
                                 WeightProportion,
-                                pPointReadA->friction, pPointReadB->friction,
-                                pReadCollider->isConnectWithBody ? globalScale : 1);
+                                pPointReadA->friction, pPointReadB->friction
+                                );
                         }
                     }
                 }
@@ -747,43 +715,59 @@ namespace ADBRuntime.Internal
             {
                 return (Quaternion.Euler(Mathf.Rad2Deg * (-force.z), 0, Mathf.Rad2Deg * (-force.x) )* direction - direction);
             }
-            private void ComputeCollider(ColliderRead* pReadCollider, ColliderReadWrite* pReadWriteCollider, PointReadWrite* pReadWritePointA, PointReadWrite* pReadWritePointB, float WeightProportion,
-                float frictionA, float frictionB, float scale)
+            private void ComputeCollider(ColliderRead* pReadCollider, ColliderReadWrite* pReadWriteCollider, PointReadWrite* pReadWritePointA, PointReadWrite* pReadWritePointB,ConstraintRead* constraint, float WeightProportion,
+                float frictionA, float frictionB)
             {
                 float throwTemp;
-                float t;
+                float t,radius;
+                Vector3 constraintCenter, colliderCenter;
+                float scale = pReadCollider->isConnectWithBody ? globalScale : 1;
+
                 switch (pReadCollider->colliderType)
                 {
                     case ColliderType.Sphere:
                         {
-                            if (QuickCheck(pReadCollider, pReadWriteCollider, pReadWritePointA, pReadWritePointB, scale))
+                            constraintCenter = (pReadWritePointA->position + pReadWritePointB->position) * 0.5f;
+                            radius = scale * pReadCollider->radius + globalScale* constraint->radius ;
+                            if (Abs(pReadWriteCollider->position.y - constraintCenter.y) < (Abs(pReadWritePointA->position.y - constraintCenter.y) + radius )&&
+                                Abs(pReadWriteCollider->position.x - constraintCenter.x) < (Abs(pReadWritePointA->position.x - constraintCenter.x) + radius) &&
+                                Abs(pReadWriteCollider->position.z - constraintCenter.z) < (Abs(pReadWritePointA->position.z - constraintCenter.z) + radius))
                             {
                                 Vector3 pointOnLine = ConstrainToSegment(pReadWriteCollider->position, pReadWritePointA->position, pReadWritePointB->position - pReadWritePointA->position, out t);
-                                DistributionPower(pointOnLine - pReadWriteCollider->position, pReadCollider->radius * scale, pReadWritePointA, pReadWritePointB, WeightProportion, t, frictionA, frictionB, pReadCollider->collideFunc);
+                                DistributionPower(pointOnLine - pReadWriteCollider->position, radius, pReadWritePointA, pReadWritePointB, WeightProportion, t, frictionA, frictionB, pReadCollider->collideFunc);
                             }
                         }
 
                         break;
                     case ColliderType.Capsule:
                         {
-
-                            if (QuickCheck(pReadCollider, pReadWriteCollider, pReadWritePointA, pReadWritePointB, scale))
+                            constraintCenter = pReadWriteCollider->position + pReadWriteCollider->direction * 0.5f;
+                            colliderCenter = (pReadWritePointA->position + pReadWritePointB->position) * 0.5f;
+                            radius = scale * pReadCollider->radius + globalScale * constraint->radius;
+                            if (Abs(constraintCenter.y - colliderCenter.y) < (Abs(pReadWriteCollider->direction.y) * 0.5f + Abs(pReadWritePointA->position.y - colliderCenter.y) + radius) &&
+                                Abs(constraintCenter.x - colliderCenter.x) < (Abs(pReadWriteCollider->direction.x) * 0.5f + Abs(pReadWritePointA->position.x - colliderCenter.x) + radius) &&
+                                Abs(constraintCenter.z - colliderCenter.z) < (Abs(pReadWriteCollider->direction.z) * 0.5f + Abs(pReadWritePointA->position.z - colliderCenter.z) + radius))
                             {
                                 Vector3 pointOnCollider, pointOnLine;
                                 SqrComputeNearestPoints(pReadWriteCollider->position, pReadWriteCollider->direction * scale, pReadWritePointA->position, pReadWritePointB->position - pReadWritePointA->position, out throwTemp, out t, out pointOnCollider, out pointOnLine);
-                                DistributionPower(pointOnLine - pointOnCollider, pReadCollider->radius * scale, pReadWritePointA, pReadWritePointB, WeightProportion, t, frictionA, frictionB, pReadCollider->collideFunc);
+                                DistributionPower(pointOnLine - pointOnCollider, radius, pReadWritePointA, pReadWritePointB, WeightProportion, t, frictionA, frictionB, pReadCollider->collideFunc);
                             }
-
                         }
 
                         break;
                     case ColliderType.OBB:
                         {
-                            if (QuickCheck(pReadCollider, pReadWriteCollider, pReadWritePointA, pReadWritePointB, scale))
+                            constraintCenter = (pReadWritePointA->position + pReadWritePointB->position) * 0.5f;
+                            radius = globalScale * constraint->radius+ Max(pReadCollider->boxSize.x, pReadCollider->boxSize.y, pReadCollider->boxSize.z) * scale * SQRT_2;
+
+                            if (Abs(pReadWriteCollider->position.x - constraintCenter.x) < Abs(pReadWritePointA->position.x - constraintCenter.x) + radius &&
+                                Abs(pReadWriteCollider->position.y - constraintCenter.y) < Abs(pReadWritePointA->position.y - constraintCenter.y) + radius &&
+                                Abs(pReadWriteCollider->position.z - constraintCenter.z) < Abs(pReadWritePointA->position.z - constraintCenter.z) + radius)
                             {
+                                Vector3 boxSize = scale * pReadCollider->boxSize + new Vector3( globalScale * constraint->radius, globalScale * constraint->radius, globalScale * constraint->radius);
                                 float t1, t2;
                                 //OYM：这个方法可以求出直线与obbbox的两个交点
-                                SegmentToOBB(pReadWritePointA->position, pReadWritePointB->position, pReadWriteCollider->position, scale * pReadCollider->boxSize, Quaternion.Inverse(pReadWriteCollider->rotation), out t1, out t2);
+                                SegmentToOBB(pReadWritePointA->position, pReadWritePointB->position, pReadWriteCollider->position, boxSize, Quaternion.Inverse(pReadWriteCollider->rotation), out t1, out t2);
 
                                 t1 = Clamp01(t1);
                                 t2 = Clamp01(t2);
@@ -796,9 +780,9 @@ namespace ADBRuntime.Internal
                                     Vector3 dir = pReadWritePointB->position - pReadWritePointA->position;
                                     Vector3 nearestPoint = pReadWritePointA->position + dir * t;
                                     Vector3 pushout = Quaternion.Inverse(pReadWriteCollider->rotation) * (nearestPoint - pReadWriteCollider->position);
-                                    float pushoutX = pushout.x > 0 ? scale * pReadCollider->boxSize.x - pushout.x : -scale * pReadCollider->boxSize.x - pushout.x;
-                                    float pushoutY = pushout.y > 0 ? scale * pReadCollider->boxSize.y - pushout.y : -scale * pReadCollider->boxSize.y - pushout.y;
-                                    float pushoutZ = pushout.z > 0 ? scale * pReadCollider->boxSize.z - pushout.z : -scale * pReadCollider->boxSize.z - pushout.z;
+                                    float pushoutX = pushout.x > 0 ? boxSize.x - pushout.x : -boxSize.x- pushout.x;
+                                    float pushoutY = pushout.y > 0 ? boxSize.y - pushout.y : -boxSize.y - pushout.y;
+                                    float pushoutZ = pushout.z > 0 ? boxSize.z - pushout.z : -boxSize.z - pushout.z;
                                     //OYM：这里我自己都不太记得了 XD
                                     //OYM：这里是选推出点离的最近的位置,然后推出
                                     if (Abs(pushoutZ) < Abs(pushoutY) && Abs(pushoutZ) < Abs(pushoutX))
@@ -843,41 +827,6 @@ namespace ADBRuntime.Internal
                     default:
                         return;
 
-                }
-            }
-            private bool QuickCheck(ColliderRead* pReadCollider, ColliderReadWrite* pReadWriteCollider, PointReadWrite* pReadWritePointA, PointReadWrite* pReadWritePointB, float scale)
-            {
-                //OYM：原理很简单,用到了AABB盒相交算法,两个物体中心坐标的间隔的vector3与包裹其的AABBbox大小之和的vector3作比较,如果前者的x,y,z中任意一个大于后者,那么这两个AABB盒不想交,及两个碰撞体不想交
-                switch (pReadCollider->colliderType)
-                {
-                    case ColliderType.Sphere:
-                        {
-                            Vector3 centerB = (pReadWritePointA->position + pReadWritePointB->position) * 0.5f;
-                            return Abs(pReadWriteCollider->position.y - centerB.y) < (Abs(pReadWritePointA->position.y - centerB.y) + scale * pReadCollider->radius) &&
-                                       Abs(pReadWriteCollider->position.x - centerB.x) < (Abs(pReadWritePointA->position.x - centerB.x) + scale * pReadCollider->radius) &&
-                                       Abs(pReadWriteCollider->position.z - centerB.z) < (Abs(pReadWritePointA->position.z - centerB.z) + scale * pReadCollider->radius);
-                        }
-
-                    case ColliderType.Capsule:
-                        {
-                            Vector3 centerA = pReadWriteCollider->position + pReadWriteCollider->direction * 0.5f;
-                            Vector3 centerB = (pReadWritePointA->position + pReadWritePointB->position) * 0.5f;
-
-                            return Abs(centerA.y - centerB.y) < (Abs(pReadWriteCollider->direction.y) * 0.5f + Abs(pReadWritePointA->position.y - centerB.y) + scale * pReadCollider->radius) &&
-                                       Abs(centerA.x - centerB.x) < (Abs(pReadWriteCollider->direction.x) * 0.5f + Abs(pReadWritePointA->position.x - centerB.x) + scale * pReadCollider->radius) &&
-                                       Abs(centerA.z - centerB.z) < (Abs(pReadWriteCollider->direction.z) * 0.5f + Abs(pReadWritePointA->position.z - centerB.z) + scale * pReadCollider->radius);
-                        }
-                    case ColliderType.OBB:
-                        {
-                            Vector3 centerB = (pReadWritePointA->position + pReadWritePointB->position) * 0.5f;
-                            float MaxLength = Max(pReadCollider->boxSize.x, pReadCollider->boxSize.y, pReadCollider->boxSize.z) * scale * SQRT_2;
-                            return Abs(pReadWriteCollider->position.x - centerB.x) < Abs(pReadWritePointA->position.x - centerB.x) + MaxLength &&
-                                       Abs(pReadWriteCollider->position.y - centerB.y) < Abs(pReadWritePointA->position.y - centerB.y) + MaxLength &&
-                                       Abs(pReadWriteCollider->position.z - centerB.z) < Abs(pReadWritePointA->position.z - centerB.z) + MaxLength;
-                        }
-
-                    default:
-                        return false;
                 }
             }
 
@@ -1049,7 +998,7 @@ out float tP, out float tQ, out Vector3 pointOnP, out Vector3 pointOnQ)
                 PointReadWrite* pReadWritePoint = pReadWritePoints + index;//OYM：获取每个读写点
                 PointRead* pReadPoint = pReadPoints + index;//OYM：获取每个只读点
 
-                if (!(pReadPoint->fixedIndex == index || pReadPoint->isVirtual))//OYM：不是fix点
+                if (pReadPoint->fixedIndex != index)//OYM：不是fix点
                 {
                     transform.position = pReadWritePoint->position;
                 }

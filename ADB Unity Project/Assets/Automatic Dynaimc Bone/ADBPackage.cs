@@ -68,15 +68,15 @@ namespace ADBRuntime
             pointUpdate.globalScale = scale;
             pointUpdate.isOptimize = isOptimize;
             pointUpdate.addForcePower = addForceForce;
-            pointUpdate.isCollision = (colliderCollisionType == ColliderCollisionType.Fast);
+            pointUpdate.isCollision = (colliderCollisionType == ColliderCollisionType.Both|| colliderCollisionType == ColliderCollisionType.Point);
 
             for (int i = 0; i < constraintUpdates.Length; i++)
             {
                 constraintUpdates[i].globalScale = scale;
-                constraintUpdates[i].isCollision = (colliderCollisionType == ColliderCollisionType.Accuate);
+                constraintUpdates[i].isCollision = (colliderCollisionType == ColliderCollisionType.Both|| colliderCollisionType == ColliderCollisionType.Constraint);
             }
             constraintUpdates1.globalScale = scale;
-          constraintUpdates1.isCollision = (colliderCollisionType == ColliderCollisionType.Accuate);
+          constraintUpdates1.isCollision = (colliderCollisionType == ColliderCollisionType.Both||colliderCollisionType == ColliderCollisionType.Constraint); ;
 
             #region LifeCycle
             Hjob = colliderGet.Schedule(colliderTransformsList);
