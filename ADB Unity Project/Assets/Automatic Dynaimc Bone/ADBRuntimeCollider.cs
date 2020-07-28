@@ -5,9 +5,9 @@ namespace ADBRuntime
 {
     public enum ColliderType
     {
-        Sphere,//OYM：现有的
-        Capsule,//OYM：现有的
-        OBB
+        Sphere=0,//OYM：现有的
+        Capsule=1,//OYM：现有的
+        OBB=2
     }
 
     //OYM：暂时没用

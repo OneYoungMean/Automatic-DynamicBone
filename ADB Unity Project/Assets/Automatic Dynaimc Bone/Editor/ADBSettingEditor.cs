@@ -11,6 +11,19 @@ namespace ADBRuntime
         ADBSetting controller;
         bool showConstraintGlobal=false;
         bool showConstrainForce=false;
+        private enum ColliderChoiceZh
+        { 
+            头 = 1 << 0,
+            上半身 = 1 << 1,
+            下半身 = 1 << 2,
+            大腿 = 1 << 3,
+            小腿 = 1 << 4,
+            大臂 = 1 << 5,
+            小臂 = 1 << 6,
+            手 = 1 << 7,
+            脚 = 1 << 8,
+            其他 = 1 << 9,
+        }
         public void OnEnable()
         {
             controller = target as ADBSetting;
@@ -77,6 +90,12 @@ namespace ADBRuntime
                     EditorGUILayout.PropertyField(serializedObject.FindProperty("circumferenceShrinkScaleGlobal"), new GUIContent("放射分布-杆件-收缩力-系数值"), true);
                     EditorGUILayout.PropertyField(serializedObject.FindProperty("circumferenceStretchScaleGlobal"), new GUIContent("放射分布-杆件-拉伸力-系数值"), true);
                 }
+
+                if (controller.isCollideShear || controller.isCollideStructuralHorizontal || controller.isCollideStructuralVertical)
+                {
+                    GUILayout.Space(5);
+                    EditorGUILayout.PropertyField(serializedObject.FindProperty("pointRadiuCurve"), new GUIContent("节点碰撞体积半径曲线"), true);
+                }
             }
             Titlebar("杆件设置", Color.green);
             showConstrainForce = EditorGUILayout.Foldout(showConstrainForce, "杆件基础力");
@@ -94,7 +113,7 @@ namespace ADBRuntime
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("bendingStretchHorizontal"), new GUIContent("水平相间-杆件-基础拉伸力"), true);
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("circumferenceShrink"), new GUIContent("分布放射-杆件-基础收缩力"), true);
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("circumferenceStretch"), new GUIContent("分布放射-杆件-基础拉伸力"), true);
-                EditorGUILayout.TextArea("杆件最终力=杆件力系数值*杆件基础力");
+                GUILayout.Label("杆件最终力=杆件力系数值*杆件基础力");
             }
 
             GUILayout.Space(5);
@@ -133,11 +152,7 @@ namespace ADBRuntime
             GUILayout.Space(5);
 
             EditorGUILayout.PropertyField(serializedObject.FindProperty("isComputeCircumference"), new GUIContent("开启放射分布杆件"), true);
-            if (controller.isCollideShear|| controller.isCollideStructuralHorizontal||controller.isCollideStructuralVertical)
-            {
-                GUILayout.Space(5);
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("pointRadiuCurve"), new GUIContent("节点碰撞体积半径曲线"), true);
-            }
+
             GUILayout.Space(10);
 
             Titlebar("其他设置", Color.green);
@@ -158,7 +173,7 @@ namespace ADBRuntime
             }
             EditorGUILayout.PropertyField(serializedObject.FindProperty("gravity"), new GUIContent("重力"), true);
             EditorGUILayout.PropertyField(serializedObject.FindProperty("isFixGravityAxis"), new GUIContent("重力轴随角色旋转而旋转"), true);
-            controller.colliderChoice =(ColliderChoice) EditorGUILayout.EnumFlagsField("接收以下种类的碰撞体的信息",controller.colliderChoice);
+            controller.colliderChoice =(ColliderChoice) EditorGUILayout.EnumFlagsField("接收以下种类的碰撞体的信息",(ColliderChoiceZh)controller.colliderChoice);
             serializedObject.ApplyModifiedProperties();
         }
 

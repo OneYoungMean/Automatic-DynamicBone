@@ -833,8 +833,6 @@ namespace ADBRuntime.Internal
                                             pReadWritePointB->position += (pushout * (1 - t));
                                             pReadWritePointB->deltaPosition += (pushout * (1 - t));
                                         }
-
-
                                     }
                                 }
                             }

@@ -14,6 +14,12 @@ namespace ADBRuntime
             ADBEditorCollider controller;
             private bool isDeleteCollider;
             private CollideFuncZh collideFuncZh;
+            private enum CollideTypecZh
+            {
+                球体=0,
+                胶囊体=1,
+                立方体=2
+            }
             private enum CollideFuncZh
             {
                 冻结在表面=0,
@@ -21,6 +27,19 @@ namespace ADBRuntime
                 碰撞体_约束在内=2,
                 力场_向外排斥=3,
                 力场_约束在内=4,
+            }
+            private enum ColliderChoiceZh
+            {
+                头 = 1 << 0,
+                上半身 = 1 << 1,
+                下半身 = 1 << 2,
+                大腿 = 1 << 3,
+                小腿 = 1 << 4,
+                大臂 = 1 << 5,
+                小臂 = 1 << 6,
+                手 = 1 << 7,
+                脚 = 1 << 8,
+                其他 = 1 << 9,
             }
             public void OnEnable()
             {
@@ -37,7 +56,8 @@ namespace ADBRuntime
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("editor.isDraw"), new GUIContent("绘制碰撞体"), true);
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("isGlobal"), new GUIContent("是否为全局碰撞体"), true);
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("editor.colliderRead.isOpen"), new GUIContent("是否打开"), true);
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("editor.colliderRead.colliderType"), new GUIContent("Collider Type"), true);
+
+                controller.editor.colliderRead.colliderType = (ColliderType)EditorGUILayout.EnumPopup("碰撞体种类", (CollideTypecZh)controller.editor.colliderRead.colliderType);
 
                 switch (controller.GetColliderType())
                 {
@@ -63,11 +83,10 @@ namespace ADBRuntime
                         break;
                     default:
                         break;
-                }          
-                collideFuncZh=(CollideFuncZh) EditorGUILayout.EnumPopup("┗━I 碰撞体功能", collideFuncZh);
-                controller.editor.colliderRead.collideFunc = (CollideFunc)collideFuncZh;
+                }
+                controller.editor.colliderRead.collideFunc = (CollideFunc)EditorGUILayout.EnumPopup("┗━I 碰撞体功能", (CollideFuncZh)collideFuncZh);
 
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("editor.colliderRead.colliderChoice"), new GUIContent("┗━I 碰撞体种类"), true);
+                controller.editor.colliderRead.colliderChoice= (ColliderChoice)EditorGUILayout.EnumPopup("┗━I 碰撞体属性",(ColliderChoiceZh) controller.editor.colliderRead.colliderChoice);
 
                 // EditorGUILayout.PropertyField(serializedObject.FindProperty("editor.colliderRead.isConnectWithBody"), new GUIContent("Is Connect With Body"), true);
                 if (!Application.isPlaying)
