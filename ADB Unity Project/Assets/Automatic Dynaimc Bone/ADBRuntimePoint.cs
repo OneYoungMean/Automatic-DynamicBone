@@ -37,19 +37,20 @@ namespace ADBRuntime
                 pointReadWrite = new PointReadWrite();
             }
         }
-        internal void OnDrawGizmos()
+        internal void OnDrawGizmos(Mono.ColliderCollisionType colliderCollisionType)
         {
             Gizmos.color = isAllowComputeOtherConstraint ? Color.grey: Color.black;
-            if (pointRead.radius < 0.005f)
-            {
-                Gizmos.DrawSphere(trans.position, 0.005f);//OYM：都说了画点用的
-            }
-            else
+            if (pointRead.radius > 0.005f&&( colliderCollisionType==Mono.ColliderCollisionType.Point|| colliderCollisionType == Mono.ColliderCollisionType.Both))
             {
                 Matrix4x4 temp = Gizmos.matrix;
                 Gizmos.matrix = Matrix4x4.TRS(trans.position, Quaternion.FromToRotation(Vector3.up, pointRead.initialLocalPosition) * trans.rotation, trans.lossyScale);
                 Gizmos.DrawWireSphere(Vector3.zero, pointRead.radius);
                 Gizmos.matrix = temp;
+
+            }
+            else
+            {
+                Gizmos.DrawSphere(trans.position, 0.005f);//OYM：都说了画点用的
             }
         }
     }

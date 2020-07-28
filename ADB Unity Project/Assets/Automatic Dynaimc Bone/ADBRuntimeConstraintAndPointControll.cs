@@ -763,45 +763,45 @@ namespace ADBRuntime
         }
         #endregion
         #region Gizmo
-        public void OnDrawGizmos()
+        public void OnDrawGizmos(Mono.ColliderCollisionType colliderCollisionType)
         {
             if (!aDBSetting.isDebugDraw) return;
 
             foreach (var point in allNodeList)
             {
-                point.OnDrawGizmos();
+                point.OnDrawGizmos(colliderCollisionType);
             }
             if (aDBSetting.isComputeStructuralVertical)
             {
-                DrawConstraint(constraintsStructuralVertical);
+                DrawConstraint(constraintsStructuralVertical, colliderCollisionType);
             }
             if (aDBSetting.isComputeStructuralHorizontal)
             {
-                DrawConstraint(constraintsStructuralHorizontal);
+                DrawConstraint(constraintsStructuralHorizontal, colliderCollisionType);
             }
             if (aDBSetting.isComputeShear)
             {
-                DrawConstraint(constraintsShear);
+                DrawConstraint(constraintsShear, colliderCollisionType);
             }
             if (aDBSetting.isComputeCircumference)
             {
-                DrawConstraint(constraintsCircumference);
+                DrawConstraint(constraintsCircumference, colliderCollisionType);
             }
             if (aDBSetting.isComputeBendingHorizontal)
             {
-                DrawConstraint(constraintsBendingHorizontal);
+                DrawConstraint(constraintsBendingHorizontal, colliderCollisionType);
             }
             if (aDBSetting.isComputeBendingVertical)
             {
-                DrawConstraint(constraintsBendingVertical);
+                DrawConstraint(constraintsBendingVertical, colliderCollisionType);
             }
         }
-        public void DrawConstraint(List<ADBRuntimeConstraint> constraints)
+        public void DrawConstraint(List<ADBRuntimeConstraint> constraints, Mono.ColliderCollisionType colliderCollisionType)
         {
             if (constraints == null) return;
             for (int i = 0; i < constraints.Count; i++)
             {
-                constraints[i].OnDrawGizmos();
+                constraints[i].OnDrawGizmos(colliderCollisionType==Mono.ColliderCollisionType.Constraint||colliderCollisionType==Mono.ColliderCollisionType.Both);
             }
         }
         #endregion

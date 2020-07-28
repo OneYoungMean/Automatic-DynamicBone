@@ -35,7 +35,7 @@ namespace ADBRuntime
 
         }
 
-        public void OnDrawGizmos()
+        public void OnDrawGizmos(bool IsDrawOutLine)
         {
             switch (constraintRead.type)
             {
@@ -61,19 +61,20 @@ namespace ADBRuntime
                 default:
                     return;
             }
-            if (constraintRead.radius == 0)
-            {
-                Gizmos.DrawLine(pointA.trans.position, pointB.trans.position);
-            }
-            else
+            if (constraintRead.radius != 0&& IsDrawOutLine)
             {
                 Vector3 directionNormalize = direction.normalized;
-                Vector3 right = Vector3.Cross(Vector3.up * constraintRead.radius, directionNormalize) ;
-                Vector3 up = Vector3.Cross(right, directionNormalize) ;
-                Gizmos.DrawLine(pointA.trans.position+ right, pointB.trans.position+ right);
+                Vector3 right = Vector3.Cross(Vector3.up * constraintRead.radius, directionNormalize);
+                Vector3 up = Vector3.Cross(right, directionNormalize);
+                Gizmos.DrawLine(pointA.trans.position + right, pointB.trans.position + right);
                 Gizmos.DrawLine(pointA.trans.position - right, pointB.trans.position - right);
                 Gizmos.DrawLine(pointA.trans.position + up, pointB.trans.position + up);
                 Gizmos.DrawLine(pointA.trans.position - up, pointB.trans.position - up);
+
+            }
+            else
+            {
+                Gizmos.DrawLine(pointA.trans.position, pointB.trans.position);
             }
         }
     }

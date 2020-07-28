@@ -289,7 +289,7 @@ namespace ADBRuntime.Mono
             {
                 foreach (var controll in jointAndPointControlls)
                 {
-                    controll.OnDrawGizmos();
+                    controll.OnDrawGizmos(colliderCollisionType);
                 }
             }
 

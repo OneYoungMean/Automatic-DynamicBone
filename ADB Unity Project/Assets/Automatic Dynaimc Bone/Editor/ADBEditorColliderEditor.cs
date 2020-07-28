@@ -21,6 +21,10 @@ namespace ADBRuntime
             }
             public override void OnInspectorGUI()
             {
+                if (Application.isPlaying)
+                {
+                    Titlebar("You can't change it on runtime",Color.red);
+                }
                 serializedObject.Update();
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("editor.isDraw"), new GUIContent("Is Draw"), true);
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("isGlobal"), new GUIContent("Is Global"), true);
@@ -53,8 +57,11 @@ namespace ADBRuntime
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("editor.colliderRead.colliderChoice"), new GUIContent("┗━I Collider Choice"), true);
 
                 // EditorGUILayout.PropertyField(serializedObject.FindProperty("editor.colliderRead.isConnectWithBody"), new GUIContent("Is Connect With Body"), true);
-                controller.Refresh();
-                serializedObject.ApplyModifiedProperties();
+                if (!Application.isPlaying)
+                {
+                    controller.Refresh();
+                    serializedObject.ApplyModifiedProperties();
+                }
             }
 
             void Titlebar(string text, Color color)
