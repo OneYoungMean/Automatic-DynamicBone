@@ -13,8 +13,6 @@ namespace ADBRuntime
         bool showConstrainForce=false;
         private enum ColliderChoiceZh
         {
-            全部打开 = -1,
-            全部关闭 = 0,
             头 = 1 << 0,
             上半身 = 1 << 1,
             下半身 = 1 << 2,
