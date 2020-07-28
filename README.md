@@ -5,8 +5,8 @@
 # AutomaticDynamicBone
 
 基于https://github.com/SPARK-inc/SPCRJointDynamics ,一个可以根据骨骼布料,自动生成具有物理效果头发和裙子的插件.  
-- **当前版本:0.5preview 最后更新日期:20/7/24**  
-- **注意,更新前请备份你已经设置好的setting文件!**   
+- **当前版本:0.6preview 最后更新日期:20/7/24**  
+- **注意,当前版本存在已知bug,正在全力抢修**   
 
 ## 新功能说明
 
