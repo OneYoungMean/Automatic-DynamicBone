@@ -6,6 +6,8 @@ using UnityEngine;
 
 namespace ADBRuntime
 {
+    using Mono;
+
     [CustomEditor(typeof(ADBRuntimeController))]
     public class ADBRuntimeEditor : Editor
     //OYM：它的编辑器，我觉得我有必要把一部分方法写到里面去
@@ -103,6 +105,7 @@ namespace ADBRuntime
             Titlebar("physical setting", new Color(0.7f, 1.0f, 0.7f));
 
             controller. isDebug = EditorGUILayout.Toggle("isDebug", controller.isDebug);
+            controller.isOptimize = EditorGUILayout.Toggle("OptimizeMove", controller.isOptimize);
             if (controller.isDebug)
             {
                 controller.iteration = EditorGUILayout.IntSlider("Iterations number", controller.iteration, 1, 1024);
@@ -114,7 +117,6 @@ namespace ADBRuntime
             controller.delayTime = EditorGUILayout.FloatField("delayTime", controller.delayTime);
             controller.windForceScale = EditorGUILayout.Slider("windForcePower",controller.windForceScale, 0, 1); 
             controller.colliderCollisionType= (ColliderCollisionType)EditorGUILayout.EnumPopup("Collision Quantity",controller.colliderCollisionType);
-
             serializedObject.ApplyModifiedProperties();
         }
 

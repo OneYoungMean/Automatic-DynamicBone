@@ -23,15 +23,8 @@ namespace ADBRuntime.Internal
             {
                 instance_ADBRunTimeJobsTable = new ADBRunTimeJobsTable();
             }
-            if (isDebug)
-            {
-                ADBRuntimeJobsTableMono mono = GameObject.Find("ADBRunTimeJobsTable")?.GetComponent<ADBRuntimeJobsTableMono>();
-                if (mono == null)
-                {
-                    mono = new GameObject("ADBRunTimeJobsTable").AddComponent<ADBRuntimeJobsTableMono>();
-                }
-                instance_ADBRunTimeJobsTable.isDebug = true;
-            }
+
+            instance_ADBRunTimeJobsTable.isDebug = isDebug;
             return instance_ADBRunTimeJobsTable;
         }
 
@@ -86,22 +79,38 @@ namespace ADBRuntime.Internal
                 var pReadWritePoint = pReadWritePoints + index;
                 var pReadPoint = pReadPoints + index;
 
+
                 if (pReadPoint->fixedIndex == index)
                 {
-                    pReadWritePoint->rotation =  Quaternion.Euler(0, transform.rotation.eulerAngles.y, 0);
+                    //Debug.Log(pReadPoint->localRotation==Quaternion.Inverse(transform.localRotation));这里没问题
+                    transform.localRotation = pReadPoint->initialLocalRotation;//OYM：这里改变之后,rotation也会改变
+
+                    pReadWritePoint->rotation = transform.rotation;
+                    pReadWritePoint->rotationY = pReadPoint->initialRotation;
                     //Debug.Log(pReadWritePoint->rotation+" "+index);
                     pReadWritePoint->position = transform.position;
-                    pReadWritePoint->deltaRotation = Quaternion.identity;
+                    pReadWritePoint->deltaRotationY = pReadWritePoint->deltaRotation = Quaternion.identity;
                     pReadWritePoint->deltaPosition = Vector3.zero;
+
                 }
                 else
                 {
                     var pFixReadWritePoint = pReadWritePoints + (pReadPoint->fixedIndex);
                     var pFixReadPoint = pReadPoints + (pReadPoint->fixedIndex);
-
-                    pReadWritePoint->position = pFixReadWritePoint->position + pFixReadWritePoint->rotation * pReadPoint->initialPosition;
-                    pReadWritePoint->deltaPosition = Vector3.zero;
+                    if (!pReadPoint->isVirtual)
+                    {
+                        transform.localRotation = pReadPoint->initialLocalRotation;
+                        pReadWritePoint->position = pFixReadWritePoint->position + pFixReadWritePoint->rotation * pReadPoint->initialPosition;
+                        transform.position = pReadWritePoint->position;
+                        pReadWritePoint->deltaPosition = Vector3.zero;
+                    }
+                    else
+                    {
+                        pReadWritePoint->position = pFixReadWritePoint->position + pFixReadWritePoint->rotation * pReadPoint->initialPosition;
+                        pReadWritePoint->deltaPosition = Vector3.zero;
+                    }
                 }
+
             }
         }
         /// <summary>
@@ -145,56 +154,6 @@ namespace ADBRuntime.Internal
             }
         }
 
-        /// <summary>
-        /// 获取点的位置,同时处理速度上的一些调整
-        /// </summary>
-        [BurstCompile]
-        public struct PointGetTransform : IJobParallelForTransform
-        {
-            [ReadOnly, NativeDisableUnsafePtrRestriction]
-            public PointRead* pReadPoints;
-            [NativeDisableUnsafePtrRestriction]
-            public PointReadWrite* pReadWritePoints;
-            [ReadOnly]
-            public float oneDivideIteration;
-            public void Execute(int index, TransformAccess transform)
-            {
-                /*
-            }
-            public void TryExecute(TransformAccessArray transforms, JobHandle job)
-            {
-                if (!job.IsCompleted)
-                {
-                    job.Complete();
-                }
-                for (int i = 0; i < transforms.length; i++)
-                {
-                    Execute(i, transforms[i]);
-                }
-            }
-
-            public void Execute(int index, Transform transform)//OYM：注意,这里只获取delta,不获取真实的坐标
-            {
-                */
-                PointRead* pReadPoint = pReadPoints + index;
-                PointReadWrite* pReadWritePoint = pReadWritePoints + index;
-
-                if (pReadPoint->fixedIndex == index)//OYM：fixedpoint
-                {
-                    pReadWritePoint->deltaPosition = oneDivideIteration * (transform.position - pReadWritePoint->position);
-                    Quaternion rotationTemp = Quaternion.Euler(0, transform.rotation.eulerAngles.y, 0) * Quaternion.Inverse(pReadWritePoint->rotation);
-                    pReadWritePoint->deltaRotation =Quaternion.Lerp(Quaternion.identity, rotationTemp , oneDivideIteration);
-
-                    //OYM：本来是底下这样的,但是发现上面的更好用
-                    //  Quaternion rotationTemp  =transform.rotation * Quaternion.Inverse(transform.localRotation);
-
-                }
-                else
-                {
-                    pReadWritePoint->deltaPosition *= pReadPoint->mass;//OYM：怠速
-                }
-            }
-        }
         [BurstCompile]
         public struct ColliderGetTransform : IJobParallelForTransform
         //OYM：获取collider的deltaPostion
@@ -221,7 +180,7 @@ namespace ADBRuntime.Internal
                         break;
                     case ColliderType.OBB:
                         pReadWriteCollider->deltaPosition = oneDivideIteration * (transform.position + transform.rotation * pReadCollider->positionOffset - pReadWriteCollider->position);
-                        pReadWriteCollider->deltaRotation = Quaternion.Lerp(quaternion.identity, ((transform.rotation * pReadCollider->staticRotation) * Quaternion.Inverse(pReadWriteCollider->rotation)), oneDivideIteration);//OYM：写的有点啰嗦,实际上就是对backToForward做除法,计算如下
+                        pReadWriteCollider->deltaRotation = Quaternion.Lerp(Quaternion.identity, ((transform.rotation * pReadCollider->staticRotation) * Quaternion.Inverse(pReadWriteCollider->rotation)), oneDivideIteration);//OYM：写的有点啰嗦,实际上就是对backToForward做除法,计算如下
                         /*
                         Quaternion rotationForward = transform.rotation * pReadCollider->staticRotation;
                         Quaternion rotationBack = Quaternion.Inverse(pReadWriteCollider->rotation);
@@ -275,46 +234,68 @@ namespace ADBRuntime.Internal
                 }
             }
         }
+
+        /// <summary>
+        /// 获取点的位置,同时处理速度上的一些调整
+        /// </summary>
         [BurstCompile]
-        public struct FixedPointUpdate : IJobParallelFor
+        public struct PointGetTransform : IJobParallelForTransform
         {
-            /// <summary>
-            /// 所有点位置的指针
-            /// </summary>
-            [NativeDisableUnsafePtrRestriction]
-            internal PointReadWrite* pReadWritePoints;
-            /// <summary>
-            /// 所有点的指针
-            /// </summary>
             [ReadOnly, NativeDisableUnsafePtrRestriction]
-            internal PointRead* pReadPoints;
-  
-            public void TryExecute(int index, int _, JobHandle job)
+            public PointRead* pReadPoints;
+            [NativeDisableUnsafePtrRestriction]
+            public PointReadWrite* pReadWritePoints;
+            [ReadOnly]
+            public float oneDivideIteration;
+            public void Execute(int index, TransformAccess transform)
+            {
+                /*
+            }
+            public void TryExecute(TransformAccessArray transforms, JobHandle job)
             {
                 if (!job.IsCompleted)
                 {
                     job.Complete();
                 }
-                for (int i = 0; i < index; i++)
+                for (int i = 0; i < transforms.length; i++)
                 {
-                    Execute(i);
+                    Execute(i, transforms[i]);
                 }
             }
-            public void Execute(int index)
+
+            public void Execute(int index, Transform transform)//OYM：注意,这里只获取delta,不获取真实的坐标
             {
+                */
                 PointRead* pReadPoint = pReadPoints + index;
                 PointReadWrite* pReadWritePoint = pReadWritePoints + index;
-                if (pReadPoint->fixedIndex == index)
+
+                if (pReadPoint->fixedIndex == index)//OYM：fixedpoint
+                {
+                    pReadWritePoint->deltaPosition = oneDivideIteration * (transform.position - pReadWritePoint->position);
+
+
+                    //OYM：做笔记 unity当中 child.rotation =parent.rotation*child.localrotation;
+                    Quaternion rotationTemp =  ( transform.rotation* Quaternion.Inverse(transform.localRotation))* pReadPoint->initialLocalRotation;
+                    pReadWritePoint->deltaRotation = Quaternion.LerpUnclamped(Quaternion.identity, rotationTemp * Quaternion.Inverse(pReadWritePoint->rotation), oneDivideIteration);
+                    pReadWritePoint->deltaRotationY = Quaternion.AngleAxis(pReadWritePoint->deltaRotation.eulerAngles.y, Vector3.up);
+
+                }
+                else
                 {
 
-                        //OYM：计算渐进的fixed点坐标
-                        pReadWritePoint->position += pReadWritePoint->deltaPosition;
-                    //OYM：注意,这里闹了一个pReadWritePoint->rotation *= pReadWritePoint->deltaRotation;的笑话,
-                    pReadWritePoint->rotation = pReadWritePoint->deltaRotation * pReadWritePoint->rotation;
+                    if (pReadWritePoint->deltaPosition.sqrMagnitude > (pReadPoint->mass ) * (pReadPoint->mass )*0.1f)//OYM：大于mass*0.2f长度的速度会触发掉速
+                    {
+                        pReadWritePoint->deltaPosition *=(0.8f+pReadPoint->mass);
+                    }
+                    else
+                    {
+                        pReadWritePoint->deltaPosition *= 0.97f;//OYM：测了一下感觉这个数最好,有需求自己改
+                    }
                 }
             }
         }
-                [BurstCompile]
+
+        [BurstCompile]
         public struct PointUpdate : IJobParallelFor
         {
             /// <summary>
@@ -346,7 +327,7 @@ namespace ADBRuntime.Internal
             /// 风力
             /// </summary>
             [ReadOnly]
-            internal Vector3 addForceForcePower;
+            internal Vector3 addForcePower;
             /// <summary>
             /// 大小
             /// </summary>
@@ -361,6 +342,8 @@ namespace ADBRuntime.Internal
             internal float deltaTime;
             [ReadOnly]
             internal bool isCollision;
+            [ReadOnly]
+            internal bool isOptimize;
             public void TryExecute(int index, int _, JobHandle job)
             {
                 if (!job.IsCompleted)
@@ -381,7 +364,6 @@ namespace ADBRuntime.Internal
                     EvaluatePosition(index, pReadPoint, pReadWritePoint);
                     if (isCollision)
                     {
-
                         for (int i = 0; i < colliderCount; ++i)
                         {
                             ColliderRead* pReadCollider = pReadColliders + i;
@@ -399,9 +381,8 @@ namespace ADBRuntime.Internal
                 {
                         //OYM：计算渐进的fixed点坐标
                         pReadWritePoint->position += pReadWritePoint->deltaPosition;
-                        //OYM：注意,这里闹了一个pReadWritePoint->rotation *= pReadWritePoint->deltaRotation;的笑话,
+                        pReadWritePoint->rotationY = pReadWritePoint->deltaRotationY * pReadWritePoint->rotationY;
                         pReadWritePoint->rotation = pReadWritePoint->deltaRotation * pReadWritePoint->rotation;
-                    
                 }
             
             }
@@ -409,35 +390,54 @@ namespace ADBRuntime.Internal
             {
                 //OYM：如果你想要添加什么奇怪的力的话,可以在这底下添加
 
+                Vector3 deltaPosition = Vector3.zero;
                 //OYM：获取固定点的信息
                 PointReadWrite* pFixedPointReadWrite = (pReadWritePoints + pReadPoint->fixedIndex);
-                //OYM：以fixed位移进行为参考进行距离补偿(这里的delta已经乘以过onedivideItertation了)
-                Vector3 positionA = pReadWritePoint->position;
-
+                //OYM：获取以fixed位移进行为参考进行距离补偿(这里的delta已经乘以过onedivideItertation了)
                 pReadWritePoint->position +=pFixedPointReadWrite->deltaPosition * pReadPoint->distanceCompensation;
-                Vector3 positionB = pReadWritePoint->position;
-                //OYM：重力
-                pReadWritePoint->deltaPosition += oneDivideIteration * pReadPoint->gravity* (0.5f * deltaTime * deltaTime)* globalScale ;
-                //OYM：风力
-                pReadWritePoint->deltaPosition += oneDivideIteration* addForceForcePower * pReadPoint->addForceScale  / pReadPoint->weight;
-                //OYM：当前相对fixed的向量
+                //OYM：获取当前相对fixed的向量
                 Vector3 direction = pReadWritePoint->position - pFixedPointReadWrite->position;
-                //OYM：归位的向量
-                Vector3 back = pFixedPointReadWrite->rotation * pReadPoint->initialPosition * globalScale - direction;
-                //OYM：弹性形变的内部应力,当freeze很小的时候设置上限,很大的时候乘以系数
-                pReadWritePoint->deltaPosition += oneDivideIteration*(pReadPoint->freeze > 1 ? pReadPoint->freeze : 1) * deltaTime * Vector3.ClampMagnitude(back, pReadPoint->freeze * 0.1f);
-                //OYM：离心力(理想状态
-                pReadWritePoint->deltaPosition += deltaTime *( direction - (pReadWritePoint->deltaRotation * direction));
+                Vector3 back;
+                //OYM：获取归位的向量
 
-                //OYM：以fixed位移进行为参考进行速度补偿
-                pReadWritePoint->deltaPosition -= pFixedPointReadWrite->deltaPosition * pReadPoint->moveByFixedPoint * 0.2f;//OYM：测试了一下,0.2是个恰到好处的值,不会显得太大也不会太小
-                //OYM：将速度赋值给距离
+                if (pReadPoint->isFixGravityAxis)
+                {
+                    back = pFixedPointReadWrite->rotation * pReadPoint->initialPosition * globalScale - direction;
+                }
+                else
+                {
+                    back = pFixedPointReadWrite->rotationY * pReadPoint->initialPosition * globalScale - direction;
+                }
+
+                //OYM：计算外来力
+                Vector3 addForce = oneDivideIteration * addForcePower * pReadPoint->addForceScale / pReadPoint->weight;
+                deltaPosition += GetRotateForce(addForce, direction)+addForce;
+                //OYM：计算弹性形变的内部应力,当freeze很小的时候设置上限,很大的时候乘以系数
+                deltaPosition += oneDivideIteration* deltaTime * ((pReadPoint->freeze < 1)? Vector3.ClampMagnitude(back, pReadPoint->freeze * 0.1f) : back * pReadPoint->freeze);
+                //OYM：计算离心力(理想状态
+                deltaPosition += deltaTime *((pFixedPointReadWrite->deltaRotation * direction)-direction );
+                //OYM：计算以fixed位移进行为参考进行速度补偿
+                deltaPosition -= pFixedPointReadWrite->deltaPosition * pReadPoint->moveByFixedPoint * 0.2f;//OYM：测试了一下,0.2是个恰到好处的值,不会显得太大也不会太小
+                //OYM：计算重力
+                deltaPosition += oneDivideIteration * pReadPoint->gravity * (0.5f * deltaTime * deltaTime) * globalScale;
+                if (isOptimize)
+                {
+                    //OYM：减少对于骨骼的拉长
+                    deltaPosition -= Vector3.Dot(deltaPosition, direction) / direction.sqrMagnitude * direction;
+                    deltaPosition += GetRotateForce(deltaPosition, direction);
+                }
+                //OYM：赋值给累积的速度
+                pReadWritePoint->deltaPosition += deltaPosition;
+                //OYM：赋值给距离
                 pReadWritePoint->position += oneDivideIteration * pReadWritePoint->deltaPosition;//OYM：这里我想了很久,应该是这样,如果是迭代n次的话,那么deltaposition将会被加上n次,正规应该是只加一次
 
+
                 //Debug.Log(index + " : " + pFixedPointReadWrite->position + " " + positionA + " " + pFixedPointReadWrite->deltaPosition * pReadPoint->distanceCompensation + "  " + positionB);
-
             }
-
+            Vector3 GetRotateForce(Vector3 force, Vector3 direction)//OYM：返回一个不存在的力,使得其向受力方向卷曲,在一些动漫里面会经常出现这种曲线的头发
+            {
+                return (Quaternion.Euler(-Mathf.Rad2Deg * force.z, 0, -Mathf.Rad2Deg * force.x) * direction - direction);
+            }
             private void ColliderCheck(PointRead* pPointRead, PointReadWrite* pReadWritePoint, ColliderRead* pReadCollider, ColliderReadWrite* pReadWriteCollider)
             {
 
@@ -627,6 +627,8 @@ namespace ADBRuntime.Internal
             public int globalColliderCount;
             [ReadOnly]
             public bool isCollision;
+            [ReadOnly]
+            internal float oneDivideIteration;
 
             public void TryExecute(int index, int temp, JobHandle job)
             {
@@ -718,8 +720,8 @@ namespace ADBRuntime.Internal
 
                     pReadWritePointA->position += Displacement * WeightProportion;
                     pReadWritePointA->deltaPosition += Displacement * WeightProportion;
-                    pReadWritePointB->position -= Displacement * (1 - WeightProportion);
-                    pReadWritePointB->deltaPosition -= Displacement * (1 - WeightProportion);
+                    pReadWritePointB->position += -Displacement * (1 - WeightProportion);
+                    pReadWritePointB->deltaPosition +=- Displacement * (1 - WeightProportion);
                 }
 
                 if (isCollision && constraint->isCollider)
@@ -741,7 +743,10 @@ namespace ADBRuntime.Internal
                     }
                 }
             }
-
+            Vector3 GetRotateForce(Vector3 force, Vector3 direction)//OYM：返回一个不存在的力,使得其向受力方向卷曲,在一些动漫里面会经常出现这种曲线的头发
+            {
+                return (Quaternion.Euler(Mathf.Rad2Deg * (-force.z), 0, Mathf.Rad2Deg * (-force.x) )* direction - direction);
+            }
             private void ComputeCollider(ColliderRead* pReadCollider, ColliderReadWrite* pReadWriteCollider, PointReadWrite* pReadWritePointA, PointReadWrite* pReadWritePointB, float WeightProportion,
                 float frictionA, float frictionB, float scale)
             {
@@ -884,16 +889,25 @@ namespace ADBRuntime.Internal
                 {
                     //OYM：整片代码里面最有趣的一块
                     //OYM：反正我现在不想回忆当时怎么想的了XD
-                    case CollideFunc.Outside:
+                    case CollideFunc.Freeze:
+                        break;//OYM：猜猜为啥这样写
+                    case CollideFunc.OutsideLimit:
                         if (!(sqrPushout < radius * radius )&& sqrPushout != 0)
                         { return; }
                         break;
-                    case CollideFunc.Inside:
+                    case CollideFunc.InsideLimit:
                         if (sqrPushout < radius * radius && sqrPushout != 0)
                         { return; }
                         break;
-                    case CollideFunc.Freeze:
+                    case CollideFunc.OutsideNoLimit:
+                        if (!(sqrPushout < radius * radius) && sqrPushout != 0)
+                        { return; }
                         break;
+                    case CollideFunc.InsideNoLimit:
+                        if (sqrPushout < radius * radius && sqrPushout != 0)
+                        { return; }
+                        break;
+
                 }
                 //OYM：把pushout方向多余的力给减掉
                 //OYM：没有也不需要
@@ -903,18 +917,37 @@ namespace ADBRuntime.Internal
                 pReadWritePointB->deltaPosition *= (1 - frictionB);
 
                 pushout = pushout * (radius / Mathf.Sqrt(sqrPushout) - 1);//OYM：这里简单解释一下,首先我要计算的是推出的距离,及半径长度减去原始的pushout度之后剩下的值,即pushout/pushout.magnitude*radius-pushout.即pushout*((radius/magnitude -1));
+
                 //  float Propotion = WeightProportion * lengthPropotion / (1 - WeightProportion - lengthPropotion + 2 * WeightProportion * lengthPropotion);
+
                 if (WeightProportion > EPSILON)
                 {
-                    pReadWritePointA->position += (pushout * (1 - lengthPropotion));
-                    pReadWritePointA->deltaPosition += (pushout * (1 - lengthPropotion));
+                    if (collideFunc ==CollideFunc.InsideNoLimit|| collideFunc == CollideFunc.OutsideNoLimit)
+                    {
+                        pReadWritePointA->deltaPosition +=0.01f*oneDivideIteration * (1 - lengthPropotion)* pushout;
+                    }
+                    else
+                    {
+                        pReadWritePointA->position += (pushout * (1 - lengthPropotion));
+                        pReadWritePointA->deltaPosition += (pushout * (1 - lengthPropotion));
+                    }
+
                 }
                 else
                 {
                     lengthPropotion = 1;
                 }
-                pReadWritePointB->position += (pushout * lengthPropotion);
-                pReadWritePointB->deltaPosition += (pushout * lengthPropotion);
+
+                if (collideFunc == CollideFunc.InsideNoLimit || collideFunc == CollideFunc.OutsideNoLimit)
+                {
+                    pReadWritePointB->deltaPosition += 0.01f * oneDivideIteration * (1 - lengthPropotion) * pushout;
+                }
+                else
+                {
+                    pReadWritePointB->position += (pushout * lengthPropotion);
+                    pReadWritePointB->deltaPosition += (pushout * lengthPropotion);
+                }
+
             }
             //OYM：https://zalo.github.io/blog/closest-point-between-segments/#line-segments
             //OYM：目前是我见过最快的方法
@@ -1024,7 +1057,7 @@ out float tP, out float tQ, out Vector3 pointOnP, out Vector3 pointOnQ)
 
                 if (pReadPoint->childFirstIndex > -1)
                 {
-                    transform.localRotation = pReadPoint->localRotation;
+                    transform.localRotation = pReadPoint->initialLocalRotation;
                     var child = pReadWritePoints + pReadPoint->childFirstIndex;
                     var parent = pReadWritePoints + pReadPoint->parentIndex;
                     var childRead = pReadPoints + pReadPoint->childFirstIndex;
@@ -1033,7 +1066,7 @@ out float tP, out float tQ, out Vector3 pointOnP, out Vector3 pointOnQ)
                     Vector3 FixedDirection = parent->position - pReadWritePoint->position;
                     if (ToDirection.sqrMagnitude > EPSILON * EPSILON)//OYM：两点不再一起
                     {
-                        Vector3 FromDirection = transform.rotation * childRead->boneAxis;//OYM：将BoneAxis按照transform.rotation进行旋转
+                        Vector3 FromDirection = transform.rotation * childRead->initialLocalPosition;//OYM：将BoneAxis按照transform.rotation进行旋转
 
                         Quaternion AimRotation = Quaternion.FromToRotation(FromDirection, ToDirection);//OYM：我仔细考虑了下,fromto用在这里不一定是最好,但是一定是最快
 

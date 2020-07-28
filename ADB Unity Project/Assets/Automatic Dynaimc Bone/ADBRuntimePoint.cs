@@ -56,6 +56,7 @@ namespace ADBRuntime
     public struct PointRead
     {
         public bool isVirtual;
+        public bool isFixGravityAxis;
         public int fixedIndex;
         /// <summary>
         /// 父节点序号
@@ -106,14 +107,15 @@ namespace ADBRuntime
         public float circumferenceShrink;
         public float circumferenceStretch;
         public Vector3 gravity;
-        public Vector3 boneAxis;
+        public Vector3 initialLocalPosition;
         public Vector3 initialPosition;
-        public Quaternion initialLocalRotation;
 
         public float freeze;
         internal float addForceScale;
         internal float distanceCompensation;
-        internal Quaternion localRotation;
+        internal Quaternion initialLocalRotation;
+        internal Quaternion initialRotation;
+        internal float velocityLimit;
     }
 
     //OYM：写入系统
@@ -121,6 +123,7 @@ namespace ADBRuntime
     {
         public Vector3 position;
         public Quaternion rotation;
+        public Quaternion rotationY;
         /* { get { return Position; }
             set {
                 if (float.IsNaN(value.x))
@@ -135,6 +138,6 @@ namespace ADBRuntime
 
         public Vector3 deltaPosition;
         public Quaternion deltaRotation;
-
+        public Quaternion deltaRotationY;
     }
 }

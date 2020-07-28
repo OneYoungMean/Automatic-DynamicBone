@@ -146,6 +146,7 @@ namespace ADBRuntime
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("weightCurve"), new GUIContent("┗━weight Curve"), true);
             }
             EditorGUILayout.PropertyField(serializedObject.FindProperty("gravity"), new GUIContent("Gravity"), true);
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("isFixGravityAxis"), new GUIContent("is Fix Gravity Axis"), true);
             controller.colliderChoice =(ColliderChoice) EditorGUILayout.EnumFlagsField("Colider Choice",controller.colliderChoice);
             serializedObject.ApplyModifiedProperties();
         }

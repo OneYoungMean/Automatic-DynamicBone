@@ -1,18 +1,15 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 
-namespace ADBRuntime
+namespace ADBRuntime.Mono
 {
     public class ADBEditorCollider : MonoBehaviour
     {
         [SerializeField]
         public ADBRuntimeCollider editor;
         [SerializeField]
-        public bool isDraw;
-        [SerializeField]
         public bool isGlobal;
-        private bool needRefresh = true;//OYM：有时候重置脚本会导致不刷新的局面
-        private ADBRuntimeCollider runner;        //OYM：这里怎么整都不好好访问,只能这么弄了
+
 
         public static List<ADBRuntimeCollider> globalColliderList;
 
@@ -23,18 +20,11 @@ namespace ADBRuntime
             {
                 globalColliderList = new List<ADBRuntimeCollider>();
             }
-            if (runner == null)
+
+            if (isGlobal && Application.isPlaying&& !globalColliderList.Contains(editor))
             {
-                Refresh();
+                globalColliderList.Add(editor);
             }
-
-
-
-            if (isGlobal && Application.isPlaying&& !globalColliderList.Contains(runner))
-            {
-                globalColliderList.Add(runner);
-            }
-            isDraw = false;
         }
         public static void RuntimeCollider2Editor(ADBRuntimeCollider runtime)
         {
@@ -43,63 +33,50 @@ namespace ADBRuntime
             editor.editor.colliderRead.isOpen = true;
         }
 
-        public ADBRuntimeCollider GetCollider()
+        public ColliderType GetColliderType()
         {
-            if (isGlobal) return null;
-
-            Refresh();
-            return runner;
+            return editor.colliderRead.colliderType;
         }
-        public void Refresh(bool isForce =false)
+        public void Refresh()
         {
-            if (editor.appendTransform == null)//OYM：不允許為空
+            switch (editor.colliderRead.colliderType)
             {
-                editor.appendTransform = transform;
-            }
-            if (isForce||needRefresh || runner?.colliderRead == null || !runner.colliderRead.Equals(editor.colliderRead))
-            {
-                needRefresh = false;
-                editor.colliderRead.CheckValue();
-
-                switch (editor.colliderRead.colliderType)
-                {
-                    case ColliderType.Sphere:
-                        runner = new SphereCollider(editor.colliderRead, editor.appendTransform);
-                        break;
-                    case ColliderType.Capsule:
-                        runner = new CapsuleCollider(editor.colliderRead, editor.appendTransform);
-                        break;
-                    case ColliderType.OBB:
-                        runner = new OBBBox(editor.colliderRead, editor.appendTransform);
-                        break;
-                }
+                case ColliderType.Sphere:
+                    if(editor.GetType()!=typeof(SphereCollider))
+                    editor = new SphereCollider(editor.colliderRead, transform);
+                    break;
+                case ColliderType.Capsule:
+                    if (editor.GetType() != typeof(CapsuleCollider))
+                        editor = new CapsuleCollider(editor.colliderRead, transform);
+                    break;
+                case ColliderType.OBB:
+                    if (editor.GetType() != typeof(OBBBoxCollider))
+                        editor = new OBBBoxCollider(editor.colliderRead, transform);
+                    break;
+                default:
+                    break;
             }
 
         }
         
         private void OnDrawGizmosSelected()
         {
-
-            Refresh();
-
-            if (!Application.isPlaying&& isDraw && editor != null)
+            if (!Application.isPlaying&& editor != null)
             {
-            runner.OnDrawGizmos();
+            editor.OnDrawGizmos();
             }
-
         }
 
         private void OnDrawGizmos()
         {
-            if (!Application.isPlaying && isDraw && editor != null&& isGlobal)
+            if (!Application.isPlaying && editor != null&& isGlobal)
             {
-                Refresh(true);
-                runner.OnDrawGizmos();
+                editor.OnDrawGizmos();
             }
         }
         public override string ToString()
         {
-            return runner.colliderRead.colliderType.ToString();
+            return editor.colliderRead.colliderType.ToString();
         }
     }
 }

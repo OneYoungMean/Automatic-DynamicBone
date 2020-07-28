@@ -14,27 +14,35 @@ namespace ADBRuntime
     public enum CollideFunc
     {
         /// <summary>
-        /// 体积会往外排斥,面会往法线方向排斥
+        /// 冻死在边界上
         /// </summary>
-        Outside=1,
+        Freeze =0,
         /// <summary>
-        /// 体积会向内约束,面会往法线相反的方向排斥
+        /// 往外排斥,并且有边界
         /// </summary>
-        Inside=2,
+        OutsideLimit=1,
         /// <summary>
-        /// 所有的点都会被限制在面上或者体的外壳上
+        /// 向内约束,并且有边界
         /// </summary>
-        Freeze=4,
+        InsideLimit=2,
         /// <summary>
-        /// 嘿,它会给物体的两面都会碰撞,但是再碰撞之前它都是可以任意在里面或者外面
+        /// 往外排斥,并且没有边界
         /// </summary>
+        OutsideNoLimit = 3,
+        /// <summary>
+        /// 向内约束,并且没有边界
+        /// </summary>
+        InsideNoLimit = 4
     }
+
     [Serializable]
-    public  class ADBRuntimeCollider
+    public class ADBRuntimeCollider
     {
         public ColliderRead colliderRead;
         public ColliderReadWrite colliderReadWrite;
         public Transform appendTransform;
+        public bool isDraw;
+        internal ADBRuntimeCollider(){}
         public ColliderRead GetColliderRead()
         {
             ColliderRead mirror = colliderRead;
@@ -48,6 +56,7 @@ namespace ADBRuntime
             return mirror;
         }
         /*
+         全部木大,交给jobs处理
         public ColliderReadWrite GetColliderReadWrite()
         {
             if (appendTransform)
@@ -91,14 +100,15 @@ namespace ADBRuntime
         {
             this.colliderRead = colliderRead;
             this.appendTransform = appendtTransform;
+            isDraw = true;
         }
-        public SphereCollider(float radius, Vector3 positionOffset,ColliderChoice colliderChoice, Transform appendTransform = null, CollideFunc collideFunc = CollideFunc.Outside)
+        public SphereCollider(float radius, Vector3 positionOffset,ColliderChoice colliderChoice, Transform appendTransform = null, CollideFunc collideFunc = CollideFunc.OutsideLimit)
         {
             colliderRead.isOpen = true;
             colliderRead.radius = radius;
 
             colliderRead.colliderType = ColliderType.Sphere;
-            colliderRead.collideFunc = CollideFunc.Outside;
+            colliderRead.collideFunc = CollideFunc.OutsideLimit;
             colliderRead.colliderChoice = colliderChoice;
             if (appendTransform != null)
             {
@@ -113,6 +123,8 @@ namespace ADBRuntime
 
         public override void OnDrawGizmos()
         {
+            if (!isDraw) return;
+
             if (appendTransform)
             {
                 Gizmos.DrawWireSphere(appendTransform.rotation * colliderRead.positionOffset * appendTransform.lossyScale.x + appendTransform.position, colliderRead.radius* appendTransform.lossyScale.x);
@@ -132,8 +144,9 @@ namespace ADBRuntime
         {
             this.colliderRead = colliderRead;
             this.appendTransform = appendtTransform;
+            isDraw = true;
         }
-        public CapsuleCollider(float radius, Vector3 pointHead, Vector3 pointTail, ColliderChoice colliderChoice,Transform appendTransform = null, CollideFunc collideFunc = CollideFunc.Outside)
+        public CapsuleCollider(float radius, Vector3 pointHead, Vector3 pointTail, ColliderChoice colliderChoice,Transform appendTransform = null, CollideFunc collideFunc = CollideFunc.OutsideLimit)
         {
             colliderRead.isOpen = true;
             colliderRead.colliderType = ColliderType.Capsule;
@@ -153,7 +166,7 @@ namespace ADBRuntime
                 colliderRead.staticDirection = pointTail - pointHead;
             }
         }
-        public CapsuleCollider(float radius,float length, Vector3 positionOffset,Vector3 direction, ColliderChoice colliderChoice,Transform appendTransform = null, CollideFunc collideFunc = CollideFunc.Outside)
+        public CapsuleCollider(float radius,float length, Vector3 positionOffset,Vector3 direction, ColliderChoice colliderChoice,Transform appendTransform = null, CollideFunc collideFunc = CollideFunc.OutsideLimit)
         {
             colliderRead.isOpen = true;
             colliderRead.colliderType = ColliderType.Capsule;
@@ -175,6 +188,8 @@ namespace ADBRuntime
         }
         public override void OnDrawGizmos()
         {
+            if (!isDraw) return;
+
             Quaternion rot;
             Vector3 pos;
             if (appendTransform == null)
@@ -220,18 +235,19 @@ namespace ADBRuntime
         }
     }
 
-    public class OBBBox : ADBRuntimeCollider
+    public class OBBBoxCollider : ADBRuntimeCollider
     {
         Vector3 OBBposition;
         Quaternion OBBRotation;
-        public OBBBox(ColliderRead colliderRead, Transform appendtTransform)
+        public OBBBoxCollider(ColliderRead colliderRead, Transform appendtTransform)
         {
             this.colliderRead = colliderRead;
             this.appendTransform = appendtTransform;
             OBBposition = colliderRead.positionOffset;
             OBBRotation = colliderRead.staticRotation;
+            isDraw = true;
         }
-        public OBBBox(Vector3 center, Vector3 range, Vector3 direction, ColliderChoice colliderChoice, Transform appendTransform = null, CollideFunc collideFunc = CollideFunc.Outside)
+        public OBBBoxCollider(Vector3 center, Vector3 range, Vector3 direction, ColliderChoice colliderChoice, Transform appendTransform = null, CollideFunc collideFunc = CollideFunc.OutsideLimit)
         {
             colliderRead.isOpen = true;
             OBBposition = appendTransform ? appendTransform.InverseTransformPoint(center) : center;
@@ -241,12 +257,14 @@ namespace ADBRuntime
             colliderRead.positionOffset = OBBposition;
             colliderRead.boxSize = new Vector3(Mathf.Abs(range.x * 0.5f), Mathf.Abs(range.y * 0.5f), Mathf.Abs(range.z * 0.5f));
             colliderRead.colliderType = ColliderType.OBB;
-            colliderRead.collideFunc = CollideFunc.Outside;
+            colliderRead.collideFunc = CollideFunc.OutsideLimit;
             colliderRead.colliderChoice = colliderChoice;
         }
 
         public override void OnDrawGizmos()
         {
+            if (!isDraw) return;
+
             Matrix4x4 before = Gizmos.matrix;
             if (appendTransform)
             {
@@ -274,17 +292,14 @@ namespace ADBRuntime
         public Vector3 positionOffset;
         public Quaternion staticRotation;
         public Vector3 staticDirection;
-
         public Vector3 boxSize;
         //public Vector3 pointB;
         //public Vector3 pointC;
 
         public float radius;
         public float length;
-        //public float lengthC;
         public bool isConnectWithBody;
-        //public float friction;
-        //OYM：too more exprience
+
         public bool Equals(ColliderRead other)
         {
             return other.isOpen == isOpen &&
@@ -327,7 +342,7 @@ namespace ADBRuntime
 class SphereComBine : ADBRuntimeCllider
 {
     float radius;
-    public SphereComBine(float radiu, float thickness, float curvature, Vector3 center, Vector3 direction, Transform appendTransform = null, CollideFunc collideFunc = CollideFunc.Outside)
+    public SphereComBine(float radiu, float thickness, float curvature, Vector3 center, Vector3 direction, Transform appendTransform = null, CollideFunc collideFunc = CollideFunc.OutsideLimit)
     {
         //OYM：A*B=radius^2,A/B=curvature
         this.radius = radiu;

@@ -37,7 +37,7 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  windScaleCurve:
+  addForceScaleCurve:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
@@ -476,10 +476,10 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   frictionGlobal: 0
-  windScaleGlobal: 0
+  addForceScaleGlobal: 1
   gravityScaleGlobal: 0
   moveByFixedPointGlobal: 0
-  distanceCompensationGlobal: 1
+  distanceCompensationGlobal: 0.5
   massGlobal: 0.95
   moveByPrePointGlobal: 0
   freezeGlobal: 2
@@ -491,7 +491,7 @@ MonoBehaviour:
   shearStretchScaleGlobal: 1
   bendingShrinkVerticalScaleGlobal: 1
   bendingStretchVerticalScaleGlobal: 1
-  bendingShrinkHorizontalScaleGlobal: 1
+  bendingShrinkHorizontalScaleGlobal: 0.00001
   bendingStretchHorizontalScaleGlobal: 1
   circumferenceShrinkScaleGlobal: 1
   circumferenceStretchScaleGlobal: 1
@@ -541,9 +541,10 @@ MonoBehaviour:
   isComputeBendingHorizontal: 1
   isComputeCircumference: 0
   isCollideStructuralVertical: 1
-  isCollideStructuralHorizontal: 0
+  isCollideStructuralHorizontal: 1
   isCollideShear: 0
-  isLoopRootPoints: 1
+  isLoopRootPoints: 0
   isDebugDraw: 1
+  isFixGravityAxis: 1
   gravity: {x: 0, y: -9.81, z: 0}
   colliderChoice: 8

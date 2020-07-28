@@ -11,7 +11,7 @@ namespace ADBRuntime
         Bending_Vertical,
         Bending_Horizontal,
         Circumference,
-        Virtual
+        Virtual,
     }
     public class ADBRuntimeConstraint
     {

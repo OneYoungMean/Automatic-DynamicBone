@@ -4,22 +4,22 @@ using System.Collections.Generic;
 using UnityEngine;
 using Unity.Mathematics;
 
-namespace ADBRuntime
+namespace ADBRuntime.Mono
 {
     public enum ColliderCollisionType
     {
         /// <summary>
         /// Accurate but slow
         /// </summary>
-        Accuate=1,
+        Accuate = 1,
         /// <summary>
         /// Route but fast
         /// </summary>
-        Fast=2,
+        Fast = 2,
         /// <summary>
         /// 没有碰撞(最快)
         /// </summary>
-        Null=3
+        Null = 3
     }
     [DisallowMultipleComponent]
     public class ADBRuntimeController : MonoBehaviour
@@ -35,6 +35,7 @@ namespace ADBRuntime
         [SerializeField]
         public float windForceScale=0.5f;
         public bool isDebug;
+        public bool isOptimize = false;
         public bool isResetPoint;
         [SerializeField]
         public ADBGlobalSetting settings;
@@ -47,7 +48,6 @@ namespace ADBRuntime
         public List<Transform> blackListOfGenerateTransform=new List<Transform>();
         [SerializeField]
         public bool isAdvance;
-
         public Transform generateTransform;
         public List<Transform> allPointTrans;
         [SerializeField]
@@ -57,6 +57,7 @@ namespace ADBRuntime
         private ADBConstraintReadAndPointControll[] jointAndPointControlls;
         private DataPackage dataPackage;
         private bool isInitialize = false;
+
         private float deltaTime=0;
         private float initializeScale;
         private float scale;
@@ -106,12 +107,14 @@ namespace ADBRuntime
                 return;
             }
 
+
             deltaTime += 0.0166f;//OYM：用time.deltaTime并不理想,或许是我笔记本太烂的缘故?
             scale = transform.lossyScale.x;
+            addForce += ADBWindZone.getaddForceForce(transform.position ) * windForceScale* deltaTime;
 
-            addForce = ADBWindZone.getaddForceForce(transform.position ) * windForceScale* deltaTime;
-            UpdateDataPakage();
+             UpdateDataPakage();
 
+            //OYM：理论上你多执行几次UpdateDataPakage()也没啥关系
 
         }
         private void OnDisable()
@@ -132,7 +135,12 @@ namespace ADBRuntime
         }
         private void UpdateDataPakage()
         {
-            bool isSuccessfulRun = dataPackage.SetRuntimeData(deltaTime, scale / initializeScale, iteration, addForce, colliderCollisionType);
+            bool isSuccessfulRun = dataPackage.SetRuntimeData(deltaTime,
+                                                              scale / initializeScale,
+                                                              iteration,
+                                                              addForce,
+                                                              colliderCollisionType,
+                                                              isOptimize);
             if (isSuccessfulRun)
             {
                 deltaTime = 0;
@@ -245,8 +253,7 @@ namespace ADBRuntime
             colliderControll = new ADBRuntimeColliderControll(generateTransform.gameObject, pointList, isGenerateColliderAutomaitc,!(Application.isPlaying),out editorColliderList);//OYM：在这里获取collider
             for (int i = 0; i < editorColliderList.Count; i++)
             {
-                editorColliderList[i].Refresh(true);
-                editorColliderList[i].isDraw = true;
+                editorColliderList[i].Refresh();
             }
             isGenerateColliderAutomaitc = false;
         }

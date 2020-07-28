@@ -482,7 +482,7 @@ MonoBehaviour:
   distanceCompensationGlobal: 1
   massGlobal: 0.9
   moveByPrePointGlobal: 0
-  freezeGlobal: 1
+  freezeGlobal: 2
   structuralShrinkVerticalScaleGlobal: 1.5
   structuralStretchVerticalScaleGlobal: 1
   structuralShrinkHorizontalScaleGlobal: 1

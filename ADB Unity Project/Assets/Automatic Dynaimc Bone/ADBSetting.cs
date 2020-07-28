@@ -87,7 +87,8 @@ namespace ADBRuntime
         public bool isCollideShear = true;
         public bool isLoopRootPoints = true;//OYM：与首节点循环链接（非刚体尽量别点
 
-        public bool isDebugDraw;
+        public bool isDebugDraw=true;
+        public bool isFixGravityAxis = true;
         public Vector3 gravity = new Vector3(0.0f, -9.81f, 0.0f);//OYM：重力
         public ColliderChoice colliderChoice = (ColliderChoice)(1 << 9 - 1);
     }

@@ -6,6 +6,7 @@ using Unity.Collections;
 
 namespace ADBRuntime
 {
+    using Mono;
     public class ADBRuntimeColliderControll
     {
         public List<ADBRuntimeCollider> runtimeColliderList;
@@ -16,25 +17,7 @@ namespace ADBRuntime
         private Transform[] colliderTransform;
 
         #region Point and parameter
-        public enum ColliderBody
-        {
-            Hips = 1,
-            Spine = 2,
-            Head = 3,
-            leftUpperArm = 4,
-            leftLowerArm = 5,
-            rightUpperArm = 6,
-            rightLowerArm = 7,
-            leftUpperLeg = 8,
-            leftLowerLeg = 9,
-            rightUpperLeg = 10,
-            rightLowerLeg = 11,
-            leftFoot = 12,
-            rightFoot = 13,
-            leftHand = 14,
-            rightHand = 15,
 
-        }
 
         public const float upperArmWidthAspect = 1f;
         public const float lowerArmWidthAspect = 0.9f;
@@ -92,12 +75,11 @@ namespace ADBRuntime
                 }
             }
             iniB = GenerateOtherCollidersData(ref runtimeColliderList,ref editorColliderList, character);
-            
             for (int i = 0; i < runtimeColliderList.Count; i++)
-            {
+            {//OYM：这个设置可以帮助你的collider跟随你的角色一起发生尺寸变化
+                //OYM：某些特殊的情况,你可以关闭它
                 runtimeColliderList[i].colliderRead.isConnectWithBody = true;
             }
-
             iniC = GenerateGlobalCollidersData(ref runtimeColliderList);
 
             initialized = iniA || iniB || iniC;
@@ -171,12 +153,11 @@ namespace ADBRuntime
             ADBEditorCollider[] colliderList = character.GetComponentsInChildren<ADBEditorCollider>(true);
             foreach (var collider in colliderList)
             {
-                var co = collider.GetCollider();
+                var co = collider.editor;
 
                 if (co != null)
                 {
                     runtimeColliderList.Add(co);
-                    collider.isDraw = false;
                 }
             }
             if (editorColliderList != null)
@@ -235,30 +216,31 @@ namespace ADBRuntime
 
             upperLegCentroid = 0.5f * (leftUpperLeg.position + rightUpperLeg.position);
             hipsWidth = Vector3.Distance(leftUpperLeg.position, rightUpperLeg.position);
+            var colliderList = new List<ADBRuntimeCollider>();
 
             //OYM：Head
             headCenterPoint = headStartPoint + new Vector3(0, 0.5f * torsoWidth, 0);
             headColliderRadiu = CheckNearstPointToSegment(0.5f * torsoWidth, headCenterPoint, Vector3.zero, ColliderChoice.Head, allPointTrans);
-            runtimeColliders.Add(new SphereCollider(headColliderRadiu, head.InverseTransformPoint(head.position+ new Vector3(0, 0.5f * torsoWidth, 0)),ColliderChoice.Head, head));
+            colliderList.Add(new SphereCollider(headColliderRadiu, head.InverseTransformPoint(head.position+ new Vector3(0, 0.5f * torsoWidth, 0)),ColliderChoice.Head, head));
 
             // Spine
             spineStartPoint = headCenterPoint + new Vector3(0,  - torsoWidth, 0);
             spineStopPoint = upperLegCentroid;
             spineColliderRadiu = CheckNearstPointToSegment(torsoWidth, spineStartPoint, spineStopPoint - spineStartPoint, ColliderChoice.UpperBody, allPointTrans);
 
-            runtimeColliders.Add(new CapsuleCollider(spineColliderRadiu, spineStartPoint, spineStopPoint, ColliderChoice.UpperBody, spine));
+            colliderList.Add(new CapsuleCollider(spineColliderRadiu, spineStartPoint, spineStopPoint, ColliderChoice.UpperBody, spine));
 
             //Hip
 
             Vector3 hipColliderCenter =upperLegCentroid;
 
             hipsColliderRadiuUp = CheckNearstPointToSegment((spineColliderRadiu *2), hipColliderCenter, Vector3.zero, ColliderChoice.UpperBody, allPointTrans);
-            runtimeColliders.Add(new SphereCollider(hipsColliderRadiuUp,spine.InverseTransformPoint(hipColliderCenter) , ColliderChoice.UpperBody, spine));
+            colliderList.Add(new SphereCollider(hipsColliderRadiuUp,spine.InverseTransformPoint(hipColliderCenter) , ColliderChoice.UpperBody, spine));
             Vector3 hipColliderCenterDownA = upperLegCentroid- new Vector3(hipsWidth*0.5f, 0, 0);
             Vector3 hipColliderCenterDownB = hipColliderCenterDownA + new Vector3(hipsWidth, 0,0);
             hipsColliderRadiuDown = CheckNearstPointToSegment(hipsWidth, hipColliderCenterDownA, hipColliderCenterDownB- hipColliderCenterDownA, ColliderChoice.LowerBody, allPointTrans);
 
-            runtimeColliders.Add(new CapsuleCollider(hipsColliderRadiuDown, hipColliderCenterDownA, hipColliderCenterDownB, ColliderChoice.LowerBody, pelvis));
+            colliderList.Add(new CapsuleCollider(hipsColliderRadiuDown, hipColliderCenterDownA, hipColliderCenterDownB, ColliderChoice.LowerBody, pelvis));
 
 
             // LeftArms
@@ -267,11 +249,11 @@ namespace ADBRuntime
             float leftUpperArmWidth = CheckNearstPointToSegment(leftArmWidth * upperArmWidthAspect, leftUpperArm.position, leftLowerArm.position - leftUpperArm.position, ColliderChoice.UpperArm, allPointTrans);
             float leftLowerArmWidth = CheckNearstPointToSegment(leftArmWidth * lowerArmWidthAspect, leftLowerArm.position, leftHand.position - leftLowerArm.position, ColliderChoice.LowerArm, allPointTrans);
 
-            runtimeColliders.Add(new CapsuleCollider(leftUpperArmWidth, leftUpperArm.position, leftLowerArm.position, ColliderChoice.UpperArm, leftUpperArm));
-            runtimeColliders.Add(new CapsuleCollider(leftLowerArmWidth, leftLowerArm.position, leftHand.position, ColliderChoice.LowerArm, leftLowerArm));
+            colliderList.Add(new CapsuleCollider(leftUpperArmWidth, leftUpperArm.position, leftLowerArm.position, ColliderChoice.UpperArm, leftUpperArm));
+            colliderList.Add(new CapsuleCollider(leftLowerArmWidth, leftLowerArm.position, leftHand.position, ColliderChoice.LowerArm, leftLowerArm));
             var leftHandCenterPoint = (leftFinger.position + leftHand.position) * 0.5f;
 
-            runtimeColliders.Add(new SphereCollider(Vector3.Distance(leftHand.position, leftHandCenterPoint),  leftHand.InverseTransformPoint(leftHandCenterPoint), ColliderChoice.Hand,leftHand));
+            colliderList.Add(new SphereCollider(Vector3.Distance(leftHand.position, leftHandCenterPoint),  leftHand.InverseTransformPoint(leftHandCenterPoint), ColliderChoice.Hand,leftHand));
 
             // LeftLegs
             float leftLegWidth = Vector3.Distance(leftUpperLeg.position, leftLowerLeg.position) * 0.3f;
@@ -279,20 +261,20 @@ namespace ADBRuntime
             float leftLowerLegWidth = CheckNearstPointToSegment(leftLegWidth * lowerLegWidthAspect, leftLowerLeg.position, leftHand.position - leftLowerLeg.position, ColliderChoice.LowerLeg, allPointTrans);
             float leftEndLegWidth = leftLegWidth * endLegWidthAspect;
 
-            runtimeColliders.Add(new CapsuleCollider(leftUpperLegWidth, leftUpperLeg.position - new Vector3(0, leftUpperLegWidth, 0), leftLowerLeg.position,ColliderChoice.UpperLeg, leftUpperLeg));
+            colliderList.Add(new CapsuleCollider(leftUpperLegWidth, leftUpperLeg.position - new Vector3(0, leftUpperLegWidth, 0), leftLowerLeg.position,ColliderChoice.UpperLeg, leftUpperLeg));
 
-            runtimeColliders.Add(new CapsuleCollider(leftLowerLegWidth, leftLowerLeg.position, leftFoot.position, ColliderChoice.LowerLeg, leftLowerLeg));
+            colliderList.Add(new CapsuleCollider(leftLowerLegWidth, leftLowerLeg.position, leftFoot.position, ColliderChoice.LowerLeg, leftLowerLeg));
             // LeftFoot
 
             if (leftToes != null)
             {
-                runtimeColliders.Add(new CapsuleCollider(leftEndLegWidth, leftFoot.position, leftToes.position, ColliderChoice.Foot,leftFoot));
+                colliderList.Add(new CapsuleCollider(leftEndLegWidth, leftFoot.position, leftToes.position, ColliderChoice.Foot,leftFoot));
             }
             else
             {
                 Vector3 leftfootStartPoint = leftFoot.position;
                 Vector3 leftfootStopPoint = new Vector3(leftfootStartPoint.x, animator.rootPosition.y + leftEndLegWidth, leftfootStartPoint.z) + animator.rootRotation * Vector3.forward * (leftLowerArm.position - leftHand.position).magnitude * endLegWidthAspect;
-                runtimeColliders.Add(new CapsuleCollider(leftEndLegWidth, leftfootStartPoint, leftfootStopPoint, ColliderChoice.Foot, leftFoot));
+                colliderList.Add(new CapsuleCollider(leftEndLegWidth, leftfootStartPoint, leftfootStopPoint, ColliderChoice.Foot, leftFoot));
             }
 
             // rightArms
@@ -301,11 +283,11 @@ namespace ADBRuntime
             float rightUpperArmWidth = CheckNearstPointToSegment(rightArmWidth * upperArmWidthAspect, rightUpperArm.position, rightLowerArm.position - rightUpperArm.position, ColliderChoice.UpperArm, allPointTrans);
             float rightLowerArmWidth = CheckNearstPointToSegment(rightArmWidth * lowerArmWidthAspect, rightLowerArm.position, rightHand.position - rightLowerArm.position, ColliderChoice.LowerArm, allPointTrans);
 
-            runtimeColliders.Add(new CapsuleCollider(rightUpperArmWidth, rightUpperArm.position, rightLowerArm.position, ColliderChoice.UpperArm, rightUpperArm));
-            runtimeColliders.Add(new CapsuleCollider(rightLowerArmWidth, rightLowerArm.position, rightHand.position, ColliderChoice.LowerArm, rightLowerArm));
+            colliderList.Add(new CapsuleCollider(rightUpperArmWidth, rightUpperArm.position, rightLowerArm.position, ColliderChoice.UpperArm, rightUpperArm));
+            colliderList.Add(new CapsuleCollider(rightLowerArmWidth, rightLowerArm.position, rightHand.position, ColliderChoice.LowerArm, rightLowerArm));
             var rightHandCenterPoint = (rightFinger.position + rightHand.position) * 0.5f;
 
-            runtimeColliders.Add(new SphereCollider(Vector3.Distance(rightHand.position, rightHandCenterPoint),  rightHand.InverseTransformPoint(rightHandCenterPoint), ColliderChoice.Hand, rightHand));
+            colliderList.Add(new SphereCollider(Vector3.Distance(rightHand.position, rightHandCenterPoint),  rightHand.InverseTransformPoint(rightHandCenterPoint), ColliderChoice.Hand, rightHand));
 
             // rightLegs
             float rightLegWidth = Vector3.Distance(rightUpperLeg.position, rightLowerLeg.position) * 0.3f;
@@ -313,20 +295,20 @@ namespace ADBRuntime
             float rightLowerLegWidth = CheckNearstPointToSegment(rightLegWidth * lowerLegWidthAspect, rightLowerLeg.position, rightHand.position - rightLowerLeg.position, ColliderChoice.LowerLeg, allPointTrans);
             float rightEndLegWidth = rightLegWidth * endLegWidthAspect;
 
-            runtimeColliders.Add(new CapsuleCollider(rightUpperLegWidth, rightUpperLeg.position - new Vector3(0, rightUpperLegWidth, 0), rightLowerLeg.position, ColliderChoice.UpperLeg, rightUpperLeg));
+            colliderList.Add(new CapsuleCollider(rightUpperLegWidth, rightUpperLeg.position - new Vector3(0, rightUpperLegWidth, 0), rightLowerLeg.position, ColliderChoice.UpperLeg, rightUpperLeg));
 
-            runtimeColliders.Add(new CapsuleCollider(rightLowerLegWidth, rightLowerLeg.position, rightFoot.position, ColliderChoice.LowerLeg, rightLowerLeg));
+            colliderList.Add(new CapsuleCollider(rightLowerLegWidth, rightLowerLeg.position, rightFoot.position, ColliderChoice.LowerLeg, rightLowerLeg));
             // rightFoot
 
             if (rightToes != null)
             {
-                runtimeColliders.Add(new CapsuleCollider(rightEndLegWidth, rightFoot.position, rightToes.position, ColliderChoice.Foot, rightFoot));
+                colliderList.Add(new CapsuleCollider(rightEndLegWidth, rightFoot.position, rightToes.position, ColliderChoice.Foot, rightFoot));
             }
             else
             {
                 Vector3 rightfootStartPoint = rightFoot.position;
                 Vector3 rightfootStopPoint = new Vector3(rightfootStartPoint.x, animator.rootPosition.y + rightEndLegWidth, rightfootStartPoint.z) + animator.rootRotation * Vector3.forward * (rightLowerArm.position - rightHand.position).magnitude * endLegWidthAspect;
-                runtimeColliders.Add(new CapsuleCollider(rightEndLegWidth, rightfootStartPoint, rightfootStopPoint, ColliderChoice.Foot, rightFoot));
+                colliderList.Add(new CapsuleCollider(rightEndLegWidth, rightfootStartPoint, rightfootStopPoint, ColliderChoice.Foot, rightFoot));
             }
 
             // fingre and other
@@ -407,6 +389,11 @@ namespace ADBRuntime
                 runtimeColliders[runtimeColliders.Count - i].colliderRead.isOpen = false;
             }
             */
+            for (int i = 0; i < colliderList.Count; i++)
+            {
+                colliderList[i].colliderRead.isConnectWithBody = true;
+            }
+            runtimeColliders.AddRange(colliderList);
         }
         public static float CheckNearstPointToSegment(float MaxLength, Vector3 position, Vector3 direction,ColliderChoice choice ,List<ADBRuntimePoint> pointTrans)
         {
