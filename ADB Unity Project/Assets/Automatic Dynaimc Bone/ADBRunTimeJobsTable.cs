@@ -809,15 +809,31 @@ namespace ADBRuntime.Internal
                                         //float Propotion = WeightProportion * t / (1 - WeightProportion - t + 2 * WeightProportion * t);
                                         if (WeightProportion > EPSILON)
                                         {
-                                            pReadWritePointA->position += (pushout * t);
-                                            pReadWritePointA->deltaPosition += (pushout * t);
+                                            if (pReadCollider->collideFunc == CollideFunc.InsideNoLimit || pReadCollider->collideFunc == CollideFunc.OutsideNoLimit)
+                                            {
+                                                pReadWritePointA->deltaPosition += 0.01f * oneDivideIteration * (pushout * t);
+                                            }
+                                            else
+                                            {
+                                                pReadWritePointA->position += (pushout * t);
+                                                pReadWritePointA->deltaPosition += (pushout * t);
+                                            }
+             
                                         }
                                         else
                                         {
                                             t = 1;
                                         }
-                                        pReadWritePointB->position += (pushout * (1 - t));
-                                        pReadWritePointB->deltaPosition += (pushout * (1 - t));
+                                        if (pReadCollider->collideFunc == CollideFunc.InsideNoLimit || pReadCollider->collideFunc == CollideFunc.OutsideNoLimit)
+                                        {
+                                            pReadWritePointB->deltaPosition += 0.01f * oneDivideIteration * (pushout * t);
+                                        }
+                                        else
+                                        {
+                                            pReadWritePointB->position += (pushout * (1 - t));
+                                            pReadWritePointB->deltaPosition += (pushout * (1 - t));
+                                        }
+
 
                                     }
                                 }

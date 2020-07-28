@@ -3,27 +3,30 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Unity.Mathematics;
+using System.ComponentModel;
 
 namespace ADBRuntime.Mono
 {
     public enum ColliderCollisionType
     {
-        /// <summary>
+        /// <summary
         /// Accurate but slow
         /// </summary>
         Both = 1,
         /// <summary>
         ///  fast but no radius
         /// </summary>
+
         Constraint = 2,
         /// <summary>
         /// little faster than constraint
         /// </summary>
-        Point = 3,
 
+        Point = 3,
         /// <summary>
         /// 没有碰撞(最快)
         /// </summary>
+
         Null = 4
     }
     [DisallowMultipleComponent]

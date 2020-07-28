@@ -7,7 +7,13 @@ using UnityEngine;
 namespace ADBRuntime
 {
     using Mono;
-
+    public enum ColliderCollisionTypeZh
+    {
+        全体碰撞=1,
+        仅杆件碰撞=2,
+        仅节点碰撞=3,
+        不计算碰撞=4
+    }
     [CustomEditor(typeof(ADBRuntimeController))]
     public class ADBRuntimeEditor : Editor
     //OYM：它的编辑器，我觉得我有必要把一部分方法写到里面去
@@ -16,6 +22,7 @@ namespace ADBRuntime
         ADBRuntimeController controller;
         private bool isDeleteCollider;
         private int max;
+        private ColliderCollisionTypeZh colliderCollisionTypeZh;
         public void OnEnable()
         {
             controller = target as ADBRuntimeController;
@@ -28,15 +35,15 @@ namespace ADBRuntime
             if (!Application.isPlaying)
             {
 
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("settings"), new GUIContent("Global Setting"), true);
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("settings"), new GUIContent("全局关联设置"), true);
   
-                Titlebar("=============== Point setting", new Color(0.7f, 1.0f, 0.7f));
-                controller.generateTransform = (Transform)EditorGUILayout.ObjectField(new GUIContent("parent Transform"), controller.generateTransform, typeof(Transform), true);
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("generateKeyWordWhiteList"), new GUIContent("Name KeyWord"), true);
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("blackListOfGenerateTransform"), new GUIContent("Transform BlackList"), true);
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("generateKeyWordBlackList"), new GUIContent("Name Key Word BlackList"), true);
+                Titlebar("=============== 节点设置", new Color(0.7f, 1.0f, 0.7f));
+                controller.generateTransform = (Transform)EditorGUILayout.ObjectField(new GUIContent("搜索起始点"), controller.generateTransform, typeof(Transform), true);
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("generateKeyWordWhiteList"), new GUIContent("识别关键词"), true);
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("blackListOfGenerateTransform"), new GUIContent("节点黑名单"), true);
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("generateKeyWordBlackList"), new GUIContent("关键词黑名单"), true);
 
-                if (GUILayout.Button("Generate Point", GUILayout.Height(22.0f)))
+                if (GUILayout.Button("生成节点数据", GUILayout.Height(22.0f)))
                 {
                     controller.initializePoint();
                     controller.isDebug = true;
@@ -44,25 +51,25 @@ namespace ADBRuntime
 
                 if (controller.allPointTrans != null)
                 {
-                    EditorGUILayout.PropertyField(serializedObject.FindProperty("allPointTrans"), new GUIContent("All point list :" + controller.allPointTrans?.Count), true);
+                    EditorGUILayout.PropertyField(serializedObject.FindProperty("allPointTrans"), new GUIContent("所有节点坐标 :" + controller.allPointTrans?.Count), true);
                     GUILayout.Space(5);
                 }
 
-                Titlebar("=============== Collider setting", new Color(0.7f, 1.0f, 0.7f));
-                string key = controller.isGenerateColliderAutomaitc ? "Generate" : "Refresh";
+                Titlebar("=============== 碰撞体设置", new Color(0.7f, 1.0f, 0.7f));
+                string key = controller.isGenerateColliderAutomaitc ? "生成" : "刷新";
 
-                if (GUILayout.Button(key + "Collider", GUILayout.Height(22.0f)))
+                if (GUILayout.Button(key + "碰撞体", GUILayout.Height(22.0f)))
                 {
                     controller.initializeCollider();
                     controller.isDebug = true;
                 }
-                controller.isGenerateColliderAutomaitc = EditorGUILayout.Toggle("┗━Is Generate Body Collider Automatic ", controller.isGenerateColliderAutomaitc);
+                controller.isGenerateColliderAutomaitc = EditorGUILayout.Toggle("自动生成全身碰撞体 ", controller.isGenerateColliderAutomaitc);
                 if (controller.isGenerateColliderAutomaitc)
                 {
-                    controller.isGenerateByFixedPoint = EditorGUILayout.Toggle("   ┗━Is Generate By Fixed Point ", controller.isGenerateByFixedPoint);
+                    controller.isGenerateByFixedPoint = EditorGUILayout.Toggle( controller.isGenerateByFixedPoint? "  ┗━以固定节点作为参照 ": "  ┗━以所有节点作为参照 ", controller.isGenerateByFixedPoint);
                 }
 
-                if (GUILayout.Button("Remove All Collider", GUILayout.Height(22.0f)))
+                if (GUILayout.Button("移除所有碰撞体", GUILayout.Height(22.0f)))
                 {
                     if (controller.editorColliderList == null) return;
                     if (isDeleteCollider)
@@ -75,40 +82,40 @@ namespace ADBRuntime
                     }
                     controller.editorColliderList = null;
                 }
-                isDeleteCollider = EditorGUILayout.Toggle("is Delete Collider Script", isDeleteCollider);
+                isDeleteCollider = EditorGUILayout.Toggle("同时删去碰撞体脚本", isDeleteCollider);
 
                 if (controller.editorColliderList != null)
                 {
-                    EditorGUILayout.PropertyField(serializedObject.FindProperty("editorColliderList"), new GUIContent("All Collider List :" + controller.editorColliderList?.Count), true);
+                    EditorGUILayout.PropertyField(serializedObject.FindProperty("editorColliderList"), new GUIContent("碰撞体列表 :" + controller.editorColliderList?.Count), true);
                 }
 
-                controller.delayTime = EditorGUILayout.FloatField("delayTime", controller.delayTime);
+                controller.delayTime = EditorGUILayout.FloatField("延迟时间", controller.delayTime);
                 Titlebar("=============== physical setting", new Color(0.7f, 1.0f, 0.7f));
             }
             else
             {
-                Titlebar("RuntimeMode", new Color(0.5F, 1, 1));
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("settings"), new GUIContent("Global Setting"), true);
+                Titlebar("运行中", new Color(0.5F, 1, 1));
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("settings"), new GUIContent("全局关联设置"), true);
                 EditorGUILayout.Space(10);
 
-                Titlebar("=============== Point setting", new Color(0.5F,1,1));
+                Titlebar("=============== 节点设置", new Color(0.5F,1,1));
 
-                if (GUILayout.Button("Refresh Point Position", GUILayout.Height(22.0f)))
+                if (GUILayout.Button("重置所有节点位置", GUILayout.Height(22.0f)))
                 {
                     controller.RestorePoint();
                 }
-                if (GUILayout.Button("Refresh All Point Data", GUILayout.Height(22.0f)))
+                if (GUILayout.Button("重置所有节点数据并重新运行", GUILayout.Height(22.0f)))
                 {
                     controller.Reset();
                 }
                 if (controller.allPointTrans != null)
                 {
-                    EditorGUILayout.PropertyField(serializedObject.FindProperty("allPointTrans"), new GUIContent("All point list :" + controller.allPointTrans?.Count), true);
+                    EditorGUILayout.PropertyField(serializedObject.FindProperty("allPointTrans"), new GUIContent("所有节点坐标 :" + controller.allPointTrans?.Count), true);
                 }
 
-                Titlebar("=============== Collider setting", new Color(0.5F, 1, 1));
+                Titlebar("===============碰撞体设定", new Color(0.5F, 1, 1));
                 EditorGUILayout.Space(5);
-                if (GUILayout.Button("RefreshColliderGizmo", GUILayout.Height(22.0f)))
+                if (GUILayout.Button("重新绘制碰撞体", GUILayout.Height(22.0f)))
                 {
                     for (int i = 0; i < controller.editorColliderList.Count; i++)
                     {
@@ -119,19 +126,20 @@ namespace ADBRuntime
 
                 if (controller.editorColliderList != null)
                 {
-                    EditorGUILayout.PropertyField(serializedObject.FindProperty("editorColliderList"), new GUIContent("All Collider List :" + controller.editorColliderList?.Count), true);
+                    EditorGUILayout.PropertyField(serializedObject.FindProperty("editorColliderList"), new GUIContent("碰撞体列表 :" + controller.editorColliderList?.Count), true);
                 }
                 Titlebar("=============== physical setting", new Color(0.5F, 1, 1));
             }
 
 
-            controller.isDebug = EditorGUILayout.Toggle("isDebug", controller.isDebug);
-            controller.isOptimize = EditorGUILayout.Toggle("OptimizeMove", controller.isOptimize);
+            controller.isDebug = EditorGUILayout.Toggle("是否绘制所有辅助线", controller.isDebug);
+            controller.isOptimize = EditorGUILayout.Toggle("轨迹优化", controller.isOptimize);
             max = max> controller.iteration?max : Mathf.CeilToInt(controller.iteration*1.1f);
             max = max > 2048 ? 2048 : max;
-            controller.iteration = EditorGUILayout.IntSlider("Iterations number", controller.iteration, 1, max);
-            controller.windForceScale = EditorGUILayout.Slider("windForcePower", controller.windForceScale, 0, 1);
-            controller.colliderCollisionType = (ColliderCollisionType)EditorGUILayout.EnumPopup("Collision Quantity", controller.colliderCollisionType);
+            controller.iteration = EditorGUILayout.IntSlider("迭代次数", controller.iteration, 1, max);
+            controller.windForceScale = EditorGUILayout.Slider("风力", controller.windForceScale, 0, 1);
+            colliderCollisionTypeZh = (ColliderCollisionTypeZh)EditorGUILayout.EnumPopup("碰撞模式", colliderCollisionTypeZh);
+            controller.colliderCollisionType =(ColliderCollisionType)colliderCollisionTypeZh;
             serializedObject.ApplyModifiedProperties();
         }
 
