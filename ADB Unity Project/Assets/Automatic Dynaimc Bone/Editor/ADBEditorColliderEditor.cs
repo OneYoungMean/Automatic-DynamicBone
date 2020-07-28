@@ -30,6 +30,8 @@ namespace ADBRuntime
             }
             private enum ColliderChoiceZh
             {
+                全部打开=-1,
+                全部关闭=0,
                 头 = 1 << 0,
                 上半身 = 1 << 1,
                 下半身 = 1 << 2,
@@ -56,7 +58,7 @@ namespace ADBRuntime
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("editor.isDraw"), new GUIContent("绘制碰撞体"), true);
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("isGlobal"), new GUIContent("是否为全局碰撞体"), true);
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("editor.colliderRead.isOpen"), new GUIContent("是否打开"), true);
-
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("editor.appendTransform"), new GUIContent("目标物体"), true);
                 controller.editor.colliderRead.colliderType = (ColliderType)EditorGUILayout.EnumPopup("碰撞体种类", (CollideTypecZh)controller.editor.colliderRead.colliderType);
 
                 switch (controller.GetColliderType())
