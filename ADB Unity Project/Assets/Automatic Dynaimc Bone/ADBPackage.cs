@@ -15,7 +15,7 @@ namespace ADBRuntime
         //private const bool isRunning = true;
         private const bool isTryExcute = false;
         private const bool isDebug = false;
-
+        private  JobHandle Hjob;
         //OYM：先把主要功能恢复
         private ADBRunTimeJobsTable ADBRunTimeJobsTable;
 
@@ -43,24 +43,26 @@ namespace ADBRuntime
 
         public DataPackage()
         {
-            ADBRunTimeJobsTable = ADBRunTimeJobsTable.GetRunTimeJobsTable(isDebug);
-
+            Hjob = new JobHandle();
             m_constraintList = new List<ConstraintRead[]>();
             m_pointReadList = new List<PointRead>();
             m_pointReadWriteList = new List<PointReadWrite>();
             pointTransformsList = new TransformAccessArray(0);
             colliderTransformsList = new TransformAccessArray(0);
         }
-        internal bool SetRuntimeData(float deltaTime, float scale, int iteration, Vector3 addForceForce, ColliderCollisionType colliderCollisionType, bool isOptimize)
+        internal bool SetRuntimeData(float deltaTime, float scale,ref int iteration, Vector3 addForceForce, ColliderCollisionType colliderCollisionType, bool isOptimize)
         {
             int batchLength = isTryExcute ? 1 : 64;
             iteration = isTryExcute ? 1 : iteration;
 
-            JobHandle Hjob = ADBRunTimeJobsTable.returnHJob;
             if (!Hjob.IsCompleted)
             {
+                iteration = Mathf.CeilToInt(iteration * 0.99f);
+                Debug.Log("检测到发生异步,自动修正迭代次数到 " + iteration);
                 return false;
             }
+
+            //OYM：当我用ADBRunTimeJobsTable.returnHJob时候,任务会在我调用的时候被强制完成,当我用本地的Hjob的时候,任务会在异步进行
 
             constraintUpdates1.oneDivideIteration = pointUpdate.oneDivideIteration = colliderGet.oneDivideIteration = pointGet.oneDivideIteration = 1.0f / iteration;
 
@@ -77,6 +79,7 @@ namespace ADBRuntime
             }
             constraintUpdates1.globalScale = scale;
           constraintUpdates1.isCollision = (colliderCollisionType == ColliderCollisionType.Both||colliderCollisionType == ColliderCollisionType.Constraint); ;
+
 
             #region LifeCycle
             Hjob = colliderGet.Schedule(colliderTransformsList);
@@ -104,10 +107,10 @@ namespace ADBRuntime
                     Hjob = constraintUpdates1.Schedule(constraintReadList1.Length, batchLength);
                 }
             }
-
+            
             Hjob = pointToTransform.Schedule(pointTransformsList);
             #endregion
-            // pointToTransform.TryExecute(pointTransformsList, Hjob);
+            //pointToTransform.TryExecute(pointTransformsList, Hjob);
 
             return true;
         }
@@ -211,25 +214,28 @@ namespace ADBRuntime
         }
         public void restorePoint()
         {
-
+            Hjob.Complete();
             ADBRunTimeJobsTable.InitiralizePoint initialpoint = new ADBRunTimeJobsTable.InitiralizePoint
             {
                 pReadPoints = (PointRead*)pointReadList.GetUnsafePtr(),
                 pReadWritePoints = (PointReadWrite*)pointReadWriteList.GetUnsafePtr(),
             };
-            ADBRunTimeJobsTable.returnHJob = initialpoint.Schedule(pointTransformsList, ADBRunTimeJobsTable.returnHJob);
+            Hjob = initialpoint.Schedule(pointTransformsList);
+            /*
             ADBRunTimeJobsTable.InitiralizeCollider initialCollider = new ADBRunTimeJobsTable.InitiralizeCollider
             {
                 pReadColliders = (ColliderRead*)collidersReadList.GetUnsafePtr(),
                 pReadWriteColliders = (ColliderReadWrite*)collidersReadWriteList.GetUnsafePtr()
             };
-            ADBRunTimeJobsTable.returnHJob = initialCollider.Schedule(colliderTransformsList, ADBRunTimeJobsTable.returnHJob);
+                        Hjob = initialCollider.Schedule(colliderTransformsList);
+            */
+
 
         }
 
         public void Dispose(bool isReset)
         {
-            ADBRunTimeJobsTable.returnHJob.Complete();
+            Hjob. Complete();
             pointReadList.Dispose();
             pointReadWriteList.Dispose();
             pointTransformsList.Dispose();

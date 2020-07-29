@@ -144,7 +144,7 @@ namespace ADBRuntime.Mono
         {
             bool isSuccessfulRun = dataPackage.SetRuntimeData(deltaTime,
                                                               scale / initializeScale,
-                                                              iteration,
+                                                              ref iteration,
                                                               addForce,
                                                               colliderCollisionType,
                                                               isOptimize);

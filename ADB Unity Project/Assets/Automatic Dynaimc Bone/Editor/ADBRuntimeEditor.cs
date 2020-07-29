@@ -133,17 +133,14 @@ namespace ADBRuntime
 
             controller.isDebug = EditorGUILayout.Toggle("是否绘制所有辅助线", controller.isDebug);
             controller.isOptimize = EditorGUILayout.Toggle("轨迹优化", controller.isOptimize);
-
-            max = max> controller.iteration?max : Mathf.CeilToInt(controller.iteration*1.1f);
-            max = max < 16 ? 16 : max;
-            max = max > 2048 ? 2048 : max;
-            controller.iteration = EditorGUILayout.IntSlider("迭代次数", controller.iteration, 1, max);
+            controller.iteration = EditorGUILayout.IntSlider("迭代次数", controller.iteration, 1, controller.isDebug?4096:256);
             controller.windForceScale = EditorGUILayout.Slider("风力", controller.windForceScale, 0, 1);
             controller.colliderCollisionType = (ColliderCollisionType)EditorGUILayout.EnumPopup("碰撞模式", (ColliderCollisionTypeZh)controller.colliderCollisionType);
             if (controller.colliderCollisionType == 0)
             {
                 controller.colliderCollisionType = ColliderCollisionType.Constraint;
             }
+            serializedObject.ApplyModifiedProperties();
         }
 
         void Titlebar(string text, Color color)

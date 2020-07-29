@@ -101,7 +101,6 @@ namespace ADBRuntime
         {
             this.colliderRead = colliderRead;
             this.appendTransform = appendtTransform;
-            isDraw = true;
         }
         public SphereCollider(float radius, Vector3 positionOffset,ColliderChoice colliderChoice, Transform appendTransform = null, CollideFunc collideFunc = CollideFunc.OutsideLimit)
         {
@@ -145,7 +144,6 @@ namespace ADBRuntime
         {
             this.colliderRead = colliderRead;
             this.appendTransform = appendtTransform;
-            isDraw = true;
         }
         public CapsuleCollider(float radius, Vector3 pointHead, Vector3 pointTail, ColliderChoice colliderChoice,Transform appendTransform = null, CollideFunc collideFunc = CollideFunc.OutsideLimit)
         {
@@ -246,7 +244,6 @@ namespace ADBRuntime
             this.appendTransform = appendtTransform;
             OBBposition = colliderRead.positionOffset;
             OBBRotation = colliderRead.staticRotation;
-            isDraw = true;
         }
         public OBBBoxCollider(Vector3 center, Vector3 range, Vector3 direction, ColliderChoice colliderChoice, Transform appendTransform = null, CollideFunc collideFunc = CollideFunc.OutsideLimit)
         {
@@ -332,7 +329,7 @@ namespace ADBRuntime
     public struct ColliderReadWrite
     {
         public Vector3 position;
-        public Vector3 direction;
+        public Vector3 direction; 
         public Quaternion rotation;
         public Vector3 deltaPosition;
         public Vector3 deltaDirection;

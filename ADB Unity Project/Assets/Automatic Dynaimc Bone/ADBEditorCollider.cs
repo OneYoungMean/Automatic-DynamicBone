@@ -16,6 +16,13 @@ namespace ADBRuntime.Mono
 
         private void Awake()
         {
+            if (editor == null)
+            {
+                return;
+            }
+
+            Refresh();
+
             if (globalColliderList == null)
             {
                 globalColliderList = new List<ADBRuntimeCollider>();
@@ -39,6 +46,10 @@ namespace ADBRuntime.Mono
         }
         public void Refresh()
         {
+            if (editor==null)
+            {
+                return;
+            }
             editor.isDraw = true;
             editor.colliderRead.CheckValue();
             switch (editor.colliderRead.colliderType)

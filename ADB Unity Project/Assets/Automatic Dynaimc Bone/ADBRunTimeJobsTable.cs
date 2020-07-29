@@ -14,36 +14,8 @@ namespace ADBRuntime.Internal
 {
     public unsafe class ADBRunTimeJobsTable
     {
-        #region Single
-        private static ADBRunTimeJobsTable instance_ADBRunTimeJobsTable;//OYM：单例模式
-        private ADBRunTimeJobsTable() { }
-        public static ADBRunTimeJobsTable GetRunTimeJobsTable(bool isDebug = false)
-        {
-            if (instance_ADBRunTimeJobsTable == null)
-            {
-                instance_ADBRunTimeJobsTable = new ADBRunTimeJobsTable();
-            }
-
-            instance_ADBRunTimeJobsTable.isDebug = isDebug;
-            return instance_ADBRunTimeJobsTable;
-        }
-
-        #endregion
-
-        internal JobHandle returnHJob;
-        internal bool isDebug;
-        // private int complexHJobBatchCount=8;
-        //先预留在这里看下性能
         private const float EPSILON = 0.001f;
         private const float SQRT_2 = 1.41421356f;
-        public int computeCount = 0;
-        public void Add(int count = 1)
-        {
-            if (isDebug)
-            {
-                computeCount += count;
-            }
-        }
 
         #region Jobs
         /// <summary>
