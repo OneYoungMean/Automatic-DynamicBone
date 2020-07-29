@@ -1,4 +1,4 @@
-写在开头:**您可能需要科学上网才能看到GIF图!**  
+写在开头:**示例自带的脚本有bug,报错的话请删除**  
 如果您实在翻不了墙，下载还贼慢，你可以选择在[此处下载](https://gitee.com/OneYoungMean/Automatic-DynamicBone)  
 [English version manual](https://github.com/OneYoungMean/Automatic-DynamicBone/wiki/English-version-manual)  
 
