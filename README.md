@@ -25,11 +25,6 @@
 
 - **添加了一个新的免费示例模型,感谢Kafuji,以及[在此处获取更多的模型](https://fantia.jp/fanclubs/3967)**  
 
-## 概述   
-
-
-[了解跟多!](https://github.com/OneYoungMean/Automatic-DynamicBone/wiki) 
-
 ## 特性
 
 - **无需(但兼容)ECS与Dots!** 我们并没有采用ECS系统!除了unity的多线程jobs系统,插件并没有额外涉及任意ECS的内容!你不用担心额外的jobs系统其对你的项目造成影响!
