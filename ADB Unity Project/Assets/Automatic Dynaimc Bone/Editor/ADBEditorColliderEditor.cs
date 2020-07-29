@@ -13,7 +13,7 @@ namespace ADBRuntime
         {
             ADBEditorCollider controller;
             private bool isDeleteCollider;
-            private CollideFuncZh collideFuncZh;
+
             private enum CollideTypecZh
             {
                 球体=0,
@@ -22,11 +22,11 @@ namespace ADBRuntime
             }
             private enum CollideFuncZh
             {
-                冻结在表面=0,
                 碰撞体_向外排斥=1,
                 碰撞体_约束在内=2,
                 力场_向外排斥=3,
                 力场_约束在内=4,
+                冻结在表面 = 5,
             }
             private enum ColliderChoiceZh
             {
@@ -44,7 +44,6 @@ namespace ADBRuntime
             public void OnEnable()
             {
                 controller = (target as ADBEditorCollider);
-
             }
             public override void OnInspectorGUI()
             {
@@ -84,8 +83,11 @@ namespace ADBRuntime
                     default:
                         break;
                 }
-                controller.editor.colliderRead.collideFunc = (CollideFunc)EditorGUILayout.EnumPopup("┗━I 碰撞体功能", (CollideFuncZh)collideFuncZh);
-
+                controller.editor.colliderRead.collideFunc = (CollideFunc)EditorGUILayout.EnumPopup("┗━I 碰撞体功能", (CollideFuncZh)controller.editor.colliderRead.collideFunc);
+                if (controller.editor.colliderRead.collideFunc == 0)
+                {
+                    controller.editor.colliderRead.collideFunc = CollideFunc.OutsideLimit;
+                }
                 controller.editor.colliderRead.colliderChoice= (ColliderChoice)EditorGUILayout.EnumPopup("┗━I 碰撞体属性",(ColliderChoiceZh) controller.editor.colliderRead.colliderChoice);
 
                 // EditorGUILayout.PropertyField(serializedObject.FindProperty("editor.colliderRead.isConnectWithBody"), new GUIContent("Is Connect With Body"), true);

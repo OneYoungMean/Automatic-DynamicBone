@@ -35,7 +35,7 @@ namespace ADBRuntime.Mono
         [SerializeField]
         public bool isGenerateColliderAutomaitc=true;
         [SerializeField]
-        public bool isGenerateByFixedPoint = true;
+        public bool isGenerateByAllPoint = true;
         [SerializeField]
         public float delayTime=0.0001f;
         [SerializeField]
@@ -246,13 +246,14 @@ namespace ADBRuntime.Mono
                 {
                     for (int i = 0; i < jointAndPointControlls.Length; i++)
                     {
-                        if (isGenerateByFixedPoint)
+                        if (isGenerateByAllPoint)
                         {
-                            pointList.AddRange(jointAndPointControlls[i].fixedNodeList);
+                            pointList.AddRange(jointAndPointControlls[i].allNodeList);
                         }
                         else
                         {
-                            pointList.AddRange(jointAndPointControlls[i].allNodeList);
+                            pointList.AddRange(jointAndPointControlls[i].fixedNodeList);
+
                         }
                     }
                 }

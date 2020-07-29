@@ -22,7 +22,6 @@ namespace ADBRuntime
         ADBRuntimeController controller;
         private bool isDeleteCollider;
         private int max;
-        private ColliderCollisionTypeZh colliderCollisionTypeZh;
         public void OnEnable()
         {
             controller = target as ADBRuntimeController;
@@ -66,7 +65,7 @@ namespace ADBRuntime
                 controller.isGenerateColliderAutomaitc = EditorGUILayout.Toggle("自动生成全身碰撞体 ", controller.isGenerateColliderAutomaitc);
                 if (controller.isGenerateColliderAutomaitc)
                 {
-                    controller.isGenerateByFixedPoint = EditorGUILayout.Toggle( controller.isGenerateByFixedPoint? "  ┗━以固定节点作为参照 ": "  ┗━以所有节点作为参照 ", controller.isGenerateByFixedPoint);
+                    controller.isGenerateByAllPoint = EditorGUILayout.Toggle( "  ┗━以所有节点作为参照 ",controller.isGenerateByAllPoint);
                 }
 
                 if (GUILayout.Button("移除所有碰撞体", GUILayout.Height(22.0f)))
@@ -141,6 +140,10 @@ namespace ADBRuntime
             controller.iteration = EditorGUILayout.IntSlider("迭代次数", controller.iteration, 1, max);
             controller.windForceScale = EditorGUILayout.Slider("风力", controller.windForceScale, 0, 1);
             controller.colliderCollisionType = (ColliderCollisionType)EditorGUILayout.EnumPopup("碰撞模式", (ColliderCollisionTypeZh)controller.colliderCollisionType);
+            if (controller.colliderCollisionType == 0)
+            {
+                controller.colliderCollisionType = ColliderCollisionType.Constraint;
+            }
         }
 
         void Titlebar(string text, Color color)

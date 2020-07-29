@@ -14,10 +14,6 @@ namespace ADBRuntime
     public enum CollideFunc
     {
         /// <summary>
-        /// 冻死在边界上
-        /// </summary>
-        Freeze =0,
-        /// <summary>
         /// 往外排斥,并且有边界
         /// </summary>
         OutsideLimit=1,
@@ -32,7 +28,11 @@ namespace ADBRuntime
         /// <summary>
         /// 向内约束,并且没有边界
         /// </summary>
-        InsideNoLimit = 4
+        InsideNoLimit = 4,
+        /// <summary>
+        /// 冻死在边界上
+        /// </summary>
+        Freeze = 5
     }
 
     [Serializable]
@@ -42,7 +42,8 @@ namespace ADBRuntime
         public ColliderReadWrite colliderReadWrite;
         public Transform appendTransform;
         public bool isDraw;
-        internal ADBRuntimeCollider(){}
+        internal ADBRuntimeCollider()
+        { }
         public ColliderRead GetColliderRead()
         {
             ColliderRead mirror = colliderRead;

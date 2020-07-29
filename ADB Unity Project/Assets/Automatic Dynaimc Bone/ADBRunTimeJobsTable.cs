@@ -384,6 +384,7 @@ namespace ADBRuntime.Internal
                 Vector3 deltaPosition = Vector3.zero;
                 //OYM：获取固定点的信息
                 PointReadWrite* pFixedPointReadWrite = (pReadWritePoints + pReadPoint->fixedIndex);
+                PointRead* pFixedPointRead = (pReadPoints + pReadPoint->fixedIndex);
                 //OYM：获取以fixed位移进行为参考进行距离补偿(这里的delta已经乘以过onedivideItertation了)
                 pReadWritePoint->position +=pFixedPointReadWrite->deltaPosition * pReadPoint->distanceCompensation;
                 //OYM：获取当前相对fixed的向量
@@ -393,10 +394,13 @@ namespace ADBRuntime.Internal
 
                 if (pReadPoint->isFixGravityAxis)
                 {
+
+                    deltaPosition += oneDivideIteration * ((pFixedPointReadWrite->rotation *Quaternion.Inverse(pFixedPointRead->initialRotation) )*pReadPoint->gravity) * (0.5f * deltaTime * deltaTime) * globalScale;//OYM：重力
                     back = pFixedPointReadWrite->rotation * pReadPoint->initialPosition * globalScale - direction;
                 }
                 else
                 {
+                    deltaPosition += oneDivideIteration * pReadPoint->gravity * (0.5f * deltaTime * deltaTime) * globalScale;//OYM：重力
                     back = pFixedPointReadWrite->rotationY * pReadPoint->initialPosition * globalScale - direction;
                 }
 
@@ -410,7 +414,7 @@ namespace ADBRuntime.Internal
                 //OYM：计算以fixed位移进行为参考进行速度补偿
                 deltaPosition -= pFixedPointReadWrite->deltaPosition * pReadPoint->moveByFixedPoint * 0.2f;//OYM：测试了一下,0.2是个恰到好处的值,不会显得太大也不会太小
                 //OYM：计算重力
-                deltaPosition += oneDivideIteration * pReadPoint->gravity * (0.5f * deltaTime * deltaTime) * globalScale;
+
                 if (isOptimize)
                 {
                     //OYM：减少对于骨骼的拉长

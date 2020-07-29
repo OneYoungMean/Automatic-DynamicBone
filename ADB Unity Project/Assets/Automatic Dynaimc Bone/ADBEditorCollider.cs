@@ -39,6 +39,8 @@ namespace ADBRuntime.Mono
         }
         public void Refresh()
         {
+            editor.isDraw = true;
+            editor.colliderRead.CheckValue();
             switch (editor.colliderRead.colliderType)
             {
                 case ColliderType.Sphere:
