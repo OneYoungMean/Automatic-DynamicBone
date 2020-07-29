@@ -4,7 +4,9 @@
 
 # AutomaticDynamicBone
 
-基于https://github.com/SPARK-inc/SPCRJointDynamics ,一个可以根据骨骼布料,自动生成具有物理效果头发和裙子的插件.  
+基于https://github.com/SPARK-inc/SPCRJointDynamics ,基于unity jobs 多线程系统,一个可以根据骨骼布料,自动生成具有物理效果头发和裙子,用于代替dynamicBone的**unity骨骼布料仿真插件**.  
+此外,缅怀作者被dynamic bone坑走了**15美刀**  
+
 - **当前版本:0.7preview 最后更新日期:20/7/29**  
 - **当前版本更新频繁,请耐心等待**   
 
@@ -25,7 +27,7 @@
 
 ## 概述   
 
-AutomaticDynamicBone(ADB)是作者由于被dynamic bone坑走了**15美刀一怒之下**开发出来,基于unity jobs 多线程系统,用于代替dynamicBone的unity骨骼布料仿真插件.   
+
 [了解跟多!](https://github.com/OneYoungMean/Automatic-DynamicBone/wiki) 
 
 ## 特性
