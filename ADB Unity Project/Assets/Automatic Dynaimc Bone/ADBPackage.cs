@@ -50,15 +50,19 @@ namespace ADBRuntime
             pointTransformsList = new TransformAccessArray(0);
             colliderTransformsList = new TransformAccessArray(0);
         }
-        internal bool SetRuntimeData(float deltaTime, float scale,ref int iteration, Vector3 addForceForce, ColliderCollisionType colliderCollisionType, bool isOptimize)
+        internal bool SetRuntimeData(float deltaTime, float scale,ref int iteration, Vector3 addForceForce, ColliderCollisionType colliderCollisionType, bool isOptimize, bool detectAsync)
         {
             int batchLength = isTryExcute ? 1 : 64;
             iteration = isTryExcute ? 1 : iteration;
 
             if (!Hjob.IsCompleted)
             {
-                iteration = Mathf.CeilToInt(iteration * 0.99f);
-                Debug.Log("检测到发生异步,自动修正迭代次数到 " + iteration);
+                if (!detectAsync)
+                {
+                    iteration = Mathf.CeilToInt(iteration * 0.99f);
+                    Debug.Log("检测到发生异步,自动修正迭代次数到 " + iteration);
+                }
+
                 return false;
             }
 
@@ -107,7 +111,7 @@ namespace ADBRuntime
                     Hjob = constraintUpdates1.Schedule(constraintReadList1.Length, batchLength);
                 }
             }
-            
+
             Hjob = pointToTransform.Schedule(pointTransformsList);
             #endregion
             //pointToTransform.TryExecute(pointTransformsList, Hjob);

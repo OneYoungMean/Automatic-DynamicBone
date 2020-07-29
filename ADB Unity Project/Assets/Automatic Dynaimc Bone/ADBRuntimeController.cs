@@ -60,7 +60,8 @@ namespace ADBRuntime.Mono
         public List<Transform> allPointTrans;
         [SerializeField]
         public List<ADBEditorCollider> editorColliderList;
-
+        [SerializeField]
+        public bool isNotAllowAsync;
         private ADBRuntimeColliderControll colliderControll;
         private ADBConstraintReadAndPointControll[] jointAndPointControlls;
         private DataPackage dataPackage;
@@ -70,6 +71,7 @@ namespace ADBRuntime.Mono
         private float initializeScale;
         private float scale;
         private Vector3 addForce;
+
 
         private void Start()//OYM：滚回来自己来趟这趟屎山
         {
@@ -147,7 +149,9 @@ namespace ADBRuntime.Mono
                                                               ref iteration,
                                                               addForce,
                                                               colliderCollisionType,
-                                                              isOptimize);
+                                                              isOptimize,
+                                                              !isNotAllowAsync
+                                                              );
             if (isSuccessfulRun)
             {
                 deltaTime = 0;
