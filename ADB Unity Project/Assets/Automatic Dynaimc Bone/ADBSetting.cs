@@ -6,7 +6,7 @@ namespace ADBRuntime
     [CreateAssetMenu(fileName = "ADBSettingFile",menuName = "ADB/SettingFile")]
     public class ADBSetting : ScriptableObject
     {
-        public bool useGlobal = false;
+        public bool useGlobal = true;
         //高级情况下用这一套
         public AnimationCurve frictionCurve = new AnimationCurve(new Keyframe[] { new Keyframe(0.0f, 0.0f), new Keyframe(1.0f, 0.0f) });
         public AnimationCurve addForceScaleCurve = new AnimationCurve(new Keyframe[] { new Keyframe(0.0f, 1.0f), new Keyframe(1.0f, 1.0f) });
@@ -93,7 +93,7 @@ namespace ADBRuntime
         public bool isDebugDraw=true;
         public bool isFixGravityAxis = true;
         public Vector3 gravity = new Vector3(0.0f, -9.81f, 0.0f);//OYM：重力
-        public ColliderChoice colliderChoice = (ColliderChoice)(1 << 9 - 1);
+        public ColliderChoice colliderChoice = (ColliderChoice)(1 << 10 - 1);
     }
 
     public enum ColliderChoice

@@ -24,6 +24,7 @@ namespace ADBRuntime
         public void OnEnable()
         {
             controller = target as ADBRuntimeController;
+
         }
         public override void OnInspectorGUI()
         {
@@ -49,7 +50,7 @@ namespace ADBRuntime
 
                 if (controller.allPointTrans != null)
                 {
-                    EditorGUILayout.PropertyField(serializedObject.FindProperty("allPointTrans"), new GUIContent("所有节点坐标 :" + controller.allPointTrans?.Count), true);
+                    EditorGUILayout.PropertyField(serializedObject.FindProperty("inspectorPointList"), new GUIContent("所有节点坐标 :" + controller.allPointTrans?.Count), true);
                     GUILayout.Space(5);
                 }
 

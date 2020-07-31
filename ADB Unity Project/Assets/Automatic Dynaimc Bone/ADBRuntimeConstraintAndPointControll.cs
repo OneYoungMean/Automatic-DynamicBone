@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ADBRuntime.Mono;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -85,7 +86,7 @@ namespace ADBRuntime
 
             if (point.childNode == null)
             {//OYM：没有子节点
-                if (aDBSetting.isComputeVirtual && (!point.trans.name.Contains("virtual")))//OYM：创建一个延长的节点
+                if (Application.isPlaying&&aDBSetting.isComputeVirtual && (!point.trans.name.Contains("virtual")))//OYM：创建一个延长的节点
                 {
                     Transform childPointTrans = new GameObject(point.trans.name + " virtual").transform;
                     childPointTrans.position = point.trans.position + ((point.parent?.depth == -1) ?
@@ -122,7 +123,7 @@ namespace ADBRuntime
                 childPoint.pointRead.fixedIndex = point.pointRead.fixedIndex;
                 childPoint.parent = point;
 
-                childPoint.pointRead.initialLocalPosition = Quaternion.Inverse(point.trans.rotation) * (childPoint.trans.position - point.trans.position);
+                childPoint.pointRead.initialLocalPosition = point.trans? Quaternion.Inverse(point.trans.rotation) * (childPoint.trans.position - point.trans.position) : childPoint.trans.position;
                 childPoint.pointRead.initialLocalRotation = childPoint.trans.localRotation;
                 childPoint.pointRead.initialRotation = childPoint.trans.rotation;
                 childPoint.index = allPointList.Count;
@@ -243,8 +244,8 @@ namespace ADBRuntime
                 {
                     for (int i = 0; i < constraintsStructuralVertical.Count; i++)
                     {
-                        VerticalVector[constraintsStructuralVertical[i].pointA.index] += constraintsStructuralVertical[i].direction.magnitude;
-                        VerticalVector[constraintsStructuralVertical[i].pointB.index] += constraintsStructuralVertical[i].direction.magnitude;
+                            VerticalVector[constraintsStructuralVertical[i].pointA.index] += constraintsStructuralVertical[i].direction.magnitude;
+                            VerticalVector[constraintsStructuralVertical[i].pointB.index] += constraintsStructuralVertical[i].direction.magnitude;
                     }
                 }
 
@@ -308,7 +309,7 @@ namespace ADBRuntime
         }
 
         #endregion
-        #region constrain
+        #region constraint
         private void CreationConstraintList()
         {
             var ConstraintReadList = new List<List<ConstraintRead>>();
@@ -562,7 +563,7 @@ namespace ADBRuntime
                 for (; j0 < horizontalConstraintList.Count; j0++)
                 {
                     ADBRuntimeConstraint ConstraintB = horizontalConstraintList[j0];
-                    if ((ConstraintA.constraintRead.shrink == 0 && ConstraintA.constraintRead.stretch == 0 || //OYM：排除A杆件或B杆件是isloopPoint生成的不承受力的杆件
+                    if (!(ConstraintA.constraintRead.shrink == 0 && ConstraintA.constraintRead.stretch == 0 || //OYM：排除A杆件或B杆件是isloopPoint生成的不承受力的杆件
                         ConstraintB.constraintRead.shrink == 0 && ConstraintB.constraintRead.stretch == 0)&&
                         ConstraintA.pointB == ConstraintB.pointA)
                     {
@@ -650,86 +651,159 @@ namespace ADBRuntime
 
         public static ADBConstraintReadAndPointControll[] GetJointAndPointControllList(Transform transform, List<string> generateKeyWordWhiteList, List<string> generateKeyWordBlackList, List<Transform> blackListOfGenerateTransform, ADBGlobalSetting settings)//OYM：一个巨啰嗦的方法
         {
-            List<ADBRuntimePoint> FixedADBRuntimePoint = searchFixedADBRuntimePoint(transform, generateKeyWordWhiteList, generateKeyWordBlackList, blackListOfGenerateTransform, 0);//OYM：获取所有的固定点,,这里的固定时指那些能动的点的父节点,顺便一提,这个方法顺便把所有节点的子节点赋值了
+            List<ADBSpringBone> aDBSpringBones =null;//OYM：新添加的一个用于搜索点的工具
 
-            if (FixedADBRuntimePoint == null)
-                return null;
-
-            //OYM：在这里对收集好的子节点进行分类与识别
+            List<ADBRuntimePoint> FixedADBRuntimePoint = searchFixedADBRuntimePoint(transform, generateKeyWordWhiteList, generateKeyWordBlackList, blackListOfGenerateTransform, 0,ref aDBSpringBones);//OYM：获取所有的固定点,,这里的固定时指那些能动的点的父节点,顺便一提,这个方法顺便把所有节点的子节点赋值了
             List<ADBConstraintReadAndPointControll> ADBRuntimeJointAndPointControlls = new List<ADBConstraintReadAndPointControll>();//OYM：
-            for (int i = 0; i < FixedADBRuntimePoint.Count; i++)
+
+            if (FixedADBRuntimePoint != null)
             {
-                Transform parentPoint = FixedADBRuntimePoint[i].trans.parent;
-                string keyWord = FixedADBRuntimePoint[i].keyWord;
-                bool isContain = false;
-                for (int j0 = 0; j0 < ADBRuntimeJointAndPointControlls.Count; j0++)
+                for (int i = 0; i < FixedADBRuntimePoint.Count; i++)
                 {
-                    //OYM：如果包含,就把它加到包含它的controll里面去
-                    if (ADBRuntimeJointAndPointControlls[j0].rootNode.trans == parentPoint && ADBRuntimeJointAndPointControlls[j0].keyWord == keyWord)
+                    Transform parentPoint = FixedADBRuntimePoint[i].trans.parent;
+                    string keyWord = FixedADBRuntimePoint[i].keyWord;
+                    bool isContain = false;
+                    for (int j0 = 0; j0 < ADBRuntimeJointAndPointControlls.Count; j0++)
                     {
-                        ADBRuntimeJointAndPointControlls[j0].fixedNodeList.Add(FixedADBRuntimePoint[i]);
-                        isContain = true;
+                        //OYM：如果包含,就把它加到包含它的controll里面去
+                        if (ADBRuntimeJointAndPointControlls[j0].rootNode.trans == parentPoint && ADBRuntimeJointAndPointControlls[j0].keyWord == keyWord)
+                        {
+                            ADBRuntimeJointAndPointControlls[j0].fixedNodeList.Add(FixedADBRuntimePoint[i]);
+                            isContain = true;
+                        }
+                    }
+                    //OYM：不包含就新建立一个controll,然后加进去
+                    if (!isContain)
+                    {
+                        ADBSetting setting;
+                        if (settings == null)
+                        {
+                            Debug.Log("Setting File is Lost,check the Resources folder");
+                            setting = (ADBSetting)ScriptableObject.CreateInstance(typeof(ADBSetting));
+                        }
+                        else
+                        {
+                            setting = settings.GetSetting(keyWord);
+                        }
+
+                        ADBRuntimeJointAndPointControlls.Add(new ADBConstraintReadAndPointControll(parentPoint, keyWord, setting));
+                        ADBRuntimeJointAndPointControlls[ADBRuntimeJointAndPointControlls.Count - 1].fixedNodeList.Add(FixedADBRuntimePoint[i]);//OYM：给
                     }
                 }
-                //OYM：不包含就新建立一个controll,然后加进去
-                if (!isContain)
+                //OYM：顺便把所有的fixednode添加给rootnode的childNode
+            }
+            //OYM：在这里对收集好的子节点进行分类与识别
+            //==================================SpringBone处理相关===============================
+            if (aDBSpringBones!=null)
+            {
+                for (int i = 0; i < aDBSpringBones.Count; i++)
                 {
-                    ADBSetting setting;
-                    if (settings == null)
+
+                    if (aDBSpringBones[i].aDBSetting == null)
                     {
-                        Debug.Log("Setting File is Lost,check the Resources folder");
-                        setting = (ADBSetting)ScriptableObject.CreateInstance(typeof(ADBSetting));
-                    }
-                    else
-                    {
-                        setting = settings.GetSetting(keyWord);
+                        Debug.Log("Setting File is Lost,The "+ aDBSpringBones[i].transform.name+"'s Spring Bone script");
+                        aDBSpringBones[i].aDBSetting = (ADBSetting)ScriptableObject.CreateInstance(typeof(ADBSetting));
                     }
 
-                    ADBRuntimeJointAndPointControlls.Add(new ADBConstraintReadAndPointControll(parentPoint, keyWord, setting));
-                    ADBRuntimeJointAndPointControlls[ADBRuntimeJointAndPointControlls.Count - 1].fixedNodeList.Add(FixedADBRuntimePoint[i]);//OYM：给
+                    ADBRuntimeJointAndPointControlls.Add(new ADBConstraintReadAndPointControll(
+                        aDBSpringBones[i].transform.parent,
+                        "",
+                        aDBSpringBones[i].aDBSetting
+                        ));
+                    ADBRuntimeJointAndPointControlls[ADBRuntimeJointAndPointControlls.Count - 1].fixedNodeList.Add(aDBSpringBones[i].fixedNode);
                 }
+
             }
-            //OYM：顺便把所有的fixednode添加给rootnode的childNode
             for (int i = 0; i < ADBRuntimeJointAndPointControlls.Count; i++)
             {
-                ADBRuntimeJointAndPointControlls[i].rootNode.childNode = ADBRuntimeJointAndPointControlls[i].fixedNodeList;
+                ADBRuntimeJointAndPointControlls[i].rootNode.childNode = ADBRuntimeJointAndPointControlls[i].fixedNodeList;//OYM：赋值
             }
+            //==================================SpringBone处理相关===============================
             return ADBRuntimeJointAndPointControlls.ToArray();
+
         }
         //OYM：deep search the fixed point ,get they childpoint and add it to their point data 
-        private static List<ADBRuntimePoint> searchFixedADBRuntimePoint(Transform transform, List<string> generateKeyWordWhiteList, List<string> generateKeyWordBlackList, List<Transform> blackListOfGenerateTransform, int depth)
+        private static List<ADBRuntimePoint> searchFixedADBRuntimePoint(Transform transform, List<string> generateKeyWordWhiteList, List<string> generateKeyWordBlackList, List<Transform> blackListOfGenerateTransform, int depth,ref List<ADBSpringBone> aDBSpringBone)
         {       //OYM：利用深度搜索,能很快找到所有的固定点,
                 //OYM：如果是子节点与父节点匹配,则父节点添加子节点坐标
                 //OYM：
             if (transform == null || transform.childCount == 0) return null;
             //OYM：防空
+            //==================================SpringBone处理相关===============================
+            var springBone = transform.GetComponent<ADBSpringBone>();
+            if (springBone != null&& (aDBSpringBone==null|| !aDBSpringBone.Contains(springBone)))
+            {
+                if (aDBSpringBone == null)
+                {
+                    aDBSpringBone = new List<ADBSpringBone>();
+                }
+                aDBSpringBone.Add(springBone);
+
+                if (springBone.fixedPointTransform != null)
+                {
+                    springBone.fixedNode = new ADBRuntimePoint(springBone.fixedPointTransform, 0, "");
+                }
+                else
+                {
+                    springBone.fixedNode = new ADBRuntimePoint(transform, 0, "");
+                    springBone.fixedPointTransform = transform;
+                }
+                springBone.fixedNode.childNode = searchFixedADBRuntimePoint(
+                    springBone.fixedPointTransform,
+                    new List<string>() { "" },
+                    springBone.generateKeyWordBlackList,
+                    springBone.blackListOfGenerateTransform,
+                    0,
+                    ref aDBSpringBone
+                );
+                List<ADBRuntimePoint> temp = new List<ADBRuntimePoint>() { springBone.fixedNode };
+                springBone.allTransfromList = new List<Transform>();
+                for (int j0 = 0; j0 < temp.Count; j0++)
+                {
+                    springBone.allTransfromList.Add(temp[j0].trans);
+                    if (temp[j0].childNode != null)
+                    {
+                        temp.AddRange(temp[j0].childNode);
+                    }
+                }
+            }
+            //==================================SpringBone处理相关===============================
+
             List<ADBRuntimePoint> ADBRuntimePoint = new List<ADBRuntimePoint>();
 
             for (int i = 0; i < transform.childCount; i++)//OYM：这里就很有意思了
             {
                 var childNodeTarns = transform.GetChild(i);//OYM：遍历每一个子节点
+
                 var childName = childNodeTarns.name.ToLower();//OYM：获取他们的名字
                 ADBRuntimePoint point = null;
 
                 //OYM：[判断是否属于黑名单
                 bool isblack = false;
-                for (int j0 = 0; j0 < blackListOfGenerateTransform.Count; j0++)
+
+                for (int j0 = 0; j0 < aDBSpringBone?.Count; j0++)//OYM：是否被Springbone搜索过了
                 {
+                    isblack = aDBSpringBone[j0].fixedPointTransform == childNodeTarns;
                     if (isblack) break;
 
-                    isblack = childNodeTarns.Equals(blackListOfGenerateTransform[j0]);
                 }
-                for (int j0 = 0; j0 < generateKeyWordBlackList.Count; j0++)
-                {
-                    if (isblack) break;
+                if (isblack) continue;
 
+                for (int j0 = 0; j0 < blackListOfGenerateTransform.Count; j0++)//OYM：是否在节点黑名单
+                {
+                    isblack = childNodeTarns.Equals(blackListOfGenerateTransform[j0]);
+                    if (isblack) break;
+                }
+                for (int j0 = 0; j0 < generateKeyWordBlackList.Count; j0++)//OYM：是否在名字黑名单
+                {
                     isblack = childName.Contains(generateKeyWordBlackList[j0]);
+                    if (isblack) break;
                 }
                 if (!isblack)
                 {
                     foreach (var whiteKey in generateKeyWordWhiteList)
                     {
-                        if (whiteKey == null || whiteKey.Length == 0) continue;
+                        if (whiteKey == null ) continue;
                         if (childName.Contains(whiteKey))
                         {
                             point = new ADBRuntimePoint(childNodeTarns, depth, whiteKey);
@@ -742,7 +816,7 @@ namespace ADBRuntime
                 //OYM：注意,这个递归非常有意思,值得好好看看
                 if (point != null)
                 {
-                    List<ADBRuntimePoint> childPoint = searchFixedADBRuntimePoint(point.trans, new List<string> { point.keyWord }, generateKeyWordBlackList, blackListOfGenerateTransform, depth + 1);
+                    List<ADBRuntimePoint> childPoint = searchFixedADBRuntimePoint(point.trans, new List<string> { point.keyWord }, generateKeyWordBlackList, blackListOfGenerateTransform, depth + 1, ref aDBSpringBone);
                     //OYM：以单一的关键词进行搜索
                     point.childNode = childPoint;//OYM：注意,这里是设置父节点的子节点,而子节点添加下一层节点搜索到的更深层的子节点
                     ADBRuntimePoint.Add(point);//OYM：result添加这个父节点,返回给上一级
@@ -750,7 +824,7 @@ namespace ADBRuntime
                 //OYM：search next
                 else
                 {
-                    List<ADBRuntimePoint> nextNode = searchFixedADBRuntimePoint(childNodeTarns, generateKeyWordWhiteList, generateKeyWordBlackList, blackListOfGenerateTransform, depth);//OYM：这个list会包含所有最顶层的父节点
+                    List<ADBRuntimePoint> nextNode = searchFixedADBRuntimePoint(childNodeTarns, generateKeyWordWhiteList, generateKeyWordBlackList, blackListOfGenerateTransform, depth,ref aDBSpringBone);//OYM：这个list会包含所有最顶层的父节点
                     //OYM：不搜索匹配的子节点,而搜索子节点的所有子节点中是否有匹配的
                     if (nextNode != null)
                     {

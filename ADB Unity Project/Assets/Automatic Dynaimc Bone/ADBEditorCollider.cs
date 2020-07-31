@@ -33,6 +33,13 @@ namespace ADBRuntime.Mono
                 globalColliderList.Add(editor);
             }
         }
+        private void OnDestroy()
+        {
+            if (globalColliderList != null)
+            {
+                globalColliderList = null;
+            }
+        }
         public static void RuntimeCollider2Editor(ADBRuntimeCollider runtime)
         {
             var editor = runtime.appendTransform.gameObject.AddComponent<ADBEditorCollider>();
@@ -57,14 +64,17 @@ namespace ADBRuntime.Mono
                 case ColliderType.Sphere:
                     if(editor.GetType()!=typeof(SphereCollider))
                     editor = new SphereCollider(editor.colliderRead, transform);
+                    editor.colliderRead.isOpen = true;
                     break;
                 case ColliderType.Capsule:
                     if (editor.GetType() != typeof(CapsuleCollider))
                         editor = new CapsuleCollider(editor.colliderRead, transform);
+                    editor.colliderRead.isOpen = true;
                     break;
                 case ColliderType.OBB:
                     if (editor.GetType() != typeof(OBBBoxCollider))
                         editor = new OBBBoxCollider(editor.colliderRead, transform);
+                    editor.colliderRead.isOpen = true;
                     break;
                 default:
                     break;

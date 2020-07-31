@@ -106,7 +106,13 @@ namespace ADBRuntime
         {
             if (Application.isPlaying&&ADBEditorCollider.globalColliderList != null)
             {
-                runtimeColliderList.AddRange(ADBEditorCollider.globalColliderList);
+                for (int i = 0; i < ADBEditorCollider.globalColliderList.Count; i++)
+                {
+                    if (!runtimeColliderList.Contains(ADBEditorCollider.globalColliderList[i]))
+                    {
+                        runtimeColliderList.Add(ADBEditorCollider.globalColliderList[i]);
+                    }
+                }
                 return true;
             }
             return false;

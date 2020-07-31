@@ -121,7 +121,6 @@ namespace ADBRuntime
         internal float distanceCompensation;
         internal Quaternion initialLocalRotation;
         internal Quaternion initialRotation;
-        internal float velocityLimit;
     }
 
     //OYM：写入系统

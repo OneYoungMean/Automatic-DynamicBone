@@ -7,6 +7,7 @@ using System.ComponentModel;
 
 namespace ADBRuntime.Mono
 {
+
     public enum ColliderCollisionType
     {
         /// <summary
@@ -32,8 +33,22 @@ namespace ADBRuntime.Mono
     [DisallowMultipleComponent]
     public class ADBRuntimeController : MonoBehaviour
     {
+        [Serializable]
+        private class ConnectWithADBSettingAndADBRuntimePoint
+        {
+            public ADBSetting setting;
+            public Transform[] points;
+            public ConnectWithADBSettingAndADBRuntimePoint(ADBSetting setting, Transform[] points)
+            {
+                this.setting = setting;
+                this.points = points;
+            }
+        }
+
         [SerializeField]
-        public bool isGenerateColliderAutomaitc=true;
+        private ConnectWithADBSettingAndADBRuntimePoint[] inspectorPointList;
+        [SerializeField]
+        public bool isGenerateColliderAutomaitc=false;
         [SerializeField]
         public bool isGenerateByAllPoint = true;
         [SerializeField]
@@ -47,6 +62,7 @@ namespace ADBRuntime.Mono
         public bool isResetPoint;
         [SerializeField]
         public ADBGlobalSetting settings;
+
         public ColliderCollisionType colliderCollisionType = ColliderCollisionType.Constraint;
         [SerializeField]
         public List<string> generateKeyWordWhiteList = new List<string> { "skirt" };// "hair", "tail", 
@@ -77,6 +93,8 @@ namespace ADBRuntime.Mono
         {
             if (!isInitialize)
             {
+                ParentCheck();
+                ListCheck();
                 initializePoint();
                 initializeCollider();
             }
@@ -182,7 +200,15 @@ namespace ADBRuntime.Mono
             }
             dataPackage.restorePoint();
         }
-        public void initializeList()
+        public void ParentCheck()
+        {
+            var parentRuntimeController = gameObject.GetComponentInParent<ADBRuntimeController>();
+            if (parentRuntimeController != null)
+            {
+                Debug.Log(transform.name + " find the parent has  ADB Runtime Controller in" + parentRuntimeController.transform.name + ", if it is not you want ,check it ");
+            }
+        }
+        private void ListCheck()
         {//OYM：一个简单的防报错和把关键词tolower的方法
 
             if (!(generateKeyWordWhiteList?.Count != 0))
@@ -216,19 +242,24 @@ namespace ADBRuntime.Mono
         }
         public void initializePoint()
         {
-            initializeList();
+
             jointAndPointControlls = ADBConstraintReadAndPointControll.GetJointAndPointControllList(generateTransform, generateKeyWordWhiteList, generateKeyWordBlackList, blackListOfGenerateTransform,settings);//OYM：在这里搜索所有的节点和杆件的controll
-            allPointTrans = new List<Transform>();
+
             if (jointAndPointControlls != null)
             {
+                allPointTrans = new List<Transform>();
+                inspectorPointList = new ConnectWithADBSettingAndADBRuntimePoint[jointAndPointControlls.Length];
 
                 for (int i = 0; i < jointAndPointControlls.Length; i++)
                 {
                     jointAndPointControlls[i].Initialize();//OYM：在这里对各种joint和point进行分类与编号
-                    for (int j0 = 0; j0 < jointAndPointControlls[i].allNodeList.Count; j0++)
+                    List<Transform> transformArray = new List<Transform>(); 
+                    for (int j = 0; j < jointAndPointControlls[i].allNodeList.Count; j++)
                     {
-                        allPointTrans.Add(jointAndPointControlls[i].allNodeList[j0].trans);
+                        transformArray.Add(jointAndPointControlls[i].allNodeList[j].trans);
                     }
+                    inspectorPointList[i] = new ConnectWithADBSettingAndADBRuntimePoint(jointAndPointControlls[i].aDBSetting, transformArray.ToArray());
+                    allPointTrans.AddRange(transformArray);
                 }
             }
             else

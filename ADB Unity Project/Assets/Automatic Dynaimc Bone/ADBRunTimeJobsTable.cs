@@ -61,6 +61,7 @@ namespace ADBRuntime.Internal
                     pReadWritePoint->rotationY = pReadPoint->initialRotation;
                     //Debug.Log(pReadWritePoint->rotation+" "+index);
                     pReadWritePoint->position = transform.position;
+
                     pReadWritePoint->deltaRotationY = pReadWritePoint->deltaRotation = Quaternion.identity;
                     pReadWritePoint->deltaPosition = Vector3.zero;
 
@@ -71,6 +72,7 @@ namespace ADBRuntime.Internal
                     var pFixReadPoint = pReadPoints + (pReadPoint->fixedIndex);
                     transform.localRotation = pReadPoint->initialLocalRotation;
                     pReadWritePoint->position = pFixReadWritePoint->position + pFixReadWritePoint->rotation * pReadPoint->initialPosition;
+
                     transform.position = pReadWritePoint->position;
                     pReadWritePoint->deltaPosition = Vector3.zero;
                 }
@@ -245,7 +247,6 @@ namespace ADBRuntime.Internal
                 }
                 else
                 {
-
                     if (pReadWritePoint->deltaPosition.sqrMagnitude > (pReadPoint->mass ) * (pReadPoint->mass )*0.1f)//OYM：大于mass*0.2f长度的速度会触发掉速
                     {
                         pReadWritePoint->deltaPosition *=(0.8f+pReadPoint->mass);

@@ -3,39 +3,31 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-[DisallowMultipleComponent]
-public class ADBSpringBone : MonoBehaviour
+namespace ADBRuntime.Mono
 {
-    //OYM：啊...怎么写才好
-    private ADBSpringBone parent;
-    private ADBSpringBone child;
-    private List<ADBSpringBone> springboneChain;
-    public ADBRuntimePoint runtimePoint;
-
-    private void OnEnable()
+    public class ADBSpringBone : MonoBehaviour
     {
-        if (parent == null)
-        {
-            springboneChain = new List<ADBSpringBone>();
-            runtimePoint = new ADBRuntimePoint(transform,0);
-        }
-        if (child == null)
-        {
-            int childCount = transform.childCount;
-            for (int i = 0; i < childCount; i++)
-            {
-                //child = (transform.GetChild(i).GetComponent<ADBSpringBone>() )?? (transform.GetChild(i).gameObject.AddComponent<ADBSpringBone>()); 
-                //上述写法存在潜在bug.要小心
-                child = transform.GetChild(i).GetComponent<ADBSpringBone>();
-                if (child == null)
-                {
-                    child = transform.GetChild(i).gameObject.AddComponent<ADBSpringBone>();
-                }
-                child.parent = this;
-            }
-            runtimePoint = new ADBRuntimePoint(transform, parent.runtimePoint.depth + 1);
+        [SerializeField]
+        public List<string> generateKeyWordBlackList = new List<string> { "ik" };
+        [SerializeField]
+        public List<Transform> blackListOfGenerateTransform = new List<Transform>();
+        [SerializeField]
+        public ADBSetting aDBSetting;
+        [SerializeField]
+        public Transform fixedPointTransform;
+        [SerializeField]
+        public List<Transform> allTransfromList = new List<Transform>();
 
+        public ADBRuntimePoint fixedNode; 
+        private void Start()
+        {
+            var runtimeController = gameObject.GetComponentsInParent<ADBRuntimeController>();
+            if (runtimeController == null || runtimeController.Length == 0)
+            {
+                Debug.Log(transform.name+" cannot find the ADB Runtime Controller ");
+            }
         }
 
     }
+
 }

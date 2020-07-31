@@ -28,7 +28,7 @@ namespace ADBRuntime
                 }
             }
 
-            Debug.Log("You dont add the keyword In ADBGlobalSetting!check the ADBGlobalSetting File ");
+            Debug.Log("You dont add the keyword : "+ keyword + " In ADBGlobalSetting! Check the ADBGlobalSetting File ");
             return (ADBSetting)ScriptableObject.CreateInstance(typeof(ADBSetting));
         }
 
@@ -42,7 +42,18 @@ namespace ADBRuntime
         List<string> keyWord;
         public bool HasKey(string key)
         {
-            return (keyWord != null && keyWord.Contains(key));
+            if (keyWord != null)
+            {
+                for (int i = 0; i < keyWord?.Count; i++)
+                {
+                    if (keyWord[i].Length>0&& keyWord[i].ToLower().Contains( key))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
         }
     }
 }
