@@ -208,6 +208,10 @@ namespace ADBRuntime.Mono
                 Debug.Log(transform.name + " find the parent has  ADB Runtime Controller in" + parentRuntimeController.transform.name + ", if it is not you want ,check it ");
             }
         }
+        public bool PointCheck()
+        {
+            return jointAndPointControlls?.Length > 0;
+        }
         public void ListCheck()
         {//OYM：一个简单的防报错和把关键词tolower的方法
 
@@ -255,6 +259,9 @@ namespace ADBRuntime.Mono
             if (jointAndPointControlls != null)
             {
                 allPointTrans = new List<Transform>();
+                /*
+                 * 这段代码被我废弃掉了,作用是允许你修改所有节点中对应的设置,但是由于无法确切的知道用户到底要怎么改(比如改了Global又改这里),为了保持正常的工作流,这段代码不会被采纳.
+                 * 如果你希望能够自由的更改你设置的面板,你可以启用它.
                 if (inspectorPointList != null && inspectorPointList.Length == jointAndPointControlls.Length)//OYM：两者存在且相等
                 { 
                     for (int i = 0; i < jointAndPointControlls.Length; i++)
@@ -272,6 +279,7 @@ namespace ADBRuntime.Mono
                 }
                 else
                 {
+                */
                     inspectorPointList = new ConnectWithADBSettingAndADBRuntimePoint[jointAndPointControlls.Length];
 
                     for (int i = 0; i < jointAndPointControlls.Length; i++)
@@ -286,7 +294,7 @@ namespace ADBRuntime.Mono
                         allPointTrans.AddRange(transformArray);
                     }
 
-                }
+                
             }
             else
             {
@@ -295,6 +303,11 @@ namespace ADBRuntime.Mono
         }
         public void initializeCollider()
         {
+            if (!PointCheck())
+            {
+                ListCheck();
+                InitializePoint();
+            }
             List<ADBRuntimePoint> pointList = null;
             if (jointAndPointControlls == null || jointAndPointControlls.Length == 0)
             {

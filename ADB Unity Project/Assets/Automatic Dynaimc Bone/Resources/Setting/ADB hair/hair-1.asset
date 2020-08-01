@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 15b93a3a2ef1bab4583f2d024dfcff47, type: 3}
   m_Name: hair-1
   m_EditorClassIdentifier: 
-  useGlobal: 0
+  useGlobal: 1
   frictionCurve:
     serializedVersion: 2
     m_Curve:
@@ -457,12 +457,36 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+  pointRadiuCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
   frictionGlobal: 0
   addForceScaleGlobal: 1
   gravityScaleGlobal: 1
   moveByFixedPointGlobal: 1
   distanceCompensationGlobal: 1
-  massGlobal: 1
+  massGlobal: 1.5
   moveByPrePointGlobal: 0
   freezeGlobal: 0
   structuralShrinkVerticalScaleGlobal: 1
@@ -490,7 +514,8 @@ MonoBehaviour:
   circumferenceShrink: 1
   circumferenceStretch: 1
   isComputeVirtual: 0
-  virtualPointRate: 0
+  isAllowComputeOtherConstraint: 0
+  virtualPointAxisLength: 0.1
   isAutoComputeWeight: 1
   weightCurve:
     serializedVersion: 2
@@ -527,5 +552,6 @@ MonoBehaviour:
   isCollideShear: 0
   isLoopRootPoints: 0
   isDebugDraw: 1
+  isFixGravityAxis: 1
   gravity: {x: 0, y: -9.81, z: 0}
   colliderChoice: 1019
