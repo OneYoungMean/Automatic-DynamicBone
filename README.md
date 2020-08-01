@@ -59,7 +59,7 @@
 
 - **作者长期在线!** 有issue必回!包君满意!
 
-![](https://s1.ax1x.com/2020/08/01/aGPeW6.gif)  
+![Github只支持5mb的动图,导致好好的一张图硬生生压成一坨shit](https://s1.ax1x.com/2020/08/01/aGAP91.gif)  
 
 
 ## 要求
