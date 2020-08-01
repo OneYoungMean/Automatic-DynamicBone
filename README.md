@@ -1,4 +1,4 @@
-写在开头:**示例自带的脚本有bug,报错的话请删除**  
+写在开头:我需要休个假....缺失的部分慢慢补... 
 如果您实在翻不了墙，下载还贼慢，你可以选择在[此处下载](https://gitee.com/OneYoungMean/Automatic-DynamicBone)  
 [English version manual](https://github.com/OneYoungMean/Automatic-DynamicBone/wiki/English-version-manual)  
 
