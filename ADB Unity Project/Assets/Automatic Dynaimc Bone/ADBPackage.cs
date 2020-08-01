@@ -128,6 +128,7 @@ namespace ADBRuntime
         public void SetPointAndConstraintpackage(ConstraintRead[][] constraintList, PointRead[] pointReadList, PointReadWrite[] pointReadWriteList, Transform[] pointTransformsList)
         {
             int offset = m_pointReadList.Count;
+
             for (int i = 0; i < pointReadList.Length; i++)
             {
                 if (pointReadList[i].parentIndex != -1)
@@ -141,6 +142,7 @@ namespace ADBRuntime
                 }
                 pointReadList[i].fixedIndex += offset;
             }
+            
             for (int i = 0; i < constraintList.Length; i++)
             {
                 for (int j0 = 0; j0 < constraintList[i].Length; j0++)

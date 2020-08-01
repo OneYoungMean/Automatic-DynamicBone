@@ -15,9 +15,10 @@ namespace ADBRuntime
         public ADBSetting aDBSetting { get; private set; }
         public string keyWord { get; private set; }
         //OYM：pointList
-        public ADBRuntimePoint rootNode;
-        public List<ADBRuntimePoint> fixedNodeList;
+        public ADBRuntimePoint rootNode { get; private set; }
+        public List<ADBRuntimePoint> fixedNodeList { get; private set; }
         public List<ADBRuntimePoint> allNodeList;
+    
 
         //OYM：constraintList
         private List<ADBRuntimeConstraint> constraintsStructuralVertical;//OYM：所有的垂直拉约束
@@ -624,6 +625,11 @@ namespace ADBRuntime
 
             dataPackage.SetPointAndConstraintpackage(constraintList, pointReadList, pointReadWriteList, pointTransformsList);
         }
+        public void SetADBSetting(ADBSetting setting)
+        {
+            aDBSetting = setting;
+            isInitialize = false;
+        }
 
         public ADBRuntimeConstraint[] GetConstraint(ConstraintType constrianttype)
         {
@@ -753,7 +759,7 @@ namespace ADBRuntime
                     new List<string>() { "" },
                     springBone.generateKeyWordBlackList,
                     springBone.blackListOfGenerateTransform,
-                    0,
+                    1,
                     ref aDBSpringBone
                 );
                 List<ADBRuntimePoint> temp = new List<ADBRuntimePoint>() { springBone.fixedNode };

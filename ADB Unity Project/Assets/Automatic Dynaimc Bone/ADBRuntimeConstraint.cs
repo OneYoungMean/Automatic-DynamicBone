@@ -110,10 +110,11 @@ namespace ADBRuntime
         /// 半径
         /// </summary>
         public float radius;
-
+         
         public bool Equals(ConstraintRead other)
         {
             return(other.indexA == indexA ||other.indexB == indexB|| other.indexA == indexB || other.indexB == indexA);
+            //OYM：理论上而言是存在完全相等的杆件的,但是我应该尽量避免了这种情况.
         }
     }
 }

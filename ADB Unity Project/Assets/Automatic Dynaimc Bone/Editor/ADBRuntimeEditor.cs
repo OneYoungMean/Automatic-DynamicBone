@@ -44,7 +44,8 @@ namespace ADBRuntime
 
                 if (GUILayout.Button("生成节点数据", GUILayout.Height(22.0f)))
                 {
-                    controller.initializePoint();
+                    controller.ListCheck();
+                    controller.InitializePoint();
                     controller.isDebug = true;
                 }
 
@@ -109,7 +110,7 @@ namespace ADBRuntime
                 }
                 if (controller.allPointTrans != null)
                 {
-                    EditorGUILayout.PropertyField(serializedObject.FindProperty("allPointTrans"), new GUIContent("所有节点坐标 :" + controller.allPointTrans?.Count), true);
+                    EditorGUILayout.PropertyField(serializedObject.FindProperty("inspectorPointList"), new GUIContent("所有节点坐标 :" + controller.allPointTrans?.Count), true);
                 }
 
                 Titlebar("===============碰撞体设定", new Color(0.5F, 1, 1));

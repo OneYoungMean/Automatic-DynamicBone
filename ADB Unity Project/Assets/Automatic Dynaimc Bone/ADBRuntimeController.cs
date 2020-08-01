@@ -95,7 +95,7 @@ namespace ADBRuntime.Mono
             {
                 ParentCheck();
                 ListCheck();
-                initializePoint();
+                InitializePoint();
                 initializeCollider();
             }
 
@@ -181,7 +181,7 @@ namespace ADBRuntime.Mono
             if (Application.isPlaying)
             {
                 RestorePoint();
-                initializePoint();
+                InitializePoint();
                 dataPackage.Dispose(true);
                 for (int i = 0; i < jointAndPointControlls.Length; i++)
                 {
@@ -202,13 +202,13 @@ namespace ADBRuntime.Mono
         }
         public void ParentCheck()
         {
-            var parentRuntimeController = gameObject.GetComponentInParent<ADBRuntimeController>();
+            var parentRuntimeController = transform.parent?.GetComponentInParent<ADBRuntimeController>();
             if (parentRuntimeController != null)
             {
                 Debug.Log(transform.name + " find the parent has  ADB Runtime Controller in" + parentRuntimeController.transform.name + ", if it is not you want ,check it ");
             }
         }
-        private void ListCheck()
+        public void ListCheck()
         {//OYM：一个简单的防报错和把关键词tolower的方法
 
             if (!(generateKeyWordWhiteList?.Count != 0))
@@ -224,7 +224,14 @@ namespace ADBRuntime.Mono
             {
                 for (int i = 0; i < generateKeyWordWhiteList.Count; i++)
                 {
-                    generateKeyWordWhiteList[i] = generateKeyWordWhiteList[i].ToLower();
+                    if (generateKeyWordWhiteList[i] == "")
+                    {
+                        generateKeyWordWhiteList[i] = null;
+                    }
+                    else
+                    {
+                        generateKeyWordWhiteList[i] = generateKeyWordWhiteList[i].ToLower();
+                    }
                 }
             }
             for (int i = 0; i < generateKeyWordBlackList.Count; i++)
@@ -240,7 +247,7 @@ namespace ADBRuntime.Mono
                 settings = Resources.Load("Setting/ADBGlobalSettingFile") as ADBGlobalSetting;
             }
         }
-        public void initializePoint()
+        public void InitializePoint()
         {
 
             jointAndPointControlls = ADBConstraintReadAndPointControll.GetJointAndPointControllList(generateTransform, generateKeyWordWhiteList, generateKeyWordBlackList, blackListOfGenerateTransform,settings);//OYM：在这里搜索所有的节点和杆件的controll
@@ -248,18 +255,37 @@ namespace ADBRuntime.Mono
             if (jointAndPointControlls != null)
             {
                 allPointTrans = new List<Transform>();
-                inspectorPointList = new ConnectWithADBSettingAndADBRuntimePoint[jointAndPointControlls.Length];
-
-                for (int i = 0; i < jointAndPointControlls.Length; i++)
-                {
-                    jointAndPointControlls[i].Initialize();//OYM：在这里对各种joint和point进行分类与编号
-                    List<Transform> transformArray = new List<Transform>(); 
-                    for (int j = 0; j < jointAndPointControlls[i].allNodeList.Count; j++)
+                if (inspectorPointList != null && inspectorPointList.Length == jointAndPointControlls.Length)//OYM：两者存在且相等
+                { 
+                    for (int i = 0; i < jointAndPointControlls.Length; i++)
                     {
-                        transformArray.Add(jointAndPointControlls[i].allNodeList[j].trans);
+                        if (jointAndPointControlls[i].aDBSetting != inspectorPointList[i].setting)
+                        {
+                            jointAndPointControlls[i].SetADBSetting ( inspectorPointList[i].setting);
+                        }
+                        jointAndPointControlls[i].Initialize();
+                        for (int j = 0; j < jointAndPointControlls[i].allNodeList.Count; j++)
+                        {
+                            allPointTrans.Add(jointAndPointControlls[i].allNodeList[j].trans);
+                        }
                     }
-                    inspectorPointList[i] = new ConnectWithADBSettingAndADBRuntimePoint(jointAndPointControlls[i].aDBSetting, transformArray.ToArray());
-                    allPointTrans.AddRange(transformArray);
+                }
+                else
+                {
+                    inspectorPointList = new ConnectWithADBSettingAndADBRuntimePoint[jointAndPointControlls.Length];
+
+                    for (int i = 0; i < jointAndPointControlls.Length; i++)
+                    {
+                        jointAndPointControlls[i].Initialize();//OYM：在这里对各种joint和point进行分类与编号
+                        List<Transform> transformArray = new List<Transform>();
+                        for (int j = 0; j < jointAndPointControlls[i].allNodeList.Count; j++)
+                        {
+                            transformArray.Add(jointAndPointControlls[i].allNodeList[j].trans);
+                        }
+                        inspectorPointList[i] = new ConnectWithADBSettingAndADBRuntimePoint(jointAndPointControlls[i].aDBSetting, transformArray.ToArray());
+                        allPointTrans.AddRange(transformArray);
+                    }
+
                 }
             }
             else
@@ -287,7 +313,8 @@ namespace ADBRuntime.Mono
                         }
                         else
                         {
-                            pointList.AddRange(jointAndPointControlls[i].fixedNodeList);
+                            pointList.AddRange(jointAndPointControlls[i].
+                                fixedNodeList);
 
                         }
                     }
