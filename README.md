@@ -59,9 +59,8 @@
 
 - **作者长期在线!** 有issue必回!包君满意!
 
-![2](https://github.com/OneYoungMean/AutomaticDynamicBone/blob/master/Manual%20GIF/A0.gif)  
- 
-![2](https://s2.ax1x.com/2020/02/29/3yRc8g.gif)
+![Github只支持5mb的动图,导致好好的一张图硬生生压成一坨shit](https://s1.ax1x.com/2020/08/01/aGEHyV.gif)  
+
 
 ## 要求
 
@@ -75,7 +74,6 @@
 2. 检查目标需要添加物理效果的骨骼,通常这类骨骼名字都会包含一个**固定的关键词**,比如hair,skirt,你需要把关键词写入到`NameKeyWord`中.  
 3. 按下`Generate Point`,并在底下找到isDebug勾选,如果一切顺利的话,你可以看到几条彩色的线和点,这些就是识别到的数据,是查看是否有遗漏的/错误的骨骼,并通过`BlackListTranform`和`BlackListKeyword`来排除自己不需要的骨骼.   
 4. 运行游戏,一切已经就绪,晃动你的目标以查看效果,就是这么快XD!  
-![3](https://github.com/OneYoungMean/Automatic-DynamicBone/blob/master/Manual%20GIF/A3.gif)   
 
 ### 说明书
 
