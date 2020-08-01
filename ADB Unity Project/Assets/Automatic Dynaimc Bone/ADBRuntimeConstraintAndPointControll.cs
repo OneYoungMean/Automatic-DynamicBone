@@ -797,13 +797,14 @@ namespace ADBRuntime
 
                 for (int j0 = 0; j0 < blackListOfGenerateTransform.Count; j0++)//OYM：是否在节点黑名单
                 {
-                    isblack = childNodeTarns.Equals(blackListOfGenerateTransform[j0]);
                     if (isblack) break;
+                    isblack = childNodeTarns.Equals(blackListOfGenerateTransform[j0]);
                 }
                 for (int j0 = 0; j0 < generateKeyWordBlackList.Count; j0++)//OYM：是否在名字黑名单
                 {
-                    isblack = childName.Contains(generateKeyWordBlackList[j0]);
                     if (isblack) break;
+                    isblack = childName.Contains(generateKeyWordBlackList[j0]);
+
                 }
                 if (!isblack)
                 {
