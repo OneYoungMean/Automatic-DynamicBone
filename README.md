@@ -1,6 +1,10 @@
-写在开头:欢迎大佬多多调试发issue,能不能进入正式版就靠你了 XD  
-如果您实在翻不了墙，下载还贼慢，你可以选择在[此处下载](https://gitee.com/OneYoungMean/Automatic-DynamicBone)  
-[English version manual](https://github.com/OneYoungMean/Automatic-DynamicBone/wiki/English-version-manual)  
+写在开头:  
+* 欢迎大佬多多调试发issue,能不能进入正式版就靠你了 XD  
+* 如果您实在翻不了墙，下载还贼慢，你可以选择在[此处下载](https://gitee.com/OneYoungMean/Automatic-DynamicBone)  
+* [English version manual](https://github.com/OneYoungMean/Automatic-DynamicBone/wiki/English-version-manual)  
+
+- **当前版本:0.9preview 最后更新日期:20/7/31**  
+- **除了修bug以外应该不会大改了..大概**   
 
 # AutomaticDynamicBone
 **unity骨骼布料仿真插件**.  
@@ -9,7 +13,7 @@
 * 一个可以根据骨骼布料,自动生成具有物理效果头发和裙子,用于代替dynamicBone插件功能
 * 此外,缅怀作者被dynamic bone坑走了**15美刀**  
 
-## 快速入门
+## 快速开始
 
 1. 在脚本中找到**ADBRuntimeController**,添加到你想要添加的目标/目标父物体上.  
 2. 检查目标需要添加物理效果的骨骼,通常这类骨骼名字都会包含一个**固定的关键词**,比如hair,skirt,你需要把关键词写入到 _识别关键词_ 中.  
@@ -18,35 +22,12 @@
 
 ![](https://s1.ax1x.com/2020/08/02/atCRNd.gif) 
 
-- **当前版本:0.9preview 最后更新日期:20/7/31**  
-- **除了修bug以外应该不会大改了..大概**   
-
-## 新功能说明
-
-- **(几乎)全中文的控制面板!**  
-- **添加了高性能模式,该模式下轨迹可能没有原来那么精确,但是性能提高4倍以上.**
-- **添加了一种全新识别节点的方式,它有点类似于Springbone,现在添加骨骼不会那么反人类了!**
-- **修正了强制主线程完成所有任务的问题,现在你可以异步等待结果完成**
-- **添加了轨迹优化选项,这个选项会改变一部分物理特性,这可能会让头发运动显得不那么自然,但是却能让它在高速运动下表现的更好**   
-- **添加了重力轴跟随角色旋转的功能,允许你制作你的反重力裙子**
-- **添加了节点的半径选项(球体),现在节点与碰撞体碰撞的时候回考虑到节点的半径了!**
-- **添加了5种新的碰撞体工作模式,请在wiki当中查看他们的介绍!**
-- **修改了虚拟点的存在形式与工作方式,你现在可以找到这些点的transfrom并查看他们的工作情况了**  
-- **修改了一部分参数的权重,现在参数的调整建议都是0~1**  
-- **修改了freeze属性的作用方式,你可以通过调整重力来修改freeze的位置方向了**  
-
-- **一些选项的优化**  
-
-
-- **添加了一个新的免费示例模型,感谢Kafuji,以及[在此处获取更多的模型](https://fantia.jp/fanclubs/3967)**  
 
 ## 特性
 
-- **无需(但兼容)ECS与Dots!** 我们并没有采用ECS系统!除了unity的多线程jobs系统,插件并没有额外涉及任意ECS的内容!你不用担心额外的jobs系统其对你的项目造成影响!
+- **针对高性能进行优化**尽可能脱离对于monobehavior的操作,尽可能减少GC以及针对物理效果的优化,采用 unity Job System + Burst compiler作为基础,采用指针写的物理底层,使用多线程进行计算与修改transfrom,拥有着**极其强悍的优化程度!**[详情](https://github.com/OneYoungMean/AutomaticDynamicBone/wiki/Q&A#q%E6%80%A7%E8%83%BD%E6%96%B9%E9%9D%A2%E5%85%B7%E4%BD%93%E6%80%8E%E4%B9%88%E6%A0%B7)  
 
-- **专为高性能定制**尽可能脱离对于monobehavior的操作,尽可能减少GC以及针对物理效果的优化,采用 unity Job System + Burst compiler作为基础,采用指针写的物理底层,使用多线程进行计算与修改transfrom,拥有着**极其强悍的优化程度!**[详情](https://github.com/OneYoungMean/AutomaticDynamicBone/wiki/Q&A#q%E6%80%A7%E8%83%BD%E6%96%B9%E9%9D%A2%E5%85%B7%E4%BD%93%E6%80%8E%E4%B9%88%E6%A0%B7)  
-
-- 支持除了WebGL以外**所有平台**  
+- **无需(但兼容)ECS与Dots!** 我们并**没有**采用ECS系统!除了unity的多线程jobs系统,你不用担心额外的jobs系统其对你的项目造成影响!并支持除了WebGL以外**所有平台**  
 
 - **极其低的学习曲线!** 作者已经帮你们把门槛踏平了!无需任何复杂的添加与操作,通过关键词识别与humanoid识别,只需要三分钟学习就可以**一键生成**你想要的bone与collider!
 
