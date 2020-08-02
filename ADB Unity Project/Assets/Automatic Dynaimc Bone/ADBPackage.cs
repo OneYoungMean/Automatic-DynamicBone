@@ -50,7 +50,7 @@ namespace ADBRuntime
             pointTransformsList = new TransformAccessArray(0);
             colliderTransformsList = new TransformAccessArray(0);
         }
-        internal bool SetRuntimeData(float deltaTime, float scale,ref int iteration, Vector3 addForceForce, ColliderCollisionType colliderCollisionType, bool isOptimize, bool detectAsync)
+        internal bool SetRuntimeData(float deltaTime, float scale,ref int iteration, Vector3 addForceForce, ColliderCollisionType colliderCollisionType, bool isOptimize, bool detectAsync,bool isFuzzyCompute)
         {
             int batchLength = isTryExcute ? 1 : 64;
             iteration = isTryExcute ? 1 : iteration;
@@ -105,10 +105,20 @@ namespace ADBRuntime
                 }
                 else
                 {
-                    Hjob = colliderUpdate.Schedule(collidersReadList.Length, batchLength);
-                    //Hjob = fixedPointUpdate.Schedule(pointReadList.Length, batchLength);
-                    Hjob =pointUpdate.Schedule(pointReadList.Length, batchLength);
-                    Hjob = constraintUpdates1.Schedule(constraintReadList1.Length, batchLength);
+                    if (isFuzzyCompute)
+                    {
+                        Hjob = colliderUpdate.Schedule(collidersReadList.Length, batchLength);
+                        //Hjob = fixedPointUpdate.Schedule(pointReadList.Length, batchLength,);
+                        Hjob = pointUpdate.Schedule(pointReadList.Length, batchLength);
+                        Hjob = constraintUpdates1.Schedule(constraintReadList1.Length, batchLength);
+                    }
+                    else
+                    {
+                        Hjob = colliderUpdate.Schedule(collidersReadList.Length, batchLength, Hjob);
+                        //Hjob = fixedPointUpdate.Schedule(pointReadList.Length, batchLength,);
+                        Hjob = pointUpdate.Schedule(pointReadList.Length, batchLength, Hjob);
+                        Hjob = constraintUpdates1.Schedule(constraintReadList1.Length, batchLength, Hjob);
+                    }
                 }
             }
 

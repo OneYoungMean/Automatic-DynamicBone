@@ -77,7 +77,9 @@ namespace ADBRuntime.Mono
         [SerializeField]
         public List<ADBEditorCollider> editorColliderList;
         [SerializeField]
-        public bool isNotAllowAsync;
+        public bool isDetectAsync = false;
+        [SerializeField]
+        public bool isFuzzyCompute=false;
         private ADBRuntimeColliderControll colliderControll;
         private ADBConstraintReadAndPointControll[] jointAndPointControlls;
         private DataPackage dataPackage;
@@ -168,7 +170,8 @@ namespace ADBRuntime.Mono
                                                               addForce,
                                                               colliderCollisionType,
                                                               isOptimize,
-                                                              !isNotAllowAsync
+                                                              !isDetectAsync,
+                                                              isFuzzyCompute
                                                               );
             if (isSuccessfulRun)
             {

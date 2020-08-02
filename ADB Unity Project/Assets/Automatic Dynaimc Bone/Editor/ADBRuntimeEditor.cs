@@ -20,7 +20,7 @@ namespace ADBRuntime
     {
         ADBRuntimeController controller;
         private bool isDeleteCollider;
-        private int max;
+        private const int max=64;
         public void OnEnable()
         {
             controller = target as ADBRuntimeController;
@@ -140,10 +140,11 @@ namespace ADBRuntime
 
             controller.isDebug = EditorGUILayout.Toggle("是否绘制所有辅助线", controller.isDebug);
             controller.isOptimize = EditorGUILayout.Toggle("轨迹优化", controller.isOptimize);
-            controller.iteration = EditorGUILayout.IntSlider("迭代次数", controller.iteration, 1, controller.isDebug?4096:256);
-            if (controller.iteration > 1024)
+            controller.isFuzzyCompute = EditorGUILayout.Toggle("高性能模式", controller.isFuzzyCompute);
+            controller.iteration = EditorGUILayout.IntSlider("迭代次数", controller.iteration, 1, max * (controller.isFuzzyCompute?8:1)*(controller.isDebug?2:1));
+            if (controller.iteration > 256)
             {
-                controller.isNotAllowAsync = EditorGUILayout.Toggle("自动优化迭代次数", controller.isNotAllowAsync);
+                controller.isDetectAsync = EditorGUILayout.Toggle("自动优化迭代次数", controller.isDetectAsync);
             }
             controller.windForceScale = EditorGUILayout.Slider("风力", controller.windForceScale, 0, 1);
             controller.colliderCollisionType = (ColliderCollisionType)EditorGUILayout.EnumPopup("碰撞模式", (ColliderCollisionTypeZh)controller.colliderCollisionType);
