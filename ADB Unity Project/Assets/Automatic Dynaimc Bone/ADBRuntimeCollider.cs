@@ -236,23 +236,19 @@ namespace ADBRuntime
 
     public class OBBBoxCollider : ADBRuntimeCollider
     {
-        Vector3 OBBposition;
-        Quaternion OBBRotation;
+
         public OBBBoxCollider(ColliderRead colliderRead, Transform appendtTransform)
         {
             this.colliderRead = colliderRead;
             this.appendTransform = appendtTransform;
-            OBBposition = colliderRead.positionOffset;
-            OBBRotation = colliderRead.staticRotation;
         }
         public OBBBoxCollider(Vector3 center, Vector3 range, Vector3 direction, ColliderChoice colliderChoice, Transform appendTransform = null, CollideFunc collideFunc = CollideFunc.OutsideLimit)
         {
             colliderRead.isOpen = true;
-            OBBposition = appendTransform ? appendTransform.InverseTransformPoint(center) : center;
-            OBBRotation = appendTransform ? appendTransform.rotation * Quaternion.FromToRotation(Vector3.up, direction) : Quaternion.FromToRotation(Vector3.up, direction);
+
             this.appendTransform = appendTransform;
-            colliderRead.staticRotation = OBBRotation;
-            colliderRead.positionOffset = OBBposition;
+            colliderRead.staticRotation = appendTransform ? appendTransform.rotation * Quaternion.FromToRotation(Vector3.up, direction) : Quaternion.FromToRotation(Vector3.up, direction);
+            colliderRead.positionOffset = appendTransform ? appendTransform.InverseTransformPoint(center) : center;
             colliderRead.boxSize = new Vector3(Mathf.Abs(range.x * 0.5f), Mathf.Abs(range.y * 0.5f), Mathf.Abs(range.z * 0.5f));
             colliderRead.colliderType = ColliderType.OBB;
             colliderRead.collideFunc = CollideFunc.OutsideLimit;
@@ -266,12 +262,12 @@ namespace ADBRuntime
             Matrix4x4 before = Gizmos.matrix;
             if (appendTransform)
             {
-                Gizmos.matrix = Matrix4x4.TRS(appendTransform.position + OBBposition * appendTransform.lossyScale.x, appendTransform.rotation * OBBRotation, appendTransform.lossyScale);
+                Gizmos.matrix = Matrix4x4.TRS(appendTransform.position + colliderRead.positionOffset * appendTransform.lossyScale.x, appendTransform.rotation * colliderRead.staticRotation, appendTransform.lossyScale);
                 Gizmos.DrawWireCube(Vector3.zero, colliderRead.boxSize * 2);
             }
             else
             {
-                Gizmos.matrix = Matrix4x4.TRS(OBBposition, OBBRotation, Vector3.one);
+                Gizmos.matrix = Matrix4x4.TRS(colliderRead.positionOffset, colliderRead.staticRotation, Vector3.one);
                 Gizmos.DrawWireCube(Vector3.zero, colliderRead.boxSize * 2);
             }
             Gizmos.DrawLine(Vector3.zero, Vector3.up);

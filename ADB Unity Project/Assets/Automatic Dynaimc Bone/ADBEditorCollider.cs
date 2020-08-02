@@ -94,6 +94,7 @@ namespace ADBRuntime.Mono
         {
             if (!Application.isPlaying && editor != null&& isGlobal)
             {
+
                 editor.OnDrawGizmos();
             }
         }

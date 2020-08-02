@@ -52,6 +52,7 @@ namespace ADBRuntime
                     Titlebar("你不能在运行过程中改变它",Color.red);
                 }
                 serializedObject.Update();
+                controller.editor.colliderRead.CheckValue();
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("editor.isDraw"), new GUIContent("绘制碰撞体"), true);
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("isGlobal"), new GUIContent("是否为全局碰撞体"), true);
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("editor.colliderRead.isOpen"), new GUIContent("是否打开"), true);

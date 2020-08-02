@@ -69,28 +69,34 @@ namespace ADBRuntime
                     controller.isGenerateByAllPoint = EditorGUILayout.Toggle( "  ┗━以所有节点作为参照 ",controller.isGenerateByAllPoint);
                 }
 
-                if (GUILayout.Button("移除所有碰撞体", GUILayout.Height(22.0f)))
-                {
-                    if (controller.editorColliderList == null) return;
-                    if (isDeleteCollider)
-                    {
-                        for (int i = 0; i < controller.editorColliderList.Count; i++)
-                        {
-                            DestroyImmediate(controller.editorColliderList[i]);
-                        }
-                        isDeleteCollider = false;
-                    }
-                    controller.editorColliderList = null;
-                }
-                isDeleteCollider = EditorGUILayout.Toggle("同时删去碰撞体脚本", isDeleteCollider);
+
 
                 if (controller.editorColliderList != null)
                 {
                     EditorGUILayout.PropertyField(serializedObject.FindProperty("editorColliderList"), new GUIContent("碰撞体列表 :" + controller.editorColliderList?.Count), true);
+                    GUILayout.Space(5);
+                    if (controller.editorColliderList.Count > 0)
+                    {
+                        if (GUILayout.Button("移除所有碰撞体", GUILayout.Height(22.0f)))
+                        {
+                            if (controller.editorColliderList == null) return;
+                            if (isDeleteCollider)
+                            {
+                                for (int i = 0; i < controller.editorColliderList.Count; i++)
+                                {
+                                    DestroyImmediate(controller.editorColliderList[i]);
+                                }
+                                isDeleteCollider = false;
+                            }
+                            controller.editorColliderList = null;
+                        }
+                        isDeleteCollider = EditorGUILayout.Toggle("同时删去碰撞体脚本", isDeleteCollider);
+                    }
                 }
 
-                controller.delayTime = EditorGUILayout.FloatField("延迟时间", controller.delayTime);
+
                 Titlebar("=============== physical setting", new Color(0.7f, 1.0f, 0.7f));
+                controller.delayTime = EditorGUILayout.FloatField("延迟时间", controller.delayTime);
             }
             else
             {
