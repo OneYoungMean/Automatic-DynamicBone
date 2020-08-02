@@ -6,6 +6,7 @@
 
 基于https://github.com/SPARK-inc/SPCRJointDynamics ,基于unity jobs 多线程系统,一个可以根据骨骼布料,自动生成具有物理效果头发和裙子,用于代替dynamicBone的**unity骨骼布料仿真插件**.  
 此外,缅怀作者被dynamic bone坑走了**15美刀**  
+![](https://s1.ax1x.com/2020/08/02/atCRNd.gif) 
 
 - **当前版本:0.9preview 最后更新日期:20/7/31**  
 - **除了修bug以外应该不会大改了..大概**   
