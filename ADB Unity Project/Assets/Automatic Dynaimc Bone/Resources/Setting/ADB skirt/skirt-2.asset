@@ -492,12 +492,12 @@ MonoBehaviour:
     m_RotationOrder: 4
   frictionGlobal: 0
   addForceScaleGlobal: 1
-  gravityScaleGlobal: 1
-  moveByFixedPointGlobal: 0.2
-  distanceCompensationGlobal: 1
+  gravityScaleGlobal: 0
+  moveByFixedPointGlobal: 0
+  distanceCompensationGlobal: 0
   massGlobal: 0.9
   moveByPrePointGlobal: 0
-  freezeGlobal: 0
+  freezeGlobal: 1
   structuralShrinkVerticalScaleGlobal: 1
   structuralStretchVerticalScaleGlobal: 1
   structuralShrinkHorizontalScaleGlobal: 1
@@ -553,13 +553,13 @@ MonoBehaviour:
   isComputeStructuralVertical: 1
   isComputeStructuralHorizontal: 1
   isComputeShear: 0
-  isComputeBendingVertical: 1
+  isComputeBendingVertical: 0
   isComputeBendingHorizontal: 0
   isComputeCircumference: 0
   isCollideStructuralVertical: 1
-  isCollideStructuralHorizontal: 0
+  isCollideStructuralHorizontal: 1
   isCollideShear: 0
-  isLoopRootPoints: 1
+  isLoopRootPoints: 0
   isDebugDraw: 1
   isFixGravityAxis: 1
   gravity: {x: 0, y: -9.81, z: 0}

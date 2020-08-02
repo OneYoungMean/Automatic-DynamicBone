@@ -237,14 +237,14 @@ namespace ADBRuntime
                 pReadWritePoints = (PointReadWrite*)pointReadWriteList.GetUnsafePtr(),
             };
             Hjob = initialpoint.Schedule(pointTransformsList);
-            /*
+            
             ADBRunTimeJobsTable.InitiralizeCollider initialCollider = new ADBRunTimeJobsTable.InitiralizeCollider
             {
                 pReadColliders = (ColliderRead*)collidersReadList.GetUnsafePtr(),
                 pReadWriteColliders = (ColliderReadWrite*)collidersReadWriteList.GetUnsafePtr()
             };
-                        Hjob = initialCollider.Schedule(colliderTransformsList);
-            */
+            Hjob = initialCollider.Schedule(colliderTransformsList);
+            
 
 
         }

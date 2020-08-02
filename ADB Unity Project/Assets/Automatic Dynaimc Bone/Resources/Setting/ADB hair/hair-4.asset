@@ -489,6 +489,15 @@ MonoBehaviour:
     m_Curve:
     - serializedVersion: 3
       time: 0
+      value: -0.00023193285
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 0.5
       value: 0.05
       inSlope: 0
       outSlope: 0
@@ -498,7 +507,7 @@ MonoBehaviour:
       outWeight: 0
     - serializedVersion: 3
       time: 1
-      value: 0.02
+      value: 0.01
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -512,7 +521,7 @@ MonoBehaviour:
   addForceScaleGlobal: 1
   gravityScaleGlobal: 0
   moveByFixedPointGlobal: 0
-  distanceCompensationGlobal: 0
+  distanceCompensationGlobal: 0.6
   massGlobal: 0.5
   moveByPrePointGlobal: 0
   freezeGlobal: 0.5
