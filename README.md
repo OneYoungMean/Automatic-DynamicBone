@@ -1,6 +1,6 @@
 写在开头:  
 * 欢迎大佬多多调试发issue,能不能进入正式版就靠你了 XD  
-* 如果您是第一次接触该项目,您可以选择在[此处下载示例](https://wws.lanzous.com/iotvcf8d3mb)  
+* 如果您是第一次接触该项目,您可以选择在[此处下载示例](https://wws.lanzous.com/iotvcf8d3mb) 并访问[项目的wiki](https://github.com/OneYoungMean/Automatic-DynamicBone/wiki)  
 * [English version manual](https://github.com/OneYoungMean/Automatic-DynamicBone/wiki/English-version-manual)  
 
 - **当前版本:0.9preview 最后更新日期:20/7/31**  
