@@ -102,7 +102,7 @@ namespace ADBRuntime
             {
                 Titlebar("运行中", new Color(0.5F, 1, 1));
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("settings"), new GUIContent("全局关联设置"), true);
-                EditorGUILayout.Space(10);
+                GUILayout.Space(10);
 
                 Titlebar("=============== 节点设置", new Color(0.5F,1,1));
 
@@ -120,7 +120,7 @@ namespace ADBRuntime
                 }
 
                 Titlebar("===============碰撞体设定", new Color(0.5F, 1, 1));
-                EditorGUILayout.Space(5);
+                GUILayout.Space(5);
                 if (GUILayout.Button("重新绘制碰撞体", GUILayout.Height(22.0f)))
                 {
                     for (int i = 0; i < controller.editorColliderList.Count; i++)
