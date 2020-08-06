@@ -381,7 +381,7 @@ namespace ADBRuntime.Internal
                 Vector3 addForce = oneDivideIteration * addForcePower * pReadPoint->addForceScale / pReadPoint->weight;
                 deltaPosition += GetRotateForce(addForce, direction)+addForce;
                 //OYM：计算弹性形变的内部应力,当freeze很小的时候设置上限,很大的时候乘以系数
-                deltaPosition += oneDivideIteration* deltaTime * ((pReadPoint->freeze < 1)? Vector3.ClampMagnitude(back, pReadPoint->freeze * 0.1f) : back * pReadPoint->freeze);
+                deltaPosition += oneDivideIteration* deltaTime * pReadPoint->freeze* Vector3.ClampMagnitude(back, pReadPoint->freeze * 0.1f);
                 //OYM：计算离心力(理想状态
                 deltaPosition += deltaTime *((pFixedPointReadWrite->deltaRotation * direction)-direction );
                 //OYM：计算以fixed位移进行为参考进行速度补偿

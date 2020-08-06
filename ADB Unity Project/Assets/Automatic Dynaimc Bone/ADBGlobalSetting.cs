@@ -20,7 +20,8 @@ namespace ADBRuntime
                     {
                         if (settings[i].setting == null)
                         {
-                            Debug.LogError("ADB GlobalSetting has lost file! Check the Resource/setting/ADBGlobalSetting");
+                            Debug.LogError("you global setting file has lost the setting file ,please check the " +
+                              keyword +" keyword");
                             settings[i].setting = (ADBSetting)ScriptableObject.CreateInstance("ADBSetting");
                         }
                         return settings[i].setting;

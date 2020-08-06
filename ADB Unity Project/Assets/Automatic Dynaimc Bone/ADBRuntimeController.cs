@@ -137,7 +137,7 @@ namespace ADBRuntime.Mono
                 return;
             }
 
-            deltaTime += 0.0166f;//OYM：用time.deltaTime并不理想,或许是我笔记本太烂的缘故?
+            deltaTime +=Mathf.Min(Time.deltaTime,0.0166f);//OYM：用time.deltaTime并不理想,或许是我笔记本太烂的缘故?
             scale = transform.lossyScale.x;
             addForce += ADBWindZone.getaddForceForce(transform.position ) * windForceScale* deltaTime;
 
