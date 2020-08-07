@@ -55,6 +55,7 @@ namespace ADBRuntime
         public void Initialize()
         {
             if (isInitialize) return;
+            fixedNodeList = rootNode.childNode;
             SerializeAndSearchAllPoints(rootNode, ref allNodeList, out maxNodeDepth);//OYM：递归搜索子节点,获取所有节点的List,计算所有节点的deepRate
             CreatePointStructList(allNodeList);//OYM：建立各种Point初始数据
 
@@ -674,7 +675,7 @@ namespace ADBRuntime
                         //OYM：如果包含,就把它加到包含它的controll里面去
                         if (ADBRuntimeJointAndPointControlls[j0].rootNode.trans == parentPoint && ADBRuntimeJointAndPointControlls[j0].keyWord == keyWord)
                         {
-                            ADBRuntimeJointAndPointControlls[j0].fixedNodeList.Add(FixedADBRuntimePoint[i]);
+                            ADBRuntimeJointAndPointControlls[j0].rootNode.childNode.Add(FixedADBRuntimePoint[i]);
                             isContain = true;
                         }
                     }
@@ -693,7 +694,7 @@ namespace ADBRuntime
                         }
 
                         ADBRuntimeJointAndPointControlls.Add(new ADBConstraintReadAndPointControll(parentPoint, keyWord, setting));
-                        ADBRuntimeJointAndPointControlls[ADBRuntimeJointAndPointControlls.Count - 1].fixedNodeList.Add(FixedADBRuntimePoint[i]);//OYM：给
+                        ADBRuntimeJointAndPointControlls[ADBRuntimeJointAndPointControlls.Count - 1].rootNode.childNode= new List<ADBRuntimePoint> { FixedADBRuntimePoint[i] };//OYM：给
                     }
                 }
                 //OYM：顺便把所有的fixednode添加给rootnode的childNode
@@ -716,13 +717,9 @@ namespace ADBRuntime
                         "",
                         aDBSpringBones[i].aDBSetting
                         ));
-                    ADBRuntimeJointAndPointControlls[ADBRuntimeJointAndPointControlls.Count - 1].fixedNodeList.Add(aDBSpringBones[i].fixedNode);
+                    ADBRuntimeJointAndPointControlls[ADBRuntimeJointAndPointControlls.Count - 1].rootNode.childNode.Add(aDBSpringBones[i].fixedNode);
                 }
 
-            }
-            for (int i = 0; i < ADBRuntimeJointAndPointControlls.Count; i++)
-            {
-                ADBRuntimeJointAndPointControlls[i].rootNode.childNode = ADBRuntimeJointAndPointControlls[i].fixedNodeList;//OYM：赋值
             }
             //==================================SpringBone处理相关===============================
             return ADBRuntimeJointAndPointControlls.ToArray();
