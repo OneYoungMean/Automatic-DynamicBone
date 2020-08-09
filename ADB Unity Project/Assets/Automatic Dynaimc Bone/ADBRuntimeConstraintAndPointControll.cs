@@ -91,9 +91,9 @@ namespace ADBRuntime
                 if (Application.isPlaying&&aDBSetting.isComputeVirtual && (!point.trans.name.Contains("virtual")))//OYM：创建一个延长的节点
                 {
                     Transform childPointTrans = new GameObject(point.trans.name + " virtual").transform;
-                    childPointTrans.position = point.trans.position + ((point.parent?.depth == -1) ?
-                        Vector3.down * aDBSetting.virtualPointAxisLength :
-                        (point.trans.position - point.parent.trans.position).normalized * aDBSetting.virtualPointAxisLength);
+                    childPointTrans.position = point.trans.position + ((point.parent?.depth != -1) ? 
+                        (point.trans.position - point.parent.trans.position).normalized * aDBSetting.virtualPointAxisLength:
+                        Vector3.down * aDBSetting.virtualPointAxisLength );
 
                     childPointTrans.parent = point.trans;
 
@@ -717,7 +717,7 @@ namespace ADBRuntime
                         "",
                         aDBSpringBones[i].aDBSetting
                         ));
-                    ADBRuntimeJointAndPointControlls[ADBRuntimeJointAndPointControlls.Count - 1].rootNode.childNode.Add(aDBSpringBones[i].fixedNode);
+                    ADBRuntimeJointAndPointControlls[ADBRuntimeJointAndPointControlls.Count - 1].rootNode.childNode= new List<ADBRuntimePoint> { aDBSpringBones[i].fixedNode};
                 }
 
             }
