@@ -12,34 +12,25 @@ namespace ADBRuntime
         public Transform trans { get;private set; }
         public ADBRuntimePoint parent { get;set; }
         public List<ADBRuntimePoint> childNode { get; set; }//OYM：子节点 
-        public bool isFixed { get; private set; }//OYM：是否固定
+        public bool isFixed { get { return depth == 0; } }//OYM：是否固定
         public string keyWord { get; private set; }//OYM：匹配的关键词
         public int depth { get; private set; }//OYM：深度
         public int index { get; set; }//OYM：序号
         public bool isAllowComputeOtherConstraint
         { get; private set; }
 
-        public ADBRuntimePoint(Transform trans, int depth, string keyWord = null, bool isAllowComputeOtherConstraint = false)
+        public ADBRuntimePoint(Transform trans, int depth, string keyWord = null, bool isAllowComputeOtherConstraint = true)
         {
-
-            if (keyWord == null )//OYM：root点(只起一个逻辑点的作用)
-            {
-                this.trans = trans;
-                this.depth = depth;
-            }
-            else
-            {
-                this.trans = trans;
-                this.keyWord = keyWord;
-                this.depth = depth;
-                this.isFixed = depth == 0;
-                pointRead = new PointRead();
-                pointReadWrite = new PointReadWrite();
-            }
+            this.trans = trans;
+            this.keyWord = keyWord;
+            this.depth = depth;
+            pointRead = new PointRead();
+            pointReadWrite = new PointReadWrite();
+            this.isAllowComputeOtherConstraint = isAllowComputeOtherConstraint;
         }
         internal void OnDrawGizmos(Mono.ColliderCollisionType colliderCollisionType)
         {
-            Gizmos.color = isAllowComputeOtherConstraint ? Color.grey: Color.black;
+            Gizmos.color = isAllowComputeOtherConstraint ?  Color.black: new Color(0.3f,1f,0.3f,1);
             if (pointRead.radius > 0.005f&&( colliderCollisionType==Mono.ColliderCollisionType.Point|| colliderCollisionType == Mono.ColliderCollisionType.Both))
             {
                 Matrix4x4 temp = Gizmos.matrix;
@@ -53,7 +44,12 @@ namespace ADBRuntime
                 Gizmos.DrawSphere(trans.position, 0.005f);//OYM：都说了画点用的
             }
         }
+       public void SetDepth(int i )
+        {
+            depth = i;
+        }
     }
+
 
     public struct PointRead
     {
@@ -64,7 +60,7 @@ namespace ADBRuntime
         /// </summary>
         public int parentIndex;
         /// <summary>
-        /// 子节点开头编号
+        /// 子节点开头编号 
         /// </summary>
         public int childFirstIndex;
         /// <summary>

@@ -459,22 +459,22 @@ namespace ADBRuntime.Internal
                             Abs(pReadWriteCollider->position.z - pReadWritePoint->position.z) < radius)//OYM：快速检查
                         {
                             pushout = Quaternion.Inverse(pReadWriteCollider->rotation) * (pReadWritePoint->position - pReadWriteCollider->position);
-                            Vector3 boxSize = scale * pReadCollider->boxSize + new Vector3(globalScale * pPointRead->radius, globalScale * pPointRead->radius, globalScale * pPointRead->radius);
-                            if (-scale * boxSize.x < pushout.x && pushout.x < scale * pReadCollider->boxSize.x &&
-                                -scale * boxSize.y < pushout.y && pushout.y < scale * pReadCollider->boxSize.y &&
-                                -scale * boxSize.z < pushout.z && pushout.z < scale * pReadCollider->boxSize.z
+                            Vector3 boxSize = scale * pReadCollider->boxSize+new Vector3( pPointRead->radius, pPointRead->radius, pPointRead->radius);
+                            if ( boxSize.x >Abs( pushout.x)&&
+                                boxSize.y >Abs(pushout.y)  &&
+                                boxSize.z > Abs(pushout.z )
                                 )
                             {
-                                float pushoutX = pushout.x > 0 ? boxSize.x - pushout.x : -scale * boxSize.x - pushout.x;
-                                float pushoutY = pushout.y > 0 ? boxSize.y - pushout.y : -scale * boxSize.y - pushout.y;
-                                float pushoutZ = pushout.z > 0 ? boxSize.z - pushout.z : -scale * boxSize.z - pushout.z;
+                                float pushoutX = ( pushout.x > 0 ? boxSize.x - pushout.x :  -boxSize.x - pushout.x);
+                                float pushoutY =  (pushout.y > 0 ? boxSize.y - pushout.y :- boxSize.y - pushout.y);
+                                float pushoutZ = (pushout.z > 0 ? boxSize.z - pushout.z : -boxSize.z - pushout.z);
 
-                                if (Abs(pushoutZ) < Abs(pushoutY) && Abs(pushoutZ) < Abs(pushoutX))
+                                if (Abs(pushoutZ) <= Abs(pushoutY) && Abs(pushoutZ) <= Abs(pushoutX))
                                 {
                                     pushout = pReadWriteCollider->rotation * new Vector3(0, 0, pushoutZ);
 
                                 }
-                                else if (Abs(pushoutY) < Abs(pushoutX) && Abs(pushoutY) < Abs(pushoutZ))
+                                else if (Abs(pushoutY) <=Abs(pushoutX) && Abs(pushoutY) <= Abs(pushoutZ))
                                 {
                                     pushout = pReadWriteCollider->rotation * new Vector3(0, pushoutY, 0);
                                 }
@@ -762,12 +762,13 @@ namespace ADBRuntime.Internal
                                     float pushoutZ = pushout.z > 0 ? boxSize.z - pushout.z : -boxSize.z - pushout.z;
                                     //OYM：这里我自己都不太记得了 XD
                                     //OYM：这里是选推出点离的最近的位置,然后推出
-                                    if (Abs(pushoutZ) < Abs(pushoutY) && Abs(pushoutZ) < Abs(pushoutX))
+                                    //OYM：Abs(pushoutZ) < Abs(pushoutY) ,可能会出现两者都为0的情况
+                                    if (Abs(pushoutZ) <= Abs(pushoutY) && Abs(pushoutZ) <= Abs(pushoutX))
                                     {
                                         pushout = pReadWriteCollider->rotation * new Vector3(0, 0, pushoutZ);
 
                                     }
-                                    else if (Abs(pushoutY) < Abs(pushoutX) && Abs(pushoutY) < Abs(pushoutZ))
+                                    else if (Abs(pushoutY) <= Abs(pushoutX) && Abs(pushoutY) <= Abs(pushoutZ))
                                     {
                                         pushout = pReadWriteCollider->rotation * new Vector3(0, pushoutY, 0);
                                     }
@@ -788,12 +789,12 @@ namespace ADBRuntime.Internal
                                         {
                                             if (pReadCollider->collideFunc == CollideFunc.InsideNoLimit || pReadCollider->collideFunc == CollideFunc.OutsideNoLimit)
                                             {
-                                                pReadWritePointA->deltaPosition += 0.01f * oneDivideIteration * (pushout * t);
+                                                pReadWritePointA->deltaPosition += 0.01f * oneDivideIteration * (pushout *(1- t));
                                             }
                                             else
                                             {
-                                                pReadWritePointA->position += (pushout * t);
-                                                pReadWritePointA->deltaPosition += (pushout * t);
+                                                pReadWritePointA->position += (pushout *(1- t));
+                                                pReadWritePointA->deltaPosition += (pushout * (1-t));
                                             }
              
                                         }
@@ -807,8 +808,8 @@ namespace ADBRuntime.Internal
                                         }
                                         else
                                         {
-                                            pReadWritePointB->position += (pushout * (1 - t));
-                                            pReadWritePointB->deltaPosition += (pushout * (1 - t));
+                                            pReadWritePointB->position += (pushout *  t);
+                                            pReadWritePointB->deltaPosition += (pushout *  t);
                                         }
                                     }
                                 }
@@ -880,7 +881,7 @@ namespace ADBRuntime.Internal
 
                 if (collideFunc == CollideFunc.InsideNoLimit || collideFunc == CollideFunc.OutsideNoLimit)
                 {
-                    pReadWritePointB->deltaPosition += 0.01f * oneDivideIteration * (1 - lengthPropotion) * pushout;
+                    pReadWritePointB->deltaPosition += 0.01f * oneDivideIteration * (lengthPropotion) * pushout;
                 }
                 else
                 {

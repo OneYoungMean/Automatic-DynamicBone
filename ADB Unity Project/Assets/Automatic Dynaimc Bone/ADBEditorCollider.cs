@@ -57,8 +57,7 @@ namespace ADBRuntime.Mono
             {
                 return;
             }
-            editor.isDraw = true;
-            editor.colliderRead.CheckValue();
+
             switch (editor.colliderRead.colliderType)
             {
                 case ColliderType.Sphere:
@@ -79,6 +78,8 @@ namespace ADBRuntime.Mono
                 default:
                     break;
             }
+            editor.isDraw = true;
+            editor.colliderRead.CheckValue();
 
         }
         

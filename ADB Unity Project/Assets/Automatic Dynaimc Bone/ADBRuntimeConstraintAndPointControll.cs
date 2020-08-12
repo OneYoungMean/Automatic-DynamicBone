@@ -40,9 +40,22 @@ namespace ADBRuntime
         private int maxNodeDepth;
 
         //OYM：new一个出来
-        private ADBConstraintReadAndPointControll(Transform rootTransform, string keyWord, ADBSetting setting)
+        public ADBConstraintReadAndPointControll(Transform rootTransform, string keyWord, ADBSetting setting)
         {
             rootNode = new ADBRuntimePoint(rootTransform, -1);//OYM：rootpoint指所有fix骨骼的同一个父节点,他会独立出来,而不是参与到计算当中
+            rootNode.index = -1;
+            rootNode.childNode = new List<ADBRuntimePoint>();
+            this.keyWord = keyWord;
+            fixedNodeList = new List<ADBRuntimePoint>();
+            allNodeList = new List<ADBRuntimePoint>();
+
+            maxNodeDepth = 1;
+            aDBSetting = setting;
+        }
+
+        public ADBConstraintReadAndPointControll(ADBRuntimePoint rootNode, string keyWord, ADBSetting setting)
+        {
+            this.rootNode = rootNode;//OYM：rootpoint指所有fix骨骼的同一个父节点,他会独立出来,而不是参与到计算当中
             rootNode.index = -1;
             this.keyWord = keyWord;
             fixedNodeList = new List<ADBRuntimePoint>();
@@ -91,8 +104,8 @@ namespace ADBRuntime
                 if (Application.isPlaying&&aDBSetting.isComputeVirtual && (!point.trans.name.Contains("virtual")))//OYM：创建一个延长的节点
                 {
                     Transform childPointTrans = new GameObject(point.trans.name + " virtual").transform;
-                    childPointTrans.position = point.trans.position + ((point.parent?.depth != -1) ? 
-                        (point.trans.position - point.parent.trans.position).normalized * aDBSetting.virtualPointAxisLength:
+                    childPointTrans.position = point.trans.position + ((point.parent!=null&& point.parent.depth != -1) ?
+                        (point.trans.position - point.parent.trans.position).normalized * aDBSetting.virtualPointAxisLength :
                         Vector3.down * aDBSetting.virtualPointAxisLength );
 
                     childPointTrans.parent = point.trans;
@@ -694,7 +707,7 @@ namespace ADBRuntime
                         }
 
                         ADBRuntimeJointAndPointControlls.Add(new ADBConstraintReadAndPointControll(parentPoint, keyWord, setting));
-                        ADBRuntimeJointAndPointControlls[ADBRuntimeJointAndPointControlls.Count - 1].rootNode.childNode= new List<ADBRuntimePoint> { FixedADBRuntimePoint[i] };//OYM：给
+                        ADBRuntimeJointAndPointControlls[ADBRuntimeJointAndPointControlls.Count - 1].rootNode.childNode.Add(FixedADBRuntimePoint[i]);
                     }
                 }
                 //OYM：顺便把所有的fixednode添加给rootnode的childNode
@@ -717,9 +730,8 @@ namespace ADBRuntime
                         "",
                         aDBSpringBones[i].aDBSetting
                         ));
-                    ADBRuntimeJointAndPointControlls[ADBRuntimeJointAndPointControlls.Count - 1].rootNode.childNode= new List<ADBRuntimePoint> { aDBSpringBones[i].fixedNode};
+                    ADBRuntimeJointAndPointControlls[ADBRuntimeJointAndPointControlls.Count - 1].rootNode.childNode= new List<ADBRuntimePoint> { aDBSpringBones[i].fixedNode };
                 }
-
             }
             //==================================SpringBone处理相关===============================
             return ADBRuntimeJointAndPointControlls.ToArray();
@@ -874,7 +886,7 @@ namespace ADBRuntime
                 DrawConstraint(constraintsBendingVertical, colliderCollisionType);
             }
         }
-        public void DrawConstraint(List<ADBRuntimeConstraint> constraints, Mono.ColliderCollisionType colliderCollisionType)
+        private  void DrawConstraint(List<ADBRuntimeConstraint> constraints, Mono.ColliderCollisionType colliderCollisionType)
         {
             if (constraints == null) return;
             for (int i = 0; i < constraints.Count; i++)

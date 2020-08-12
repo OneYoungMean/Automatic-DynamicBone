@@ -165,7 +165,7 @@ namespace ADBRuntime
                 colliderRead.staticDirection = pointTail - pointHead;
             }
         }
-        public CapsuleCollider(float radius,float length, Vector3 positionOffset,Vector3 direction, ColliderChoice colliderChoice,Transform appendTransform = null, CollideFunc collideFunc = CollideFunc.OutsideLimit)
+        public CapsuleCollider(float radius,float length, Vector3 positionOffset,Quaternion localRotation, ColliderChoice colliderChoice,Transform appendTransform = null, CollideFunc collideFunc = CollideFunc.OutsideLimit)
         {
             colliderRead.isOpen = true;
             colliderRead.colliderType = ColliderType.Capsule;
@@ -176,13 +176,13 @@ namespace ADBRuntime
             if (appendTransform != null)
             {
                 this.appendTransform = appendTransform;
-                colliderRead.staticDirection = Quaternion.Inverse(appendTransform.rotation) * (direction == Vector3.zero ? Vector3.up : direction);
-                colliderRead.positionOffset = Quaternion.Inverse(appendTransform.rotation)*positionOffset;
+                colliderRead.staticDirection = localRotation* Vector3.up* length;
+                colliderRead.positionOffset = Quaternion.Inverse(appendTransform.rotation) *positionOffset;
             }
             else
             {
                 colliderRead.positionOffset = positionOffset;
-                colliderRead.staticDirection = direction==Vector3.zero?Vector3.up:direction;
+                colliderRead.staticDirection = Quaternion.Inverse(localRotation) * Vector3.up;
             }
         }
         public override void OnDrawGizmos()
@@ -242,19 +242,30 @@ namespace ADBRuntime
             this.colliderRead = colliderRead;
             this.appendTransform = appendtTransform;
         }
-        public OBBBoxCollider(Vector3 center, Vector3 range, Vector3 direction, ColliderChoice colliderChoice, Transform appendTransform = null, CollideFunc collideFunc = CollideFunc.OutsideLimit)
+        public OBBBoxCollider(Vector3 center, Vector3 size, Vector3 direction, ColliderChoice colliderChoice, Transform appendTransform = null, CollideFunc collideFunc = CollideFunc.OutsideLimit)
         {
             colliderRead.isOpen = true;
 
             this.appendTransform = appendTransform;
             colliderRead.staticRotation = appendTransform ? appendTransform.rotation * Quaternion.FromToRotation(Vector3.up, direction) : Quaternion.FromToRotation(Vector3.up, direction);
             colliderRead.positionOffset = appendTransform ? appendTransform.InverseTransformPoint(center) : center;
-            colliderRead.boxSize = new Vector3(Mathf.Abs(range.x * 0.5f), Mathf.Abs(range.y * 0.5f), Mathf.Abs(range.z * 0.5f));
+            colliderRead.boxSize = new Vector3(Mathf.Abs(size.x ), Mathf.Abs(size.y), Mathf.Abs(size.z ));
             colliderRead.colliderType = ColliderType.OBB;
             colliderRead.collideFunc = CollideFunc.OutsideLimit;
             colliderRead.colliderChoice = colliderChoice;
         }
+        public OBBBoxCollider(Vector3 center, Vector3 size, Quaternion rotation, ColliderChoice colliderChoice, Transform appendTransform = null, CollideFunc collideFunc = CollideFunc.OutsideLimit)
+        {
+            colliderRead.isOpen = true;
 
+            this.appendTransform = appendTransform;
+            colliderRead.staticRotation = appendTransform ? appendTransform.rotation * rotation:rotation;
+            colliderRead.positionOffset = appendTransform ? appendTransform.InverseTransformPoint(center) : center;
+            colliderRead.boxSize = new Vector3(Mathf.Abs(size.x), Mathf.Abs(size.y), Mathf.Abs(size.z));
+            colliderRead.colliderType = ColliderType.OBB;
+            colliderRead.collideFunc = CollideFunc.OutsideLimit;
+            colliderRead.colliderChoice = colliderChoice;
+        }
         public override void OnDrawGizmos()
         {
             if (!isDraw) return;
@@ -262,7 +273,7 @@ namespace ADBRuntime
             Matrix4x4 before = Gizmos.matrix;
             if (appendTransform)
             {
-                Gizmos.matrix = Matrix4x4.TRS(appendTransform.position + colliderRead.positionOffset * appendTransform.lossyScale.x, appendTransform.rotation * colliderRead.staticRotation, appendTransform.lossyScale);
+                Gizmos.matrix = Matrix4x4.TRS(appendTransform.position + appendTransform.rotation * colliderRead.positionOffset * appendTransform.lossyScale.x, appendTransform.rotation * colliderRead.staticRotation, appendTransform.lossyScale);
                 Gizmos.DrawWireCube(Vector3.zero, colliderRead.boxSize * 2);
             }
             else
@@ -313,7 +324,11 @@ namespace ADBRuntime
         {
             radius = radius < 0 ? 0 : radius;
             length = length < 0 ? 0 : length;
-            boxSize = boxSize.normalized * boxSize.magnitude;
+            if (length == 0&& colliderType==ColliderType.Capsule)
+            {
+                colliderType = ColliderType.Sphere;
+            }
+            boxSize = boxSize.normalized * boxSize.magnitude;//OYM：我当初为啥要写这一段啊...
             staticDirection = staticDirection == Vector3.zero ? Vector3.up : staticDirection;
             staticRotation = Quaternion.FromToRotation(Vector3.up, staticDirection);
             if (((int)colliderChoice) == 0)
