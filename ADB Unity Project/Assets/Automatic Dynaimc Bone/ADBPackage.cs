@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿//#define ADB_DEBUG
+
+using UnityEngine;
 using UnityEngine.Jobs;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
@@ -12,11 +14,9 @@ namespace ADBRuntime
     using Mono;
     public unsafe class DataPackage
     {
-        //private const bool isRunning = true;
-        private const bool isTryExcute = false;
-        private const bool isDebug = false;
-        private  JobHandle Hjob;
-        //OYM：先把主要功能恢复
+        static int batchLength = 64;
+
+        private JobHandle Hjob;
         private ADBRunTimeJobsTable ADBRunTimeJobsTable;
 
         private ADBRunTimeJobsTable.ColliderGetTransform colliderGet;
@@ -50,10 +50,21 @@ namespace ADBRuntime
             pointTransformsList = new TransformAccessArray(0);
             colliderTransformsList = new TransformAccessArray(0);
         }
-        internal bool SetRuntimeData(float deltaTime, float scale,ref int iteration, Vector3 addForceForce, ColliderCollisionType colliderCollisionType, bool isOptimize, bool detectAsync,bool isFuzzyCompute)
+        /// <summary>
+        /// 物理接口,如果要更新物理数据,需要在里面填入相关的信息
+        /// </summary>
+        /// <param name="deltaTime"></param>
+        /// <param name="scale"></param>
+        /// <param name="iteration"></param>
+        /// <param name="addForce"></param>
+        /// <param name="colliderCollisionType"></param>
+        /// <param name="isOptimize"></param>
+        /// <param name="detectAsync"></param>
+        /// <param name="isFuzzyCompute"></param>
+        /// <returns></returns>
+        internal bool SetRuntimeData(float deltaTime, float scale, ref int iteration, Vector3 addForce, ColliderCollisionType colliderCollisionType, bool isOptimize, bool detectAsync, bool isFuzzyCompute)
         {
-            int batchLength = isTryExcute ? 1 : 64;
-            iteration = isTryExcute ? 1 : iteration;
+
 
             if (!Hjob.IsCompleted)
             {
@@ -67,64 +78,67 @@ namespace ADBRuntime
             }
 
             //OYM：当我用ADBRunTimeJobsTable.returnHJob时候,任务会在我调用的时候被强制完成,当我用本地的Hjob的时候,任务会在异步进行
+            //OYM:  注意,JH底层很可能也是单例
 
+            //OYM:  赋参
             constraintUpdates1.oneDivideIteration = pointUpdate.oneDivideIteration = colliderGet.oneDivideIteration = pointGet.oneDivideIteration = 1.0f / iteration;
-
             pointUpdate.deltaTime = deltaTime;
             pointUpdate.globalScale = scale;
             pointUpdate.isOptimize = isOptimize;
-            pointUpdate.addForcePower = addForceForce;
-            pointUpdate.isCollision = (colliderCollisionType == ColliderCollisionType.Both|| colliderCollisionType == ColliderCollisionType.Point);
+            pointUpdate.addForcePower = addForce;
+            pointUpdate.isCollision = (colliderCollisionType == ColliderCollisionType.Both || colliderCollisionType == ColliderCollisionType.Point);
 
+            //OYM:  上面这个是防迭代顺序错乱而设置强制顺序
             for (int i = 0; i < constraintUpdates.Length; i++)
             {
                 constraintUpdates[i].globalScale = scale;
-                constraintUpdates[i].isCollision = (colliderCollisionType == ColliderCollisionType.Both|| colliderCollisionType == ColliderCollisionType.Constraint);
+                constraintUpdates[i].isCollision = (colliderCollisionType == ColliderCollisionType.Both || colliderCollisionType == ColliderCollisionType.Constraint);
             }
+            //OYM:  下面就是随机顺序了
             constraintUpdates1.globalScale = scale;
-          constraintUpdates1.isCollision = (colliderCollisionType == ColliderCollisionType.Both||colliderCollisionType == ColliderCollisionType.Constraint); ;
-
+            constraintUpdates1.isCollision = (colliderCollisionType == ColliderCollisionType.Both || colliderCollisionType == ColliderCollisionType.Constraint); ;
 
             #region LifeCycle
+
+#if ADB_DEBUG
+            pointGet.TryExecute(pointTransformsList, Hjob);
+#else
             Hjob = colliderGet.Schedule(colliderTransformsList);
             Hjob = pointGet.Schedule(pointTransformsList);
-
-            //pointGet.TryExecute(pointTransformsList, Hjob);
+#endif
 
             for (int i = 0; i < iteration; i++)
             {
-                if (isTryExcute)
-                {
-                    colliderUpdate.TryExecute(collidersReadList.Length, batchLength, Hjob);
+#if ADB_DEBUG
+                colliderUpdate.TryExecute(collidersReadList.Length, batchLength, Hjob);
 
-                    pointUpdate.TryExecute(pointReadList.Length, batchLength, Hjob);
-                    for (int j0 = 0; j0 < constraintUpdates.Length; j0++)
-                    {
-                        constraintUpdates[j0].TryExecute(constraintReadList[j0].Length, batchLength, Hjob);
-                    }
+                pointUpdate.TryExecute(pointReadList.Length, batchLength, Hjob);
+                for (int j0 = 0; j0 < constraintUpdates.Length; j0++)
+                {
+                    constraintUpdates[j0].TryExecute(constraintReadList[j0].Length, batchLength, Hjob);
+                }
+#else
+                if (isFuzzyCompute)
+                {
+                    Hjob = colliderUpdate.Schedule(collidersReadList.Length, batchLength);
+                    Hjob = pointUpdate.Schedule(pointReadList.Length, batchLength);
+                    Hjob = constraintUpdates1.Schedule(constraintReadList1.Length, batchLength);
                 }
                 else
                 {
-                    if (isFuzzyCompute)
-                    {
-                        Hjob = colliderUpdate.Schedule(collidersReadList.Length, batchLength);
-                        //Hjob = fixedPointUpdate.Schedule(pointReadList.Length, batchLength,);
-                        Hjob = pointUpdate.Schedule(pointReadList.Length, batchLength);
-                        Hjob = constraintUpdates1.Schedule(constraintReadList1.Length, batchLength);
-                    }
-                    else
-                    {
-                        Hjob = colliderUpdate.Schedule(collidersReadList.Length, batchLength, Hjob);
-                        //Hjob = fixedPointUpdate.Schedule(pointReadList.Length, batchLength,);
-                        Hjob = pointUpdate.Schedule(pointReadList.Length, batchLength, Hjob);
-                        Hjob = constraintUpdates1.Schedule(constraintReadList1.Length, batchLength, Hjob);
-                    }
+                    Hjob = colliderUpdate.Schedule(collidersReadList.Length, batchLength, Hjob);
+                    Hjob = pointUpdate.Schedule(pointReadList.Length, batchLength, Hjob);
+                    Hjob = constraintUpdates1.Schedule(constraintReadList1.Length, batchLength, Hjob);
                 }
+#endif
             }
 
+#if ADB_DEBUG
+            pointToTransform.TryExecute(pointTransformsList, Hjob);
+#else
             Hjob = pointToTransform.Schedule(pointTransformsList);
+#endif
             #endregion
-            //pointToTransform.TryExecute(pointTransformsList, Hjob);
 
             return true;
         }
@@ -152,7 +166,7 @@ namespace ADBRuntime
                 }
                 pointReadList[i].fixedIndex += offset;
             }
-            
+
             for (int i = 0; i < constraintList.Length; i++)
             {
                 for (int j0 = 0; j0 < constraintList[i].Length; j0++)
@@ -171,6 +185,7 @@ namespace ADBRuntime
         }
         public void SetNativeArray()
         {
+            //OYM:  创建各种实例
             pointReadList = new NativeArray<PointRead>(m_pointReadList.ToArray(), Allocator.Persistent);
             pointReadWriteList = new NativeArray<PointReadWrite>(m_pointReadWriteList.ToArray(), Allocator.Persistent);
             constraintReadList = new NativeArray<ConstraintRead>[m_constraintList.Count];
@@ -190,6 +205,7 @@ namespace ADBRuntime
             constraintUpdates1 = new ADBRunTimeJobsTable.ConstraintUpdate();
             pointToTransform = new ADBRunTimeJobsTable.JobPointToTransform();
 
+            //OYM:  获取指针与赋值
             colliderGet.pReadColliders = (ColliderRead*)collidersReadList.GetUnsafePtr();
             colliderGet.pReadWriteColliders = (ColliderReadWrite*)collidersReadWriteList.GetUnsafePtr();
 
@@ -228,6 +244,9 @@ namespace ADBRuntime
             pointToTransform.pReadWritePoints = (PointReadWrite*)pointReadWriteList.GetUnsafePtr();
 
         }
+        /// <summary>
+        /// 重置所有点
+        /// </summary>
         public void restorePoint()
         {
             Hjob.Complete();
@@ -237,21 +256,25 @@ namespace ADBRuntime
                 pReadWritePoints = (PointReadWrite*)pointReadWriteList.GetUnsafePtr(),
             };
             Hjob = initialpoint.Schedule(pointTransformsList);
-            
+
             ADBRunTimeJobsTable.InitiralizeCollider initialCollider = new ADBRunTimeJobsTable.InitiralizeCollider
             {
                 pReadColliders = (ColliderRead*)collidersReadList.GetUnsafePtr(),
                 pReadWriteColliders = (ColliderReadWrite*)collidersReadWriteList.GetUnsafePtr()
             };
             Hjob = initialCollider.Schedule(colliderTransformsList);
-            
+
 
 
         }
-
+        /// <summary>
+        /// 释放,如果为true,则重新加载数据
+        /// 注意,该操作会释放大量GC
+        /// </summary>
+        /// <param name="isReset"></param>
         public void Dispose(bool isReset)
         {
-            Hjob. Complete();
+            Hjob.Complete();
             pointReadList.Dispose();
             pointReadWriteList.Dispose();
             pointTransformsList.Dispose();
@@ -273,8 +296,6 @@ namespace ADBRuntime
                 collidersReadWriteList.Dispose();
                 colliderTransformsList.Dispose();
             }
-
-
         }
     }
 }

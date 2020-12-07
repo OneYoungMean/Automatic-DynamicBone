@@ -1,4 +1,5 @@
-﻿
+﻿//#define ADB_DEBUG
+
 using UnityEngine;
 using UnityEngine.Jobs;
 using Unity.Jobs;
@@ -32,7 +33,7 @@ namespace ADBRuntime.Internal
 
             public void Execute(int index, TransformAccess transform)
             {
-                /*
+#if ADB_DEBUG
             }
             public void TryExecute(TransformAccessArray transforms, JobHandle job)
             {
@@ -47,7 +48,8 @@ namespace ADBRuntime.Internal
             }
             void Execute(int index, Transform transform)
             {
-            */
+#endif
+
                 var pReadWritePoint = pReadWritePoints + index;
                 var pReadPoint = pReadPoints + index;
 
@@ -91,8 +93,8 @@ namespace ADBRuntime.Internal
 
             public void Execute(int index, TransformAccess transform)
             {
-                /*
-            )
+#if ADB_DEBUG
+            }
             public void TryExecute(TransformAccessArray transforms, JobHandle job)
             {
                 if (!job.IsCompleted)
@@ -106,7 +108,7 @@ namespace ADBRuntime.Internal
             }
             public void Execute(int index, Transform transform)
             {
-                */
+#endif
                 ColliderReadWrite* pReadWriteCollider = pReadWriteColliders + index;
                 ColliderRead* pReadCollider = pReadColliders + index;
 
@@ -145,12 +147,7 @@ namespace ADBRuntime.Internal
                         break;
                     case ColliderType.OBB:
                         pReadWriteCollider->deltaPosition = oneDivideIteration * (transform.position + transform.rotation * pReadCollider->positionOffset - pReadWriteCollider->position);
-                        pReadWriteCollider->deltaRotation = Quaternion.Lerp(Quaternion.identity, ((transform.rotation * pReadCollider->staticRotation) * Quaternion.Inverse(pReadWriteCollider->rotation)), oneDivideIteration);//OYM：写的有点啰嗦,实际上就是对backToForward做除法,计算如下
-                        /*
-                        Quaternion rotationForward = transform.rotation * pReadCollider->staticRotation;
-                        Quaternion rotationBack = Quaternion.Inverse(pReadWriteCollider->rotation);
-                        Quaternion backToForward = rotationForward * rotationBack;
-                         */
+                        pReadWriteCollider->deltaRotation = Quaternion.Lerp(Quaternion.identity, ((transform.rotation * pReadCollider->staticRotation) * Quaternion.Inverse(pReadWriteCollider->rotation)), oneDivideIteration);
                         break;
                     default:
                         break;
@@ -214,7 +211,7 @@ namespace ADBRuntime.Internal
             public float oneDivideIteration;
             public void Execute(int index, TransformAccess transform)
             {
-                /*
+#if ADB_DEBUG
             }
             public void TryExecute(TransformAccessArray transforms, JobHandle job)
             {
@@ -230,7 +227,8 @@ namespace ADBRuntime.Internal
 
             public void Execute(int index, Transform transform)//OYM：注意,这里只获取delta,不获取真实的坐标
             {
-                */
+#endif
+
                 PointRead* pReadPoint = pReadPoints + index;
                 PointReadWrite* pReadWritePoint = pReadWritePoints + index;
 
@@ -247,7 +245,8 @@ namespace ADBRuntime.Internal
                 }
                 else
                 {
-                    if (pReadWritePoint->deltaPosition.sqrMagnitude > (pReadPoint->mass ) * (pReadPoint->mass )*0.1f)//OYM：大于mass*0.2f长度的速度会触发掉速
+                    //OYM:  写成这样是为了在迭代的方式下尽可能的减少计算,所以用近似的方法减少速度,而不是damp
+                    if (pReadWritePoint->deltaPosition.sqrMagnitude > (pReadPoint->mass ) * (pReadPoint->mass )*0.1f)//OYM：>0.1*mass*mass,注意这里的mass被乘以了0.2f
                     {
                         pReadWritePoint->deltaPosition *=(0.8f+pReadPoint->mass);
                     }
@@ -298,7 +297,7 @@ namespace ADBRuntime.Internal
             [ReadOnly]
             internal float globalScale;
             /// <summary>
-            /// 1/迭代次数,为什么不用int,因为除法比乘法慢
+            /// 1/迭代次数,为什么不用迭代次数,因为除法比乘法慢
             /// </summary>
             [ReadOnly]
             internal float oneDivideIteration;
@@ -308,6 +307,7 @@ namespace ADBRuntime.Internal
             internal bool isCollision;
             [ReadOnly]
             internal bool isOptimize;
+ #if ADB_DEBUG
             public void TryExecute(int index, int _, JobHandle job)
             {
                 if (!job.IsCompleted)
@@ -319,6 +319,7 @@ namespace ADBRuntime.Internal
                     Execute(i);
                 }
             }
+#endif
             public void Execute(int index)
             {
                 PointRead* pReadPoint = pReadPoints + index;
@@ -365,7 +366,7 @@ namespace ADBRuntime.Internal
                 Vector3 back;
                 //OYM：获取归位的向量
 
-                if (pReadPoint->isFixGravityAxis)
+                if (pReadPoint->isFixGravityAxis)//OYM:  固定重力方向,这个值会受到fix节点初始rotation的影响
                 {
 
                     deltaPosition += oneDivideIteration * ((pFixedPointReadWrite->rotation *Quaternion.Inverse(pFixedPointRead->initialRotation) )*pReadPoint->gravity) * (0.5f * deltaTime * deltaTime) * globalScale;//OYM：重力
@@ -391,9 +392,11 @@ namespace ADBRuntime.Internal
                 if (isOptimize)
                 {
                     //OYM：减少对于骨骼的拉长
+                    //OYM:  注意,这个操作会让你的骨骼看上去更加的卷,更加的带有动漫风
                     deltaPosition -= Vector3.Dot(deltaPosition, direction) / direction.sqrMagnitude * direction;
                     deltaPosition += GetRotateForce(deltaPosition, direction);
                 }
+
                 //OYM：赋值给累积的速度
                 pReadWritePoint->deltaPosition += deltaPosition;
                 //OYM：赋值给距离
@@ -576,7 +579,7 @@ namespace ADBRuntime.Internal
             public bool isCollision;
             [ReadOnly]
             internal float oneDivideIteration;
-
+ #if ADB_DEBUG
             public void TryExecute(int index, int temp, JobHandle job)
             {
                 if (!job.IsCompleted)
@@ -588,6 +591,7 @@ namespace ADBRuntime.Internal
                     Execute(i);
                 }
             }
+#endif
             public void Execute(int index)
             {
                 //OYM：获取约束
@@ -762,7 +766,7 @@ namespace ADBRuntime.Internal
                                     float pushoutZ = pushout.z > 0 ? boxSize.z - pushout.z : -boxSize.z - pushout.z;
                                     //OYM：这里我自己都不太记得了 XD
                                     //OYM：这里是选推出点离的最近的位置,然后推出
-                                    //OYM：Abs(pushoutZ) < Abs(pushoutY) ,可能会出现两者都为0的情况
+                                    //OYM：Abs(pushoutZ) < Abs(pushoutY)是错的 ,可能会出现两者都为0的情况
                                     if (Abs(pushoutZ) <= Abs(pushoutY) && Abs(pushoutZ) <= Abs(pushoutX))
                                     {
                                         pushout = pReadWriteCollider->rotation * new Vector3(0, 0, pushoutZ);
@@ -971,7 +975,7 @@ out float tP, out float tQ, out Vector3 pointOnP, out Vector3 pointOnQ)
 
             public void Execute(int index, TransformAccess transform)
             {
-                /*
+#if ADB_DEBUG
              }
              public void TryExecute(TransformAccessArray transforms, JobHandle job)
              {
@@ -986,7 +990,7 @@ out float tP, out float tQ, out Vector3 pointOnP, out Vector3 pointOnQ)
              }
              public void Execute(int index, Transform transform)
              {
-                */
+#endif
                 PointReadWrite* pReadWritePoint = pReadWritePoints + index;//OYM：获取每个读写点
                 PointRead* pReadPoint = pReadPoints + index;//OYM：获取每个只读点
 
@@ -995,7 +999,8 @@ out float tP, out float tQ, out Vector3 pointOnP, out Vector3 pointOnQ)
                     transform.position = pReadWritePoint->position;
                 }
 
-
+                //OYM:  旋转节点
+                //OYM:  这里有个bug,当初考虑的时候是存在多个子节点的,但是实际上并没有
                 if (pReadPoint->childFirstIndex > -1)
                 {
                     transform.localRotation = pReadPoint->initialLocalRotation;
@@ -1016,7 +1021,7 @@ out float tP, out float tQ, out Vector3 pointOnP, out Vector3 pointOnQ)
                 }
             }
         }
-        #endregion
+#endregion
     }
 }
 
