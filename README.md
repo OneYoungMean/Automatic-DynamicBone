@@ -1,7 +1,6 @@
 写在开头:  
-* 插件暂时处于不稳定状态,请耐心等待.
 * 如果您是第一次接触该项目,您可以选择在[此处下载示例](https://wws.lanzous.com/iotvcf8d3mb) 并访问[项目的wiki](https://github.com/OneYoungMean/Automatic-DynamicBone/wiki)  
-* [English version manual](https://github.com/OneYoungMean/Automatic-DynamicBone/wiki/English-version-manual)  
+* [English version manual](https://github.com/OneYoungMean/Automatic-DynamicBone/wiki/English-version-manual)  sorry Im too busy to make the localization XD
 
 - **当前版本:0.9preview 最后更新日期:20/7/31**  
 - **除了修bug以外应该不会大改了..大概**   
@@ -12,6 +11,7 @@
 * 基于unity jobs 多线程系统
 * 一个可以根据骨骼布料,自动生成具有物理效果头发和裙子,用于代替dynamicBone插件功能
 * 此外,缅怀作者被dynamic bone坑走了**15美刀**  
+
 
 ## 快速开始
 
@@ -51,8 +51,8 @@
 
 - **作者长期在线!** 有issue必回!包君满意!
 
-![Github只支持5mb的动图,导致好好的一张图硬生生压成一坨shit](https://s1.ax1x.com/2020/08/01/aGEHyV.gif)  
-
+![Github只支持5mb的动图,导致好好的一张图硬生生压成一坨shit](https://s1.ax1x.com/2020/08/01/aGEHyV.gif)
+![我承认magic cloth很好用,但是这不是你们试图让我盗用别人代码的理由,我是开源插件,爱用不用](https://s1.ax1x.com/2020/09/17/wfmGUe.gif)
 
 ## 要求
 
@@ -68,7 +68,7 @@
 [省略掉的吐槽很辛苦的话]
 [省略掉的吐槽自己真的很穷的话]
 [省略掉的小声BB的话]
-有没有愿意收留实习生的,弱小,无助,可怜,还没钱QAQ
+有没有愿意收2020冬季实习生的,弱小,无助,可怜,还没钱QAQ
 ```
 ***
 ### 已知存在问题
