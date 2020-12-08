@@ -1,4 +1,4 @@
-﻿//#define ADB_DEBUG
+﻿#define ADB_DEBUG
 
 using UnityEngine;
 using UnityEngine.Jobs;
@@ -35,15 +35,15 @@ namespace ADBRuntime.Internal
             {
 #if ADB_DEBUG
             }
-            public void TryExecute(TransformAccessArray transforms, JobHandle job)
+            public void TryExecute(TransformAccessArray PoinTransforms, JobHandle job)
             {
                 if (!job.IsCompleted)
                 {
                     job.Complete();
                 }
-                for (int i = 0; i < transforms.length; i++)
+                for (int i = 0; i < PoinTransforms.length; i++)
                 {
-                    Execute(i, transforms[i]);
+                    Execute(i, PoinTransforms[i]);
                 }
             }
             void Execute(int index, Transform transform)
@@ -60,23 +60,27 @@ namespace ADBRuntime.Internal
                     transform.localRotation = pReadPoint->initialLocalRotation;//OYM：这里改变之后,rotation也会改变
 
                     pReadWritePoint->rotation = transform.rotation;
-                    pReadWritePoint->rotationY = pReadPoint->initialRotation;
+                    pReadWritePoint->rotationY = pReadPoint->initialRotation;//OYM:  注意,这个rotationY是参照原始的旋转,然后乘以deltaRotationY算出来的,是依赖rotation算出来,而不是真实存在的
                     //Debug.Log(pReadWritePoint->rotation+" "+index);
                     pReadWritePoint->position = transform.position;
 
-                    pReadWritePoint->deltaRotationY = pReadWritePoint->deltaRotation = Quaternion.identity;
+                    pReadWritePoint->deltaRotationY = pReadWritePoint->deltaRotation = Quaternion.identity;//OYM:  fixed坐标不需要这些花里胡哨的
                     pReadWritePoint->deltaPosition = Vector3.zero;
 
                 }
                 else
                 {
+                    //OYM:  这里先要把所有乱动的点恢复到原来的坐标上去(比如你需要修复穿模,调用一下清零),再重新记录数据
+
                     var pFixReadWritePoint = pReadWritePoints + (pReadPoint->fixedIndex);
                     var pFixReadPoint = pReadPoints + (pReadPoint->fixedIndex);
-                    transform.localRotation = pReadPoint->initialLocalRotation;
-                    pReadWritePoint->position = pFixReadWritePoint->position + pFixReadWritePoint->rotation * pReadPoint->initialPosition;
+                    transform.localRotation = pReadPoint->initialLocalRotation;//OYM: 修复localrotation
+                    pReadWritePoint->position = pFixReadWritePoint->position + pFixReadWritePoint->rotation * pReadPoint->initialPosition;//OYM:  修复position
 
                     transform.position = pReadWritePoint->position;
                     pReadWritePoint->deltaPosition = Vector3.zero;
+                    pReadWritePoint->deltaRotationY = pReadWritePoint->deltaRotation = Quaternion.identity;
+
                 }
             }
         }
@@ -95,15 +99,15 @@ namespace ADBRuntime.Internal
             {
 #if ADB_DEBUG
             }
-            public void TryExecute(TransformAccessArray transforms, JobHandle job)
+            public void TryExecute(TransformAccessArray ColliderTransforms, JobHandle job)
             {
                 if (!job.IsCompleted)
                 {
                     job.Complete();
                 }
-                for (int i = 0; i < transforms.length; i++)
+                for (int i = 0; i < ColliderTransforms.length; i++)
                 {
-                    Execute(i, transforms[i]);
+                    Execute(i, ColliderTransforms[i]);
                 }
             }
             public void Execute(int index, Transform transform)
@@ -156,7 +160,7 @@ namespace ADBRuntime.Internal
         }
         [BurstCompile]
         public struct ColliderUpdate : IJobParallelFor
-        //OYM：把job的点转换成实际的点
+        //OYM:  获取坐标,迭代
         {
             [ReadOnly, NativeDisableUnsafePtrRestriction]
             public ColliderRead* pReadColliders;
@@ -225,7 +229,7 @@ namespace ADBRuntime.Internal
                 }
             }
 
-            public void Execute(int index, Transform transform)//OYM：注意,这里只获取delta,不获取真实的坐标
+            public void Execute(int index, Transform transform)//OYM：注意,这里只获取delta的值与fixed点的坐标,不记录其他的数据
             {
 #endif
 

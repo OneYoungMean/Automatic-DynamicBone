@@ -1,4 +1,4 @@
-﻿//#define ADB_DEBUG
+﻿#define ADB_DEBUG
 
 using UnityEngine;
 using UnityEngine.Jobs;
@@ -64,7 +64,9 @@ namespace ADBRuntime
         /// <returns></returns>
         internal bool SetRuntimeData(float deltaTime, float scale, ref int iteration, Vector3 addForce, ColliderCollisionType colliderCollisionType, bool isOptimize, bool detectAsync, bool isFuzzyCompute)
         {
-
+#if ADB_DEBUG
+            iteration = 1;
+#else
 
             if (!Hjob.IsCompleted)
             {
@@ -76,7 +78,7 @@ namespace ADBRuntime
 
                 return false;
             }
-
+#endif
             //OYM：当我用ADBRunTimeJobsTable.returnHJob时候,任务会在我调用的时候被强制完成,当我用本地的Hjob的时候,任务会在异步进行
             //OYM:  注意,JH底层很可能也是单例
 
@@ -98,7 +100,7 @@ namespace ADBRuntime
             constraintUpdates1.globalScale = scale;
             constraintUpdates1.isCollision = (colliderCollisionType == ColliderCollisionType.Both || colliderCollisionType == ColliderCollisionType.Constraint); ;
 
-            #region LifeCycle
+#region LifeCycle
 
 #if ADB_DEBUG
             pointGet.TryExecute(pointTransformsList, Hjob);
@@ -138,7 +140,7 @@ namespace ADBRuntime
 #else
             Hjob = pointToTransform.Schedule(pointTransformsList);
 #endif
-            #endregion
+#endregion
 
             return true;
         }
@@ -255,15 +257,22 @@ namespace ADBRuntime
                 pReadPoints = (PointRead*)pointReadList.GetUnsafePtr(),
                 pReadWritePoints = (PointReadWrite*)pointReadWriteList.GetUnsafePtr(),
             };
+#if ADB_DEBUG
+            initialpoint.TryExecute(pointTransformsList, Hjob);
+#else
             Hjob = initialpoint.Schedule(pointTransformsList);
+#endif
 
             ADBRunTimeJobsTable.InitiralizeCollider initialCollider = new ADBRunTimeJobsTable.InitiralizeCollider
             {
                 pReadColliders = (ColliderRead*)collidersReadList.GetUnsafePtr(),
                 pReadWriteColliders = (ColliderReadWrite*)collidersReadWriteList.GetUnsafePtr()
             };
+#if ADB_DEBUG
+            initialCollider.TryExecute(colliderTransformsList, Hjob);
+#else
             Hjob = initialCollider.Schedule(colliderTransformsList);
-
+#endif
 
 
         }
