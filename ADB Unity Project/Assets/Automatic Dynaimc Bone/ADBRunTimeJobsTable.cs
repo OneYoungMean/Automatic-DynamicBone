@@ -1,4 +1,4 @@
-﻿#define ADB_DEBUG
+﻿//#define ADB_DEBUG
 
 using UnityEngine;
 using UnityEngine.Jobs;

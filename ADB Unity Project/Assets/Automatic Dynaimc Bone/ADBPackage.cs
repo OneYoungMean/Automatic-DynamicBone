@@ -1,4 +1,4 @@
-﻿#define ADB_DEBUG
+﻿//#define ADB_DEBUG
 
 using UnityEngine;
 using UnityEngine.Jobs;
@@ -122,7 +122,7 @@ namespace ADBRuntime
 #else
                 if (isFuzzyCompute)
                 {
-                    Hjob = colliderUpdate.Schedule(collidersReadList.Length, batchLength);
+                    Hjob = colliderUpdate. Schedule(collidersReadList.Length, batchLength);
                     Hjob = pointUpdate.Schedule(pointReadList.Length, batchLength);
                     Hjob = constraintUpdates1.Schedule(constraintReadList1.Length, batchLength);
                 }
