@@ -2,7 +2,7 @@
 * 如果您是第一次接触该项目,您可以选择在[此处下载示例](https://wws.lanzous.com/iotvcf8d3mb) 并访问[项目的wiki](https://github.com/OneYoungMean/Automatic-DynamicBone/wiki)  
 * [English version manual](https://github.com/OneYoungMean/Automatic-DynamicBone/wiki/English-version-manual)  sorry Im too busy to make the localization XD
 
-- **当前版本:0.9preview 最后更新日期:20/7/31**  
+- **当前版本:0.9preview 最后更新日期:20/12/11**  
 - **除了修bug以外应该不会大改了..大概**   
 
 # AutomaticDynamicBone
