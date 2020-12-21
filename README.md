@@ -51,8 +51,8 @@
 
 - **作者长期在线!** 有issue必回!包君满意!
 
-![Github只支持5mb的动图,导致好好的一张图硬生生压成一坨shit](https://s1.ax1x.com/2020/08/01/aGEHyV.gif)
-![如果您看到本条信息,请尝试访问该链接查看动图](https://s1.ax1x.com/2020/09/17/wfmGUe.gif)
+![Github只支持5mb的动图,导致好好的一张图硬生生压成一坨shit](https://s1.ax1x.com/2020/08/01/aGEHyV.gif)  
+![](https://s1.ax1x.com/2020/09/17/wfmGUe.gif)
 
 ## 要求
 
