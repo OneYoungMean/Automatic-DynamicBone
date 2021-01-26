@@ -324,9 +324,12 @@ namespace ADBRuntime
         {
             radius = radius < 0 ? 0 : radius;
             length = length < 0 ? 0 : length;
-            if (length == 0&& colliderType==ColliderType.Capsule)
+            if (Application.isPlaying)
             {
-                colliderType = ColliderType.Sphere;
+                if (length == 0 && colliderType == ColliderType.Capsule)
+                {
+                    colliderType = ColliderType.Sphere;
+                }
             }
             boxSize = boxSize.normalized * boxSize.magnitude;//OYM：我当初为啥要写这一段啊...
             staticDirection = staticDirection == Vector3.zero ? Vector3.up : staticDirection;
