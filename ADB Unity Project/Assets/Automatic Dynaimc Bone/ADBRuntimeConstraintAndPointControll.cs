@@ -387,16 +387,16 @@ namespace ADBRuntime
             //OYM：所有横着排列的节点之间的杆件
             #region Structural_Horizontal
             constraintsStructuralHorizontal = new List<ADBRuntimeConstraint>();
-            for (int i = 0; i < HorizontalRootCount - 1; ++i)//OYM：同上，但是不会循环
+            for (int i = 0; i < HorizontalRootCount - 1; ++i)//OYM:  循环创建杆件
             {
                 CreationConstraintHorizontal(fixedPointList[i + 0], fixedPointList[i + 1], ref constraintsStructuralHorizontal, aDBSetting.structuralShrinkHorizontal, aDBSetting.structuralStretchHorizontal);
             }
-            if (aDBSetting.isLoopRootPoints && HorizontalRootCount > 2)//OYM：循环获取？
+            if (aDBSetting.isLoopRootPoints && HorizontalRootCount > 2)
             {
                 CreationConstraintHorizontal(fixedPointList[ HorizontalRootCount-1], fixedPointList[0], ref constraintsStructuralHorizontal, aDBSetting.structuralShrinkHorizontal, aDBSetting.structuralStretchHorizontal);
             }
 
-            else
+            else//OYM：如果需要断开的话则会将杆件的受力调整为0,这样既不会导致失去杆件而穿模,也不会存在约束.
             {
                 CreationConstraintHorizontal(fixedPointList[HorizontalRootCount - 1], fixedPointList[0], ref constraintsStructuralHorizontal, 0, 0);
             }
@@ -468,7 +468,7 @@ namespace ADBRuntime
 
             if ((childPointAList != null) && (childPointBList != null))
             {
-                if (childPointAList[0].isAllowComputeOtherConstraint || childPointBList[0].isAllowComputeOtherConstraint) return;//OYM：虚点不参与其中
+                if (!childPointAList[0].allowCreateAllConstraint || !childPointBList[0].allowCreateAllConstraint) return;//OYM：不允许创建则跳过
 
                 if (childPointAList.Count >= 2)//OYM：存在多个子节点
                 {
@@ -485,7 +485,7 @@ namespace ADBRuntime
             }
             else if ((childPointAList != null) && (childPointBList == null))//OYM：为了防止互相连接,只允许向序号增大的方向进行连接
             {
-                if (childPointAList[0].isAllowComputeOtherConstraint) return;//OYM：虚点不参与其中
+                if (!childPointAList[0].allowCreateAllConstraint) return;//OYM：不允许创建则跳过
 
                 sortByDistance(PointB, ref childPointAList, false);
                 if (childPointAList.Count >= 2)//OYM：存在多个子节点
@@ -511,7 +511,7 @@ namespace ADBRuntime
 
             if (childPointAList != null && childPointBList != null)
             {
-                if (childPointAList[0].isAllowComputeOtherConstraint || childPointBList[0].isAllowComputeOtherConstraint) return;//OYM：虚点不参与其中
+                if (!childPointAList[0].allowCreateAllConstraint || !childPointBList[0].allowCreateAllConstraint) return;//OYM：不允许创建则跳过
 
                 sortByDistance(PointB, ref childPointAList, false);
                 sortByDistance(PointA, ref childPointBList, true);
@@ -538,7 +538,7 @@ namespace ADBRuntime
                 ADBRuntimePoint existPoint = childPointAList == null ? PointA : PointB;
                 List<ADBRuntimePoint> existList = childPointAList == null ? childPointBList : childPointAList;
 
-                if (existPoint.isAllowComputeOtherConstraint || existList[0].isAllowComputeOtherConstraint) return;//OYM：虚点不参与其中
+                if (!existPoint.allowCreateAllConstraint || !existList[0].allowCreateAllConstraint) return;//OYM：不允许创建则跳过
 
                 sortByDistance(existPoint, ref existList, false);
                 if (existList.Count >= 2)//OYM：存在多个子节点
@@ -561,7 +561,10 @@ namespace ADBRuntime
                 if (child.childNode == null) continue;
                 foreach (var grandSon in child.childNode)
                 {
-                    ConstraintList.Add(new ADBRuntimeConstraint(ConstraintType.Bending_Vertical, Point, grandSon, shrink, stretch,false));
+                    if (grandSon.allowCreateAllConstraint)
+                    {
+                        ConstraintList.Add(new ADBRuntimeConstraint(ConstraintType.Bending_Vertical, Point, grandSon, shrink, stretch, false));
+                    }
                 }
                 CreationConstraintBendingVertical(child, ref ConstraintList, shrink, stretch);
             }
@@ -588,16 +591,19 @@ namespace ADBRuntime
             }
         }
 
-        private void CreationConstraintCircumference(ADBRuntimePoint fixedPoint, ref List<ADBRuntimeConstraint> ConstraintList, float shrink, float stretch)
+        private void CreationConstraintCircumference(ADBRuntimePoint point, ref List<ADBRuntimeConstraint> ConstraintList, float shrink, float stretch,int deep=0)
         {
-            if (fixedPoint == null || fixedPoint.childNode == null) return;
+            if (point == null || point.childNode == null) return;
 
-            for (int i = 0; i < fixedPoint.childNode.Count; i++)
+            for (int i = 0; i < point.childNode.Count; i++)
             {
-                if (fixedPoint.childNode[i].isAllowComputeOtherConstraint) continue;
 
-                ConstraintList.Add(new ADBRuntimeConstraint(ConstraintType.Circumference, fixedPoint, fixedPoint.childNode[i], shrink, stretch,false));
-                CreationConstraintCircumference(fixedPoint, fixedPoint.childNode[i], ref ConstraintList, shrink, stretch);//OYM：递归
+                if (!point.childNode[i].allowCreateAllConstraint) continue;//OYM：不允许创建则跳过
+                if (deep != 0 && (aDBSetting.isComputeBendingVertical && deep != 1)) //OYM:  第0层通常都有ConstraintStructuralVertical,第一层如果打开ComputeBendingVertical也会重复,所以排除这两种情况.
+                {
+                    ConstraintList.Add(new ADBRuntimeConstraint(ConstraintType.Circumference, point, point.childNode[i], shrink, stretch, false));
+                }
+                CreationConstraintCircumference(point, point.childNode[i], ref ConstraintList, shrink, stretch);//OYM：递归
             }
         }
 
@@ -756,11 +762,11 @@ namespace ADBRuntime
 
                 if (springBone.fixedPointTransform != null)
                 {
-                    springBone.fixedNode = new ADBRuntimePoint(springBone.fixedPointTransform, 0, "");
+                    springBone.fixedNode = new ADBRuntimePoint(springBone.fixedPointTransform, 0, "");//OYM:  创建fixed节点
                 }
                 else
                 {
-                    springBone.fixedNode = new ADBRuntimePoint(transform, 0, "");
+                    springBone.fixedNode = new ADBRuntimePoint(transform, 0, "");//OYM:  创建fixed节点
                     springBone.fixedPointTransform = transform;
                 }
                 springBone.fixedNode.childNode = searchFixedADBRuntimePoint(
@@ -822,7 +828,7 @@ namespace ADBRuntime
                         if (whiteKey == null ) continue;
                         if (childName.Contains(whiteKey))
                         {
-                            point = new ADBRuntimePoint(childNodeTarns, depth, whiteKey);
+                            point = new ADBRuntimePoint(childNodeTarns, depth, whiteKey);//OYM:  创建fixed节点
                             break;
                         }
                     }
