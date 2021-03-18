@@ -1,8 +1,9 @@
 写在开头:  
+* 过些日子可能会更新?
 * 如果您是第一次接触该项目,您可以选择在[此处下载示例](https://wws.lanzous.com/iotvcf8d3mb) 并访问[项目的wiki](https://github.com/OneYoungMean/Automatic-DynamicBone/wiki)  
 * [English version manual](https://github.com/OneYoungMean/Automatic-DynamicBone/wiki/English-version-manual)  sorry Im too busy to make the localization XD
 
-- **当前版本:0.9preview 最后更新日期:20/7/31**  
+- **当前版本:0.9preview 最后更新日期:20/12/11**  
 - **除了修bug以外应该不会大改了..大概**   
 
 # AutomaticDynamicBone
@@ -20,7 +21,7 @@
 3. 按下`生成节点数据`,并在底下找到绘制并辅助线勾选,如果一切顺利的话,你可以看到几条彩色的线和点,这些就是识别到的数据.  
 4. 运行游戏,一切已经就绪,晃动你的目标以查看效果,就是这么快XD!  
 
-![](https://s1.ax1x.com/2020/08/02/atCRNd.gif) 
+![如果您看到本条信息,说明您的github被墙了一部分,图片无法加载出来,请尝试换个时间段再来](https://s1.ax1x.com/2020/08/02/atCRNd.gif) 
 
 
 ## 特性
@@ -51,8 +52,8 @@
 
 - **作者长期在线!** 有issue必回!包君满意!
 
-![Github只支持5mb的动图,导致好好的一张图硬生生压成一坨shit](https://s1.ax1x.com/2020/08/01/aGEHyV.gif)
-![我承认magic cloth很好用,但是这不是你们试图让我盗用别人代码的理由,我是开源插件,爱用不用](https://s1.ax1x.com/2020/09/17/wfmGUe.gif)
+![Github只支持5mb的动图,导致好好的一张图硬生生压成一坨shit](https://s1.ax1x.com/2020/08/01/aGEHyV.gif)  
+![](https://s1.ax1x.com/2020/09/17/wfmGUe.gif)
 
 ## 要求
 
@@ -68,7 +69,7 @@
 [省略掉的吐槽很辛苦的话]
 [省略掉的吐槽自己真的很穷的话]
 [省略掉的小声BB的话]
-有没有愿意收2020冬季实习生的,弱小,无助,可怜,还没钱QAQ
+要加油鸭
 ```
 ***
 ### 已知存在问题
