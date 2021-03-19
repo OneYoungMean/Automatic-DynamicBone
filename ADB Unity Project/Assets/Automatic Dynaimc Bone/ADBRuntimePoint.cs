@@ -16,7 +16,7 @@ namespace ADBRuntime
         public string keyWord { get; private set; }//OYM：匹配的关键词
         public int depth { get; private set; }//OYM：深度
         public int index { get; set; }//OYM：序号
-        public bool isAllowComputeOtherConstraint
+        public bool allowCreateAllConstraint
         { get; private set; }
 
         public ADBRuntimePoint(Transform trans, int depth, string keyWord = null, bool isAllowComputeOtherConstraint = true)
@@ -26,11 +26,11 @@ namespace ADBRuntime
             this.depth = depth;
             pointRead = new PointRead();
             pointReadWrite = new PointReadWrite();
-            this.isAllowComputeOtherConstraint = isAllowComputeOtherConstraint;
+            this.allowCreateAllConstraint = isAllowComputeOtherConstraint;
         }
         internal void OnDrawGizmos(Mono.ColliderCollisionType colliderCollisionType)
         {
-            Gizmos.color = isAllowComputeOtherConstraint ?  Color.black: new Color(0.3f,1f,0.3f,1);
+            Gizmos.color = allowCreateAllConstraint ?  Color.black: new Color(0.3f,1f,0.3f,1);
             if (pointRead.radius > 0.005f&&( colliderCollisionType==Mono.ColliderCollisionType.Point|| colliderCollisionType == Mono.ColliderCollisionType.Both))
             {
                 Matrix4x4 temp = Gizmos.matrix;
