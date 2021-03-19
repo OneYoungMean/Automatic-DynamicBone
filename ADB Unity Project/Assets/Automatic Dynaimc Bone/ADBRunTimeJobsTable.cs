@@ -666,9 +666,9 @@ namespace ADBRuntime.Internal
                 {
                     Vector3 Displacement = Direction.normalized * (Force * ConstraintPower);
 
-                   // pReadWritePointA->position += Displacement * WeightProportion;
+                    pReadWritePointA->position += Displacement * WeightProportion;
                     pReadWritePointA->deltaPosition += Displacement * WeightProportion* oneDivideIteration*0.5f;
-                    //pReadWritePointB->position += -Displacement * (1 - WeightProportion);
+                    pReadWritePointB->position += -Displacement * (1 - WeightProportion);
                     pReadWritePointB->deltaPosition +=- Displacement * (1 - WeightProportion)* oneDivideIteration * 0.5f;
                 }
 
