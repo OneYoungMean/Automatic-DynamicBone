@@ -667,9 +667,9 @@ namespace ADBRuntime.Internal
                     Vector3 Displacement = Direction.normalized * (Force * ConstraintPower);
 
                     pReadWritePointA->position += Displacement * WeightProportion;
-                    pReadWritePointA->deltaPosition += Displacement * WeightProportion* oneDivideIteration;
+                    pReadWritePointA->deltaPosition += Displacement * WeightProportion;
                     pReadWritePointB->position += -Displacement * (1 - WeightProportion);
-                    pReadWritePointB->deltaPosition +=- Displacement * (1 - WeightProportion)* oneDivideIteration;
+                    pReadWritePointB->deltaPosition +=- Displacement * (1 - WeightProportion);
                 }
 
                 if (isCollision && constraint->isCollider)
