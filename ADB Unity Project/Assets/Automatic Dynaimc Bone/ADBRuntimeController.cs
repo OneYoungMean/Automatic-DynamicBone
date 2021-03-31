@@ -122,6 +122,7 @@ namespace ADBRuntime.Mono
         private void Update()
         {
             if (jointAndPointControlls == null) return;
+            deltaTime = Mathf.Lerp(deltaTime,Time.deltaTime, 1 / delayTime * 60);
 
             if (delayTime - Time.deltaTime > 0)
             {
@@ -137,7 +138,8 @@ namespace ADBRuntime.Mono
                 return;
             }
 
-            deltaTime +=Mathf.Min(Time.deltaTime,0.0166f);//OYM：用time.deltaTime并不理想,或许是我笔记本太烂的缘故?
+            //  deltaTime =Mathf.Lerp(deltaTime, Mathf.Min(Time.deltaTime,0.0166f),0.1f);//OYM：用time.deltaTime并不理想,或许是我笔记本太烂的缘故?
+
             scale = transform.lossyScale.x;
             addForce += ADBWindZone.getaddForceForce(transform.position ) * windForceScale* deltaTime;
 
@@ -175,7 +177,6 @@ namespace ADBRuntime.Mono
                                                               );
             if (isSuccessfulRun)
             {
-                deltaTime = 0;
                 addForce = Vector3.zero;
             }
         }

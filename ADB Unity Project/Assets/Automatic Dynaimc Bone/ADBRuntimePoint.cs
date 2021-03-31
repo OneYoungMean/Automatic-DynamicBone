@@ -138,6 +138,7 @@ namespace ADBRuntime
             } }*/
 
         public Vector3 deltaPosition;
+        public Vector3 deltaGravity;
         public Quaternion deltaRotation;
         public Quaternion deltaRotationY;
     }
