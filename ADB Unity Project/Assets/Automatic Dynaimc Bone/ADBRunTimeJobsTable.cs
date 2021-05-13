@@ -65,7 +65,7 @@ namespace ADBRuntime.Internal
                     pReadWritePoint->position = transform.position;
 
                     pReadWritePoint->deltaRotationY = pReadWritePoint->deltaRotation = Quaternion.identity;
-                    pReadWritePoint->deltaPosition = Vector3.zero;
+                    pReadWritePoint->deltaPosition = float3.zero;
 
                 }
                 else
@@ -73,10 +73,10 @@ namespace ADBRuntime.Internal
                     var pFixReadWritePoint = pReadWritePoints + (pReadPoint->fixedIndex);
                     var pFixReadPoint = pReadPoints + (pReadPoint->fixedIndex);
                     transform.localRotation = pReadPoint->initialLocalRotation;
-                    pReadWritePoint->position = pFixReadWritePoint->position + pFixReadWritePoint->rotation * pReadPoint->initialPosition;
+                    pReadWritePoint->position =(float3) pFixReadWritePoint->position +math.mul( pFixReadWritePoint->rotation , pReadPoint->initialPosition);
 
                     transform.position = pReadWritePoint->position;
-                    pReadWritePoint->deltaPosition = Vector3.zero;
+                    pReadWritePoint->deltaPosition = float3.zero;
                 }
             }
         }
@@ -115,8 +115,8 @@ namespace ADBRuntime.Internal
                 pReadWriteCollider->position =transform.position + transform.rotation * pReadCollider->positionOffset;
                 pReadWriteCollider->direction =transform.rotation * pReadCollider->staticDirection;
                 pReadWriteCollider->rotation =  transform.rotation * pReadCollider->staticRotation;
-                pReadWriteCollider->deltaPosition = Vector3.zero;
-                pReadWriteCollider->deltaDirection = Vector3.zero;
+                pReadWriteCollider->deltaPosition = float3.zero;
+                pReadWriteCollider->deltaDirection = float3.zero;
                 pReadWriteCollider->deltaRotation = Quaternion.identity;
             }
         }
@@ -139,14 +139,14 @@ namespace ADBRuntime.Internal
                 switch (pReadCollider->colliderType)
                 {
                     case ColliderType.Sphere:
-                        pReadWriteCollider->deltaPosition = oneDivideIteration*( transform.position + transform.rotation * pReadCollider->positionOffset- pReadWriteCollider->position);
+                        pReadWriteCollider->deltaPosition = oneDivideIteration*((float3) transform.position +math.mul( (quaternion)transform.rotation , pReadCollider->positionOffset)- pReadWriteCollider->position);
                         break;
                     case ColliderType.Capsule:
-                        pReadWriteCollider->deltaPosition = oneDivideIteration*(transform.position + transform.rotation * pReadCollider->positionOffset - pReadWriteCollider->position);
-                        pReadWriteCollider->deltaDirection = oneDivideIteration*( transform.rotation * pReadCollider->staticDirection- pReadWriteCollider->direction);
+                        pReadWriteCollider->deltaPosition = oneDivideIteration*((float3)transform.position + math.mul((quaternion)transform.rotation, pReadCollider->positionOffset) - pReadWriteCollider->position);
+                        pReadWriteCollider->deltaDirection = oneDivideIteration* (math.mul((quaternion)transform.rotation,  pReadCollider->staticDirection)- pReadWriteCollider->direction);
                         break;
                     case ColliderType.OBB:
-                        pReadWriteCollider->deltaPosition = oneDivideIteration * (transform.position + transform.rotation * pReadCollider->positionOffset - pReadWriteCollider->position);
+                        pReadWriteCollider->deltaPosition = oneDivideIteration * ((float3)transform.position + math.mul((quaternion)transform.rotation, pReadCollider->positionOffset) - pReadWriteCollider->position);
                         pReadWriteCollider->deltaRotation = Quaternion.Lerp(Quaternion.identity, ((transform.rotation * pReadCollider->staticRotation) * Quaternion.Inverse(pReadWriteCollider->rotation)), oneDivideIteration);
                         break;
                     default:
@@ -188,7 +188,7 @@ namespace ADBRuntime.Internal
                         break;
                     case ColliderType.OBB:
                         pReadWriteCollider->position += pReadWriteCollider->deltaPosition ;
-                        pReadWriteCollider->rotation =pReadWriteCollider->deltaRotation* pReadWriteCollider->rotation;
+                        pReadWriteCollider->rotation =math.mul( pReadWriteCollider->deltaRotation, pReadWriteCollider->rotation);
                         break;
                     default:
                         break;
@@ -234,13 +234,13 @@ namespace ADBRuntime.Internal
 
                 if (pReadPoint->fixedIndex == index)//OYM：fixedpoint
                 {
-                    pReadWritePoint->deltaPosition = oneDivideIteration * (transform.position - pReadWritePoint->position);
+                    pReadWritePoint->deltaPosition = oneDivideIteration * ((float3)transform.position - pReadWritePoint->position);
 
 
                     //OYM：做笔记 unity当中 child.rotation =parent.rotation*child.localrotation;
                     Quaternion rotationTemp =  ( transform.rotation* Quaternion.Inverse(transform.localRotation))* pReadPoint->initialLocalRotation;
                     pReadWritePoint->deltaRotation = Quaternion.LerpUnclamped(Quaternion.identity, rotationTemp * Quaternion.Inverse(pReadWritePoint->rotation), oneDivideIteration);
-                    pReadWritePoint->deltaRotationY = Quaternion.AngleAxis(pReadWritePoint->deltaRotation.eulerAngles.y, Vector3.up);
+                  //  pReadWritePoint->deltaRotationY = Quaternion.AngleAxis(pReadWritePoint->deltaRotation.eulerAngles.y, float3.up);
 
                 }
                 else
@@ -283,7 +283,7 @@ namespace ADBRuntime.Internal
             /// 风力
             /// </summary>
             [ReadOnly]
-            internal Vector3 addForcePower;
+            internal float3 addForcePower;
             /// <summary>
             /// 大小
             /// </summary>
@@ -338,8 +338,8 @@ namespace ADBRuntime.Internal
                 {
                         //OYM：计算渐进的fixed点坐标
                         pReadWritePoint->position += pReadWritePoint->deltaPosition;
-                        pReadWritePoint->rotationY = pReadWritePoint->deltaRotationY * pReadWritePoint->rotationY;
-                        pReadWritePoint->rotation = pReadWritePoint->deltaRotation * pReadWritePoint->rotation;
+                        pReadWritePoint->rotationY = math.mul(pReadWritePoint->deltaRotationY,pReadWritePoint->rotationY);
+                        pReadWritePoint->rotation = math.mul( pReadWritePoint->deltaRotation ,pReadWritePoint->rotation);
                 }
             
             }
@@ -347,7 +347,7 @@ namespace ADBRuntime.Internal
             {
                 //OYM：如果你想要添加什么奇怪的力的话,可以在这底下添加
 
-                Vector3 deltaPosition = pReadWritePoint->deltaPosition;
+                float3 deltaPosition = pReadWritePoint->deltaPosition;
                 var temp = deltaPosition;
                 //OYM：获取固定点的信息
                 PointReadWrite* pFixedPointReadWrite = (pReadWritePoints + pReadPoint->fixedIndex);
@@ -358,8 +358,8 @@ namespace ADBRuntime.Internal
 
 
                 //OYM：获取当前相对fixed的向量
-                Vector3 direction = pReadWritePoint->position - pFixedPointReadWrite->position;
-                Vector3 gravity =Vector3 .zero;
+                float3 direction = pReadWritePoint->position - pFixedPointReadWrite->position;
+                float3 gravity =float3 .zero;
                 //OYM：获取归位的向量
                 if (pReadPoint->isFixGravityAxis)//OYM:  固定重力方向,这个值会受到fix节点初始rotation的影响
                 {
@@ -372,29 +372,29 @@ namespace ADBRuntime.Internal
 
                 deltaPosition += gravity*oneDivideIteration;
 
-                Vector3 addForce = oneDivideIteration * addForcePower * pReadPoint->addForceScale / pReadPoint->weight;
+                float3 addForce = oneDivideIteration * addForcePower * pReadPoint->addForceScale / pReadPoint->weight;
                 deltaPosition += GetRotateForce(addForce, direction)+addForce;
                 //OYM：计算回到原始位置的力,当freeze很小的时候设置上限,很大的时候乘以系数
-                Vector3 back = Vector3.zero;
+                float3 back = float3.zero;
                 if (pReadPoint->freeze>EPSILON)
                 {
                     if (pReadPoint->isFixGravityAxis)//OYM:  固定重力方向,这个值会受到fix节点初始rotation的影响
                     {
-                        back = pFixedPointReadWrite->rotation * pReadPoint->initialPosition * globalScale - direction;
+                        back =math.mul( pFixedPointReadWrite->rotation , pReadPoint->initialPosition) * globalScale - direction;
                     }
                     else
                     {
-                        back = pFixedPointReadWrite->rotationY * pReadPoint->initialPosition * globalScale - direction;
+                        back = math.mul(pFixedPointReadWrite->rotationY , pReadPoint->initialPosition) * globalScale - direction;
                     }
-                    back = oneDivideIteration * deltaTime * pReadPoint->freeze * Vector3.ClampMagnitude(back, pReadPoint->freeze * 0.1f);
+                    back = oneDivideIteration * deltaTime * pReadPoint->freeze * math.clamp(back, -pReadPoint->freeze * 0.1f, pReadPoint->freeze * 0.1f);
                 }
                 deltaPosition += back;
 
                 //OYM：计算以fixed位移进行为参考进行速度补偿
-                //deltaPosition -= pFixedPointReadWrite->deltaPosition * pReadPoint->moveByFixedPoint * 0.2f;//OYM：测试了一下,0.2是个恰到好处的值,不会显得太大也不会太小
+                deltaPosition -= pFixedPointReadWrite->deltaPosition * pReadPoint->moveByFixedPoint * 0.2f;//OYM：测试了一下,0.2是个恰到好处的值,不会显得太大也不会太小
                 
                 //OYM：计算离心力(理想状态
-                deltaPosition += deltaTime *((pFixedPointReadWrite->deltaRotation * direction)-direction );
+                deltaPosition += deltaTime *(math.mul (pFixedPointReadWrite->deltaRotation , direction)-direction );
 
                 //OYM：计算重力
 
@@ -402,7 +402,7 @@ namespace ADBRuntime.Internal
                 {
                     //OYM：减少对于骨骼的拉长
                     //OYM:  注意,这个操作会让你的骨骼看上去更加的卷,更加的带有动漫风
-                    deltaPosition -= Vector3.Dot(deltaPosition, direction) / direction.sqrMagnitude * direction;
+                    deltaPosition -= math.dot(deltaPosition, direction) / math.lengthsq( direction) * direction;
                     deltaPosition += GetRotateForce(deltaPosition, direction);
                 }
 
@@ -413,15 +413,15 @@ namespace ADBRuntime.Internal
 
                 //Debug.Log(index + " : " + pFixedPointReadWrite->position + " " + positionA + " " + pFixedPointReadWrite->deltaPosition * pReadPoint->distanceCompensation + "  " + positionB);
             }
-            Vector3 GetRotateForce(Vector3 force, Vector3 direction)//OYM：返回一个不存在的力,使得其向受力方向卷曲,在一些动漫里面会经常出现这种曲线的头发
+            float3 GetRotateForce(float3 force, float3 direction)//OYM：返回一个不存在的力,使得其向受力方向卷曲,在一些动漫里面会经常出现这种曲线的头发
             {
-                return (Quaternion.Euler(-Mathf.Rad2Deg * force.z, 0, -Mathf.Rad2Deg * force.x) * direction - direction);
+                return (math.mul( quaternion.Euler(-Mathf.Rad2Deg * force.z, 0, -Mathf.Rad2Deg * force.x) , direction) - direction);
             }
             private void ColliderCheck(PointRead* pPointRead, PointReadWrite* pReadWritePoint, ColliderRead* pReadCollider, ColliderReadWrite* pReadWriteCollider)
             {
 
                 //OYM：条件判断
-                Vector3 pushout;
+                float3 pushout;
                 float sqrPushout;
                 float scale = pReadCollider->isConnectWithBody ? globalScale : 1;
                 float radius;
@@ -435,7 +435,7 @@ namespace ADBRuntime.Internal
                             Abs(pReadWriteCollider->position.z - pReadWritePoint->position.z) < radius)//OYM：快速检查
                         {
                             pushout = pReadWritePoint->position - pReadWriteCollider->position;
-                            sqrPushout = pushout.sqrMagnitude;
+                            sqrPushout =math.lengthsq( pushout);
 
                             if (sqrPushout < radius* radius)
                             {
@@ -448,13 +448,13 @@ namespace ADBRuntime.Internal
 
                     case ColliderType.Capsule:
                         radius = pPointRead->radius * globalScale + pReadCollider->radius * scale;
-                        Vector3 centerA = pReadWriteCollider->position + scale * pReadWriteCollider->direction * 0.5f;
+                        float3 centerA = pReadWriteCollider->position + scale * pReadWriteCollider->direction * 0.5f;
                         if (Abs(centerA.y - pReadWritePoint->position.y) < Abs(pReadWriteCollider->direction.y) * 0.5f + radius &&
                             Abs(centerA.x - pReadWritePoint->position.x) < Abs(pReadWriteCollider->direction.x) * 0.5f + radius &&
                              Abs(centerA.z - pReadWritePoint->position.z) < Abs(pReadWriteCollider->direction.z) * 0.5f + radius)//OYM：快速检查
                         {
-                            pushout = pReadWritePoint->position - ConstrainToSegment(pReadWritePoint->position, pReadWriteCollider->position, pReadWriteCollider->direction * scale);
-                            sqrPushout = pushout.sqrMagnitude;
+                            pushout = pReadWritePoint->position - ConstrainToSegment(pReadWritePoint->position, pReadWriteCollider->position, pReadWriteCollider->direction*pReadCollider->length * scale);
+                            sqrPushout = math.lengthsq(pushout);
                             if (sqrPushout < radius* radius)
                             {
                                 pushout = pushout * (radius / Mathf.Sqrt(sqrPushout) - 1);
@@ -470,7 +470,7 @@ namespace ADBRuntime.Internal
                             Abs(pReadWriteCollider->position.z - pReadWritePoint->position.z) < radius)//OYM：快速检查
                         {
                             pushout = Quaternion.Inverse(pReadWriteCollider->rotation) * (pReadWritePoint->position - pReadWriteCollider->position);
-                            Vector3 boxSize = scale * pReadCollider->boxSize+new Vector3( pPointRead->radius, pPointRead->radius, pPointRead->radius);
+                            float3 boxSize = scale * pReadCollider->boxSize+new float3( pPointRead->radius, pPointRead->radius, pPointRead->radius);
                             if ( boxSize.x >Abs( pushout.x)&&
                                 boxSize.y >Abs(pushout.y)  &&
                                 boxSize.z > Abs(pushout.z )
@@ -482,16 +482,16 @@ namespace ADBRuntime.Internal
 
                                 if (Abs(pushoutZ) <= Abs(pushoutY) && Abs(pushoutZ) <= Abs(pushoutX))
                                 {
-                                    pushout = pReadWriteCollider->rotation * new Vector3(0, 0, pushoutZ);
+                                    pushout =math.mul( pReadWriteCollider->rotation , new float3(0, 0, pushoutZ));
 
                                 }
                                 else if (Abs(pushoutY) <=Abs(pushoutX) && Abs(pushoutY) <= Abs(pushoutZ))
                                 {
-                                    pushout = pReadWriteCollider->rotation * new Vector3(0, pushoutY, 0);
+                                    pushout = math.mul(pReadWriteCollider->rotation , new float3(0, pushoutY, 0));
                                 }
                                 else
                                 {
-                                    pushout = pReadWriteCollider->rotation * new Vector3(pushoutX, 0, 0);
+                                    pushout = math.mul(pReadWriteCollider->rotation , new float3(pushoutX, 0, 0));
                                 }
                                 pReadWritePoint->position += pushout;
                                 pReadWritePoint->deltaPosition += pushout;
@@ -502,47 +502,47 @@ namespace ADBRuntime.Internal
                         return;
                 }
             }
-            Vector3 ConstrainToSegment(Vector3 tag, Vector3 pos, Vector3 dir)
+            float3 ConstrainToSegment(float3 tag, float3 pos, float3 dir)
             {
-                float  t = Vector3.Dot(tag - pos, dir) / dir.sqrMagnitude;
+                float  t = math.dot(tag - pos, dir) / math.lengthsq( dir);
                 return pos + dir * Clamp01(t);
             }
-            void SegmentToOBB(Vector3 start, Vector3 end, Vector3 center, Vector3 min, Vector3 max, Quaternion InverseNormal, out float t1, out float t2)
+            void SegmentToOBB(float3 start, float3 end, float3 center, float3 min, float3 max, Quaternion InverseNormal, out float t1, out float t2)
             {
-                Vector3 startP = InverseNormal * (center - start);
-                Vector3 endP = InverseNormal * (center - end);
+                float3 startP = InverseNormal * (center - start);
+                float3 endP = InverseNormal * (center - end);
                 SegmentToAABB(startP, endP, center, min, max, out t1, out t2);
             }
 
-            void SegmentToAABB(Vector3 start, Vector3 end, Vector3 center, Vector3 min, Vector3 max, out float t1, out float t2)
+            void SegmentToAABB(float3 start, float3 end, float3 center, float3 min, float3 max, out float t1, out float t2)
             {
-                Vector3 dir = end - start;
+                float3 dir = end - start;
                 t1 = Max(Min((min.x - start.x) / dir.x, (max.x - start.x) / dir.x), Min((min.y - start.y) / dir.y, (max.y - start.y) / dir.y), Min((min.z - start.z) / dir.z, (max.z - start.z) / dir.z));
                 t2 = Min(Max((min.x - start.x) / dir.x, (max.x - start.x) / dir.x), Max((min.y - start.y) / dir.y, (max.y - start.y) / dir.y), Max((min.z - start.z) / dir.z, (max.z - start.z) / dir.z));
             }
             float Abs(float A)
             {
-                return A > 0 ? A : -A;
+                return math.abs(A);
             }
             float Clamp01(float A)
             {
-                return A > 0 ? (A < 1 ? A : 1) : 0;
+                return math.clamp(A, 0, 1);
             }
             float Min(float A, float B, float C)
             {
-                return A < B ? (A < C ? A : C) : (B < C ? B : C);
+                return math.min(math.min(A, B), C);
             }
             float Min(float A, float B)
             {
-                return A > B ? B : A;
+                return math.min(A, B);
             }
             float Max(float A, float B, float C)
             {
-                return A > B ? (A > C ? A : C) : (B > C ? B : C);
+                return math.max(math.max(A, B), C);
             }
             float Max(float A, float B)
             {
-                return A > B ? A : B;
+                return math.max(A, B);
             }
         }
         [BurstCompile]
@@ -620,7 +620,7 @@ namespace ADBRuntime.Internal
                 var Direction = pReadWritePointB->position - pReadWritePointA->position;
 
 
-                float Distance = Direction.magnitude;
+                float Distance =math.length( Direction);
                 //OYM：力度等于距离减去长度除以弹性，这个值可以不存在，可以大于1但是没有什么卵用
                 float Force = Distance - constraint->length * globalScale;
                 //OYM：是否收缩，意味着力大于0
@@ -672,7 +672,7 @@ namespace ADBRuntime.Internal
 
                 if (ConstraintPower > 0.0f)//OYM：这里不可能小于0吧（除非有人搞破坏）
                 {
-                    Vector3 Displacement = Direction.normalized * (Force * ConstraintPower);
+                    float3 Displacement =math.normalize( Direction) * (Force * ConstraintPower);
 
                     pReadWritePointA->position += Displacement * WeightProportion;
                     pReadWritePointA->deltaPosition += Displacement * WeightProportion;
@@ -700,16 +700,16 @@ namespace ADBRuntime.Internal
                     }
                 }
             }
-            Vector3 GetRotateForce(Vector3 force, Vector3 direction)//OYM：返回一个不存在的力,使得其向受力方向卷曲,在一些动漫里面会经常出现这种曲线的头发
+            float3 GetRotateForce(float3 force, float3 direction)//OYM：返回一个不存在的力,使得其向受力方向卷曲,在一些动漫里面会经常出现这种曲线的头发
             {
-                return (Quaternion.Euler(Mathf.Rad2Deg * (-force.z), 0, Mathf.Rad2Deg * (-force.x) )* direction - direction);
+                return (math.mul(quaternion.Euler(-Mathf.Rad2Deg * force.z, 0, -Mathf.Rad2Deg * force.x), direction) - direction);
             }
             private void ComputeCollider(ColliderRead* pReadCollider, ColliderReadWrite* pReadWriteCollider, PointReadWrite* pReadWritePointA, PointReadWrite* pReadWritePointB,ConstraintRead* constraint, float WeightProportion,
                 float frictionA, float frictionB)
             {
                 float throwTemp;
                 float t,radius;
-                Vector3 constraintCenter, colliderCenter;
+                float3 constraintCenter, colliderCenter;
                 float scale = pReadCollider->isConnectWithBody ? globalScale : 1;
 
                 switch (pReadCollider->colliderType)
@@ -722,7 +722,7 @@ namespace ADBRuntime.Internal
                                 Abs(pReadWriteCollider->position.x - constraintCenter.x) < (Abs(pReadWritePointA->position.x - constraintCenter.x) + radius) &&
                                 Abs(pReadWriteCollider->position.z - constraintCenter.z) < (Abs(pReadWritePointA->position.z - constraintCenter.z) + radius))
                             {
-                                Vector3 pointOnLine = ConstrainToSegment(pReadWriteCollider->position, pReadWritePointA->position, pReadWritePointB->position - pReadWritePointA->position, out t);
+                                float3 pointOnLine = ConstrainToSegment(pReadWriteCollider->position, pReadWritePointA->position, pReadWritePointB->position - pReadWritePointA->position, out t);
                                 DistributionPower(pointOnLine - pReadWriteCollider->position, radius, pReadWritePointA, pReadWritePointB, WeightProportion, t, frictionA, frictionB, pReadCollider->collideFunc);
                             }
                         }
@@ -737,7 +737,7 @@ namespace ADBRuntime.Internal
                                 Abs(constraintCenter.x - colliderCenter.x) < (Abs(pReadWriteCollider->direction.x) * 0.5f + Abs(pReadWritePointA->position.x - colliderCenter.x) + radius) &&
                                 Abs(constraintCenter.z - colliderCenter.z) < (Abs(pReadWriteCollider->direction.z) * 0.5f + Abs(pReadWritePointA->position.z - colliderCenter.z) + radius))
                             {
-                                Vector3 pointOnCollider, pointOnLine;
+                                float3 pointOnCollider, pointOnLine;
                                 SqrComputeNearestPoints(pReadWriteCollider->position, pReadWriteCollider->direction * scale, pReadWritePointA->position, pReadWritePointB->position - pReadWritePointA->position, out throwTemp, out t, out pointOnCollider, out pointOnLine);
                                 DistributionPower(pointOnLine - pointOnCollider, radius, pReadWritePointA, pReadWritePointB, WeightProportion, t, frictionA, frictionB, pReadCollider->collideFunc);
                             }
@@ -753,7 +753,7 @@ namespace ADBRuntime.Internal
                                 Abs(pReadWriteCollider->position.y - constraintCenter.y) < Abs(pReadWritePointA->position.y - constraintCenter.y) + radius &&
                                 Abs(pReadWriteCollider->position.z - constraintCenter.z) < Abs(pReadWritePointA->position.z - constraintCenter.z) + radius)
                             {
-                                Vector3 boxSize = scale * pReadCollider->boxSize + new Vector3( globalScale * constraint->radius, globalScale * constraint->radius, globalScale * constraint->radius);
+                                float3 boxSize = scale * pReadCollider->boxSize + new float3( globalScale * constraint->radius, globalScale * constraint->radius, globalScale * constraint->radius);
                                 float t1, t2;
                                 //OYM：这个方法可以求出直线与obbbox的两个交点
                                 SegmentToOBB(pReadWritePointA->position, pReadWritePointB->position, pReadWriteCollider->position, boxSize, Quaternion.Inverse(pReadWriteCollider->rotation), out t1, out t2);
@@ -766,9 +766,9 @@ namespace ADBRuntime.Internal
                                 {
                                     //OYM：这里不是取最近的点,而是取中点,最近的点效果并不理想
                                     t = (t1 + t2) * 0.5f;
-                                    Vector3 dir = pReadWritePointB->position - pReadWritePointA->position;
-                                    Vector3 nearestPoint = pReadWritePointA->position + dir * t;
-                                    Vector3 pushout = Quaternion.Inverse(pReadWriteCollider->rotation) * (nearestPoint - pReadWriteCollider->position);
+                                    float3 dir = pReadWritePointB->position - pReadWritePointA->position;
+                                    float3 nearestPoint = pReadWritePointA->position + dir * t;
+                                    float3 pushout = Quaternion.Inverse(pReadWriteCollider->rotation) * (nearestPoint - pReadWriteCollider->position);
                                     float pushoutX = pushout.x > 0 ? boxSize.x - pushout.x : -boxSize.x- pushout.x;
                                     float pushoutY = pushout.y > 0 ? boxSize.y - pushout.y : -boxSize.y - pushout.y;
                                     float pushoutZ = pushout.z > 0 ? boxSize.z - pushout.z : -boxSize.z - pushout.z;
@@ -777,20 +777,20 @@ namespace ADBRuntime.Internal
                                     //OYM：Abs(pushoutZ) < Abs(pushoutY)是错的 ,可能会出现两者都为0的情况
                                     if (Abs(pushoutZ) <= Abs(pushoutY) && Abs(pushoutZ) <= Abs(pushoutX))
                                     {
-                                        pushout = pReadWriteCollider->rotation * new Vector3(0, 0, pushoutZ);
+                                        pushout =math.mul( pReadWriteCollider->rotation , new float3(0, 0, pushoutZ));
 
                                     }
                                     else if (Abs(pushoutY) <= Abs(pushoutX) && Abs(pushoutY) <= Abs(pushoutZ))
                                     {
-                                        pushout = pReadWriteCollider->rotation * new Vector3(0, pushoutY, 0);
+                                        pushout = math.mul(pReadWriteCollider->rotation , new float3(0, pushoutY, 0));
                                     }
                                     else
                                     {
-                                        pushout = pReadWriteCollider->rotation * new Vector3(pushoutX, 0, 0);
+                                        pushout = math.mul(pReadWriteCollider->rotation , new float3(pushoutX, 0, 0));
                                     }
-                                    if (pushout.sqrMagnitude != 0)
+                                    if (math.lengthsq( pushout) != 0)
                                     {
-                                        //float inverse1Velocity = Vector3.Dot(pushout, pReadWritePointA->velocity) / pushout.sqrMagnitude;
+                                        //float inverse1Velocity = float3.Dot(pushout, pReadWritePointA->velocity) / pushout.sqrMagnitude;
                                         //pReadWritePointA->velocity -= pushout * inverse1Velocity;
                                         //pReadWritePointB->velocity -= pushout * inverse1Velocity;
                                         pReadWritePointA->deltaPosition *= (1 - frictionA);
@@ -834,10 +834,10 @@ namespace ADBRuntime.Internal
                 }
             }
 
-            void DistributionPower(Vector3 pushout, float radius, PointReadWrite* pReadWritePointA, PointReadWrite* pReadWritePointB, float WeightProportion, float lengthPropotion, float frictionA, float frictionB, CollideFunc collideFunc)
+            void DistributionPower(float3 pushout, float radius, PointReadWrite* pReadWritePointA, PointReadWrite* pReadWritePointB, float WeightProportion, float lengthPropotion, float frictionA, float frictionB, CollideFunc collideFunc)
             {
 
-                float sqrPushout = pushout.sqrMagnitude;
+                float sqrPushout =math.lengthsq(pushout);
                 switch (collideFunc)
                 {
                     //OYM：整片代码里面最有趣的一块
@@ -864,8 +864,8 @@ namespace ADBRuntime.Internal
                 }
                 //OYM：把pushout方向多余的力给减掉
                 //OYM：没有也不需要
-                    // pReadWritePointA->velocity -= pushout * (Vector3.Dot(pushout, pReadWritePointA->velocity) / sqrPushout);
-                    //pReadWritePointB->velocity -= pushout * (Vector3.Dot(pushout, pReadWritePointB->velocity) / sqrPushout);
+                    // pReadWritePointA->velocity -= pushout * (float3.Dot(pushout, pReadWritePointA->velocity) / sqrPushout);
+                    //pReadWritePointB->velocity -= pushout * (float3.Dot(pushout, pReadWritePointB->velocity) / sqrPushout);
                 pReadWritePointA->deltaPosition *= (1 - frictionA);
                 pReadWritePointB->deltaPosition *= (1 - frictionB);
 
@@ -905,42 +905,42 @@ namespace ADBRuntime.Internal
             //OYM：https://zalo.github.io/blog/closest-point-between-segments/#line-segments
             //OYM：目前是我见过最快的方法
             float SqrComputeNearestPoints(
-                Vector3 posP,//OYM：碰撞体的位置起点位置
-                Vector3 dirP,//OYM：碰撞体的朝向
-                Vector3 posQ,//OYM：约束的起点坐标
-                Vector3 dirQ,//OYM：约束的起点朝向
-out float tP, out float tQ, out Vector3 pointOnP, out Vector3 pointOnQ)
+                float3 posP,//OYM：碰撞体的位置起点位置
+                float3 dirP,//OYM：碰撞体的朝向
+                float3 posQ,//OYM：约束的起点坐标
+                float3 dirQ,//OYM：约束的起点朝向
+out float tP, out float tQ, out float3 pointOnP, out float3 pointOnQ)
             {
-                float lineDirSqrMag = dirQ.sqrMagnitude;
-                Vector3 inPlaneA = posP - ((Vector3.Dot(posP - posQ, dirQ) / lineDirSqrMag) * dirQ);
-                Vector3 inPlaneB = posP + dirP - ((Vector3.Dot(posP + dirP - posQ, dirQ) / lineDirSqrMag) * dirQ);
-                Vector3 inPlaneBA = inPlaneB - inPlaneA;
+                float lineDirSqrMag =math.lengthsq( dirQ);
+                float3 inPlaneA = posP - ((math.dot(posP - posQ, dirQ) / lineDirSqrMag) * dirQ);
+                float3 inPlaneB = posP + dirP - ((math.dot(posP + dirP - posQ, dirQ) / lineDirSqrMag) * dirQ);
+                float3 inPlaneBA = inPlaneB - inPlaneA;
 
-                float t1 = Vector3.Dot(posQ - inPlaneA, inPlaneBA) / inPlaneBA.sqrMagnitude;
-                t1 = (inPlaneA != inPlaneB) ? t1 : 0f; // Zero's t if parallel
-                Vector3 L1ToL2Line = posP + dirP * Clamp01(t1);
+                float t1 = math.dot(posQ - inPlaneA, inPlaneBA) /math.lengthsq( inPlaneBA);
+                t1 =math.all (inPlaneA != inPlaneB) ? t1 : 0f; // Zero's t if parallel
+                float3 L1ToL2Line = posP + dirP * Clamp01(t1);
 
                 pointOnQ = ConstrainToSegment(L1ToL2Line, posQ, dirQ, out tQ);
                 pointOnP = ConstrainToSegment(pointOnQ, posP, dirP, out tP);
-                return (pointOnP - pointOnQ).sqrMagnitude;
+                return math.lengthsq(pointOnP - pointOnQ);
             }
 
-            Vector3 ConstrainToSegment(Vector3 tag, Vector3 pos, Vector3 dir, out float t)
+            float3 ConstrainToSegment(float3 tag, float3 pos, float3 dir, out float t)
             {
-                t = Vector3.Dot(tag - pos, dir) / dir.sqrMagnitude;
+                t = math.dot(tag - pos, dir) / math.lengthsq( dir);
                 t = Clamp01(t);
                 return pos + dir * t;
             }
-            void SegmentToOBB(Vector3 start, Vector3 end, Vector3 center, Vector3 size, Quaternion InverseNormal, out float t1, out float t2)
+            void SegmentToOBB(float3 start, float3 end, float3 center, float3 size, Quaternion InverseNormal, out float t1, out float t2)
             {
-                Vector3 startP = InverseNormal * (center - start);
-                Vector3 endP = InverseNormal * (center - end);
+                float3 startP = InverseNormal * (center - start);
+                float3 endP = InverseNormal * (center - end);
                 SegmentToAABB(startP, endP, center, -size, size, out t1, out t2);
             }
 
-            void SegmentToAABB(Vector3 start, Vector3 end, Vector3 center, Vector3 min, Vector3 max, out float t1, out float t2)
+            void SegmentToAABB(float3 start, float3 end, float3 center, float3 min, float3 max, out float t1, out float t2)
             {
-                Vector3 dir = end - start;
+                float3 dir = end - start;
                 t1 = Max(
                                 Min(
                                     (min.x - start.x) / dir.x,
@@ -989,7 +989,7 @@ out float tP, out float tQ, out Vector3 pointOnP, out Vector3 pointOnQ)
         }
         
         [BurstCompile]
-        public struct ConstraintForceUpdateByPoint : IJobParallelFor
+        public struct ConstraintForceUpdateByPoint : IJobParallelFor //OYM:一个能避免粒子过于颤抖的 ConstraintForceUpdate,但是移除了 Constraint碰撞计算
         {
             /// <summary>
             /// 指向所有可读的点
@@ -1037,7 +1037,7 @@ out float tP, out float tQ, out Vector3 pointOnP, out Vector3 pointOnQ)
 
                 NativeMultiHashMapIterator<int> iterator;
                 ConstraintRead constraint;
-                Vector3 move =Vector3.zero;
+                float3 move =float3.zero;
 
                 if (!constraintsRead.TryGetFirstValue(index, out constraint, out iterator)) //OYM:  在这里获取约束与迭代器
                 {
@@ -1062,7 +1062,7 @@ out float tP, out float tQ, out Vector3 pointOnP, out Vector3 pointOnQ)
                 var Direction = pReadWritePointB->position - (pReadWritePointA->position);
 
 
-                float Distance = Direction.magnitude;
+                float Distance =math.length( Direction);
                 //OYM：力度等于距离减去长度除以弹性，这个值可以不存在，可以大于1但是没有什么卵用
                 float Force = Distance - constraint.length * globalScale;
                 //OYM：是否收缩，意味着力大于0
@@ -1114,305 +1114,15 @@ out float tP, out float tQ, out Vector3 pointOnP, out Vector3 pointOnQ)
 
                 if (ConstraintPower > 0.0f)//OYM：这里不可能小于0吧（除非有人搞破坏）
                 {
-                    Vector3 Displacement = Direction.normalized * (Force * ConstraintPower);
+                    float3 Displacement =math.normalize( Direction) * (Force * ConstraintPower);
                     move += Displacement * WeightProportion;
                 }
-                /*
-                if (isCollision && constraint->isCollider)
-                {
-                    for (int i = 0; i < colliderCount; ++i)
-                    {
-                        ColliderRead* pReadCollider = pReadColliders + i;//OYM：终于到碰撞这里了
-
-                        if (pReadCollider->isOpen && (pPointReadA->colliderChoice & pReadCollider->colliderChoice) != 0)
-                        {//OYM：collider是否打开,且pPointReadA->colliderChoice是否包含 pReadCollider->colliderChoice的位
-                            ColliderReadWrite* pReadWriteCollider = pReadWriteColliders + i;
-                            ComputeCollider(
-                                pReadCollider, pReadWriteCollider,
-                                pReadWritePointA, pReadWritePointB,
-                                constraint,
-                                WeightProportion,
-                                pPointReadA->friction, pPointReadB->friction
-                                );
-                        }
-                    }
-                }
-                */
             } while (constraintsRead.TryGetNextValue(out constraint,ref iterator));
                 if (count != 0)
                 {
                     pReadWritePointA->deltaPosition += move / count;
                     pReadWritePointA->position += move / count;
                 }
-
-            }
-            Vector3 GetRotateForce(Vector3 force, Vector3 direction)//OYM：返回一个不存在的力,使得其向受力方向卷曲,在一些动漫里面会经常出现这种曲线的头发
-            {
-                return (Quaternion.Euler(Mathf.Rad2Deg * (-force.z), 0, Mathf.Rad2Deg * (-force.x)) * direction - direction);
-            }
-            private void ComputeCollider(ColliderRead* pReadCollider, ColliderReadWrite* pReadWriteCollider, PointReadWrite* pReadWritePointA, PointReadWrite* pReadWritePointB, ConstraintRead* constraint, float WeightProportion,
-                float frictionA, float frictionB)
-            {
-                float throwTemp;
-                float t, radius;
-                Vector3 constraintCenter, colliderCenter;
-                float scale = pReadCollider->isConnectWithBody ? globalScale : 1;
-
-                switch (pReadCollider->colliderType)
-                {
-                    case ColliderType.Sphere:
-                        {
-                            constraintCenter = (pReadWritePointA->position + pReadWritePointB->position) * 0.5f;
-                            radius = scale * pReadCollider->radius + globalScale * constraint->radius;
-                            if (Abs(pReadWriteCollider->position.y - constraintCenter.y) < (Abs(pReadWritePointA->position.y - constraintCenter.y) + radius) &&
-                                Abs(pReadWriteCollider->position.x - constraintCenter.x) < (Abs(pReadWritePointA->position.x - constraintCenter.x) + radius) &&
-                                Abs(pReadWriteCollider->position.z - constraintCenter.z) < (Abs(pReadWritePointA->position.z - constraintCenter.z) + radius))
-                            {
-                                Vector3 pointOnLine = ConstrainToSegment(pReadWriteCollider->position, pReadWritePointA->position, pReadWritePointB->position - pReadWritePointA->position, out t);
-                                DistributionPower(pointOnLine - pReadWriteCollider->position, radius, pReadWritePointA, pReadWritePointB, WeightProportion, t, frictionA, frictionB, pReadCollider->collideFunc);
-                            }
-                        }
-
-                        break;
-                    case ColliderType.Capsule:
-                        {
-                            constraintCenter = pReadWriteCollider->position + pReadWriteCollider->direction * 0.5f;
-                            colliderCenter = (pReadWritePointA->position + pReadWritePointB->position) * 0.5f;
-                            radius = scale * pReadCollider->radius + globalScale * constraint->radius;
-                            if (Abs(constraintCenter.y - colliderCenter.y) < (Abs(pReadWriteCollider->direction.y) * 0.5f + Abs(pReadWritePointA->position.y - colliderCenter.y) + radius) &&
-                                Abs(constraintCenter.x - colliderCenter.x) < (Abs(pReadWriteCollider->direction.x) * 0.5f + Abs(pReadWritePointA->position.x - colliderCenter.x) + radius) &&
-                                Abs(constraintCenter.z - colliderCenter.z) < (Abs(pReadWriteCollider->direction.z) * 0.5f + Abs(pReadWritePointA->position.z - colliderCenter.z) + radius))
-                            {
-                                Vector3 pointOnCollider, pointOnLine;
-                                SqrComputeNearestPoints(pReadWriteCollider->position, pReadWriteCollider->direction * scale, pReadWritePointA->position, pReadWritePointB->position - pReadWritePointA->position, out throwTemp, out t, out pointOnCollider, out pointOnLine);
-                                DistributionPower(pointOnLine - pointOnCollider, radius, pReadWritePointA, pReadWritePointB, WeightProportion, t, frictionA, frictionB, pReadCollider->collideFunc);
-                            }
-                        }
-
-                        break;
-                    case ColliderType.OBB:
-                        {
-                            constraintCenter = (pReadWritePointA->position + pReadWritePointB->position) * 0.5f;
-                            radius = globalScale * constraint->radius + Max(pReadCollider->boxSize.x, pReadCollider->boxSize.y, pReadCollider->boxSize.z) * scale * SQRT_2;
-
-                            if (Abs(pReadWriteCollider->position.x - constraintCenter.x) < Abs(pReadWritePointA->position.x - constraintCenter.x) + radius &&
-                                Abs(pReadWriteCollider->position.y - constraintCenter.y) < Abs(pReadWritePointA->position.y - constraintCenter.y) + radius &&
-                                Abs(pReadWriteCollider->position.z - constraintCenter.z) < Abs(pReadWritePointA->position.z - constraintCenter.z) + radius)
-                            {
-                                Vector3 boxSize = scale * pReadCollider->boxSize + new Vector3(globalScale * constraint->radius, globalScale * constraint->radius, globalScale * constraint->radius);
-                                float t1, t2;
-                                //OYM：这个方法可以求出直线与obbbox的两个交点
-                                SegmentToOBB(pReadWritePointA->position, pReadWritePointB->position, pReadWriteCollider->position, boxSize, Quaternion.Inverse(pReadWriteCollider->rotation), out t1, out t2);
-
-                                t1 = Clamp01(t1);
-                                t2 = Clamp01(t2);
-                                //OYM：如果存在,那么t2>t1,且至少有一个点不在边界上
-                                bool bHit = t1 >= 0f && t2 > t1 && t2 <= 1.0f;
-                                if (bHit)
-                                {
-                                    //OYM：这里不是取最近的点,而是取中点,最近的点效果并不理想
-                                    t = (t1 + t2) * 0.5f;
-                                    Vector3 dir = pReadWritePointB->position - pReadWritePointA->position;
-                                    Vector3 nearestPoint = pReadWritePointA->position + dir * t;
-                                    Vector3 pushout = Quaternion.Inverse(pReadWriteCollider->rotation) * (nearestPoint - pReadWriteCollider->position);
-                                    float pushoutX = pushout.x > 0 ? boxSize.x - pushout.x : -boxSize.x - pushout.x;
-                                    float pushoutY = pushout.y > 0 ? boxSize.y - pushout.y : -boxSize.y - pushout.y;
-                                    float pushoutZ = pushout.z > 0 ? boxSize.z - pushout.z : -boxSize.z - pushout.z;
-                                    //OYM：这里我自己都不太记得了 XD
-                                    //OYM：这里是选推出点离的最近的位置,然后推出
-                                    //OYM：Abs(pushoutZ) < Abs(pushoutY)是错的 ,可能会出现两者都为0的情况
-                                    if (Abs(pushoutZ) <= Abs(pushoutY) && Abs(pushoutZ) <= Abs(pushoutX))
-                                    {
-                                        pushout = pReadWriteCollider->rotation * new Vector3(0, 0, pushoutZ);
-
-                                    }
-                                    else if (Abs(pushoutY) <= Abs(pushoutX) && Abs(pushoutY) <= Abs(pushoutZ))
-                                    {
-                                        pushout = pReadWriteCollider->rotation * new Vector3(0, pushoutY, 0);
-                                    }
-                                    else
-                                    {
-                                        pushout = pReadWriteCollider->rotation * new Vector3(pushoutX, 0, 0);
-                                    }
-                                    if (pushout.sqrMagnitude != 0)
-                                    {
-                                        //float inverse1Velocity = Vector3.Dot(pushout, pReadWritePointA->velocity) / pushout.sqrMagnitude;
-                                        //pReadWritePointA->velocity -= pushout * inverse1Velocity;
-                                        //pReadWritePointB->velocity -= pushout * inverse1Velocity;
-                                        pReadWritePointA->deltaPosition *= (1 - frictionA);
-                                        pReadWritePointB->deltaPosition *= (1 - frictionB);
-
-                                        //float Propotion = WeightProportion * t / (1 - WeightProportion - t + 2 * WeightProportion * t);
-                                        if (WeightProportion > EPSILON)
-                                        {
-                                            if (pReadCollider->collideFunc == CollideFunc.InsideNoLimit || pReadCollider->collideFunc == CollideFunc.OutsideNoLimit)
-                                            {
-                                                pReadWritePointA->deltaPosition += 0.01f * oneDivideIteration * (pushout * (1 - t));
-                                            }
-                                            else
-                                            {
-                                                pReadWritePointA->position += (pushout * (1 - t));
-                                                pReadWritePointA->deltaPosition += (pushout * (1 - t));
-                                            }
-
-                                        }
-                                        else
-                                        {
-                                            t = 1;
-                                        }
-                                        if (pReadCollider->collideFunc == CollideFunc.InsideNoLimit || pReadCollider->collideFunc == CollideFunc.OutsideNoLimit)
-                                        {
-                                            pReadWritePointB->deltaPosition += 0.01f * oneDivideIteration * (pushout * t);
-                                        }
-                                        else
-                                        {
-                                            pReadWritePointB->position += (pushout * t);
-                                            pReadWritePointB->deltaPosition += (pushout * t);
-                                        }
-                                    }
-                                }
-                            }
-                            break;
-                        }
-                    default:
-                        return;
-
-                }
-            }
-
-            void DistributionPower(Vector3 pushout, float radius, PointReadWrite* pReadWritePointA, PointReadWrite* pReadWritePointB, float WeightProportion, float lengthPropotion, float frictionA, float frictionB, CollideFunc collideFunc)
-            {
-
-                float sqrPushout = pushout.sqrMagnitude;
-                switch (collideFunc)
-                {
-                    //OYM：整片代码里面最有趣的一块
-                    //OYM：反正我现在不想回忆当时怎么想的了XD
-                    case CollideFunc.Freeze:
-                        break;//OYM：猜猜为啥这样写
-                    case CollideFunc.OutsideLimit:
-                        if (!(sqrPushout < radius * radius) && sqrPushout != 0)
-                        { return; }
-                        break;
-                    case CollideFunc.InsideLimit:
-                        if (sqrPushout < radius * radius && sqrPushout != 0)
-                        { return; }
-                        break;
-                    case CollideFunc.OutsideNoLimit:
-                        if (!(sqrPushout < radius * radius) && sqrPushout != 0)
-                        { return; }
-                        break;
-                    case CollideFunc.InsideNoLimit:
-                        if (sqrPushout < radius * radius && sqrPushout != 0)
-                        { return; }
-                        break;
-
-                }
-                //OYM：把pushout方向多余的力给减掉
-                //OYM：没有也不需要
-                // pReadWritePointA->velocity -= pushout * (Vector3.Dot(pushout, pReadWritePointA->velocity) / sqrPushout);
-                //pReadWritePointB->velocity -= pushout * (Vector3.Dot(pushout, pReadWritePointB->velocity) / sqrPushout);
-                pReadWritePointA->deltaPosition *= (1 - frictionA);
-                pReadWritePointB->deltaPosition *= (1 - frictionB);
-
-                pushout = pushout * (radius / Mathf.Sqrt(sqrPushout) - 1);//OYM：这里简单解释一下,首先我要计算的是推出的距离,及半径长度减去原始的pushout度之后剩下的值,即pushout/pushout.magnitude*radius-pushout.即pushout*((radius/magnitude -1));
-
-                //  float Propotion = WeightProportion * lengthPropotion / (1 - WeightProportion - lengthPropotion + 2 * WeightProportion * lengthPropotion);
-
-                if (WeightProportion > EPSILON)
-                {
-                    if (collideFunc == CollideFunc.InsideNoLimit || collideFunc == CollideFunc.OutsideNoLimit)
-                    {
-                        pReadWritePointA->deltaPosition += 0.01f * oneDivideIteration * (1 - lengthPropotion) * pushout;
-                    }
-                    else
-                    {
-                        pReadWritePointA->position += (pushout * (1 - lengthPropotion));
-                        pReadWritePointA->deltaPosition += (pushout * (1 - lengthPropotion));
-                    }
-
-                }
-                else
-                {
-                    lengthPropotion = 1;
-                }
-
-                if (collideFunc == CollideFunc.InsideNoLimit || collideFunc == CollideFunc.OutsideNoLimit)
-                {
-                    pReadWritePointB->deltaPosition += 0.01f * oneDivideIteration * (lengthPropotion) * pushout;
-                }
-                else
-                {
-                    pReadWritePointB->position += (pushout * lengthPropotion);
-                    pReadWritePointB->deltaPosition += (pushout * lengthPropotion);
-                }
-
-            }
-            //OYM：https://zalo.github.io/blog/closest-point-between-segments/#line-segments
-            //OYM：目前是我见过最快的方法
-            float SqrComputeNearestPoints(
-                Vector3 posP,//OYM：碰撞体的位置起点位置
-                Vector3 dirP,//OYM：碰撞体的朝向
-                Vector3 posQ,//OYM：约束的起点坐标
-                Vector3 dirQ,//OYM：约束的起点朝向
-out float tP, out float tQ, out Vector3 pointOnP, out Vector3 pointOnQ)
-            {
-                float lineDirSqrMag = dirQ.sqrMagnitude;
-                Vector3 inPlaneA = posP - ((Vector3.Dot(posP - posQ, dirQ) / lineDirSqrMag) * dirQ);
-                Vector3 inPlaneB = posP + dirP - ((Vector3.Dot(posP + dirP - posQ, dirQ) / lineDirSqrMag) * dirQ);
-                Vector3 inPlaneBA = inPlaneB - inPlaneA;
-
-                float t1 = Vector3.Dot(posQ - inPlaneA, inPlaneBA) / inPlaneBA.sqrMagnitude;
-                t1 = (inPlaneA != inPlaneB) ? t1 : 0f; // Zero's t if parallel
-                Vector3 L1ToL2Line = posP + dirP * Clamp01(t1);
-
-                pointOnQ = ConstrainToSegment(L1ToL2Line, posQ, dirQ, out tQ);
-                pointOnP = ConstrainToSegment(pointOnQ, posP, dirP, out tP);
-                return (pointOnP - pointOnQ).sqrMagnitude;
-            }
-
-            Vector3 ConstrainToSegment(Vector3 tag, Vector3 pos, Vector3 dir, out float t)
-            {
-                t = Vector3.Dot(tag - pos, dir) / dir.sqrMagnitude;
-                t = Clamp01(t);
-                return pos + dir * t;
-            }
-            void SegmentToOBB(Vector3 start, Vector3 end, Vector3 center, Vector3 size, Quaternion InverseNormal, out float t1, out float t2)
-            {
-                Vector3 startP = InverseNormal * (center - start);
-                Vector3 endP = InverseNormal * (center - end);
-                SegmentToAABB(startP, endP, center, -size, size, out t1, out t2);
-            }
-
-            void SegmentToAABB(Vector3 start, Vector3 end, Vector3 center, Vector3 min, Vector3 max, out float t1, out float t2)
-            {
-                Vector3 dir = end - start;
-                t1 = Max(Min((min.x - start.x) / dir.x, (max.x - start.x) / dir.x), Min((min.y - start.y) / dir.y, (max.y - start.y) / dir.y), Min((min.z - start.z) / dir.z, (max.z - start.z) / dir.z));
-                t2 = Min(Max((min.x - start.x) / dir.x, (max.x - start.x) / dir.x), Max((min.y - start.y) / dir.y, (max.y - start.y) / dir.y), Max((min.z - start.z) / dir.z, (max.z - start.z) / dir.z));
-            }
-            float Abs(float A)
-            {
-                return A > 0 ? A : -A;
-            }
-            float Clamp01(float A)
-            {
-                return A > 0 ? (A < 1 ? A : 1) : 0;
-            }
-            float Min(float A, float B, float C)
-            {
-                return A < B ? (A < C ? A : C) : (B < C ? B : C);
-            }
-            float Min(float A, float B)
-            {
-                return A > B ? B : A;
-            }
-            float Max(float A, float B, float C)
-            {
-                return A > B ? (A > C ? A : C) : (B > C ? B : C);
-            }
-            float Max(float A, float B)
-            {
-                return A > B ? A : B;
             }
         }
         
@@ -1462,11 +1172,11 @@ out float tP, out float tQ, out Vector3 pointOnP, out Vector3 pointOnQ)
                     var parent = pReadWritePoints + pReadPoint->parentIndex;
                     var childRead = pReadPoints + pReadPoint->childFirstIndex;
 
-                    Vector3 ToDirection = child->position - pReadWritePoint->position;//OYM：朝向等于面向子节点的方向
-                    Vector3 FixedDirection = parent->position - pReadWritePoint->position;
-                    if (ToDirection.sqrMagnitude > EPSILON * EPSILON)//OYM：两点不再一起
+                    float3 ToDirection = child->position - pReadWritePoint->position;//OYM：朝向等于面向子节点的方向
+                    float3 FixedDirection = parent->position - pReadWritePoint->position;
+                    if (math.lengthsq( ToDirection) > EPSILON * EPSILON)//OYM：两点不再一起
                     {
-                        Vector3 FromDirection = transform.rotation * childRead->initialLocalPosition;//OYM：将BoneAxis按照transform.rotation进行旋转
+                        float3 FromDirection = transform.rotation * childRead->initialLocalPosition;//OYM：将BoneAxis按照transform.rotation进行旋转
 
                         Quaternion AimRotation = Quaternion.FromToRotation(FromDirection, ToDirection);//OYM：我仔细考虑了下,fromto用在这里不一定是最好,但是一定是最快
 

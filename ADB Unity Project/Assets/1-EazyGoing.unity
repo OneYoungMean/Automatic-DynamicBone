@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0, g: 0, b: 0, a: 1}
+  m_IndirectSpecularColor: {r: 0.44114998, g: 0.48245525, b: 0.52970153, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -589,10 +589,24 @@ MonoBehaviour:
       colliderType: 1
       collideFunc: 1
       colliderChoice: 512
-      positionOffset: {x: 0, y: 0, z: 0}
-      staticRotation: {x: 0, y: 0, z: -0.7071068, w: 0.7071068}
-      staticDirection: {x: 1, y: 0, z: 0}
-      boxSize: {x: 0, y: 0, z: 0}
+      positionOffset:
+        x: 0
+        y: 0
+        z: 0
+      staticRotation:
+        value:
+          x: 0
+          y: 0
+          z: 0
+          w: 0
+      staticDirection:
+        x: 1
+        y: 0
+        z: 0
+      boxSize:
+        x: 0
+        y: 0
+        z: 0
       radius: 0.05
       length: 1
       isConnectWithBody: 0
@@ -4101,7 +4115,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   inspectorPointList:
-  - setting: {fileID: 11400000, guid: deab5b02656c48d458cee4dec287cb03, type: 2}
+  - setting: {fileID: 0}
     points:
     - {fileID: 1686950310}
     - {fileID: 203179178}
@@ -4213,13 +4227,13 @@ MonoBehaviour:
     - {fileID: 1924945149}
   isGenerateColliderAutomaitc: 0
   isGenerateByAllPoint: 1
-  delayTime: 0
+  delayTime: 1
   iteration: 16
   windForceScale: 0
   isDebug: 1
   isOptimize: 0
   isResetPoint: 0
-  settings: {fileID: 11400000, guid: b8b0ffa98566d1344b129da1558b9894, type: 2}
+  settings: {fileID: 11400000, guid: 9460316c98846ae4fb50d1faa655f79d, type: 2}
   colliderCollisionType: 4
   generateKeyWordWhiteList:
   - hair
@@ -4338,7 +4352,8 @@ MonoBehaviour:
   - {fileID: 157287964}
   - {fileID: 1924945149}
   editorColliderList: []
-  isNotAllowAsync: 0
+  isDetectAsync: 0
+  isFuzzyCompute: 1
 --- !u!1 &1617197352
 GameObject:
   m_ObjectHideFlags: 0

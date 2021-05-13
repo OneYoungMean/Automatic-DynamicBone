@@ -42,7 +42,7 @@ namespace ADBRuntime
         private NativeArray<PointReadWrite> pointReadWriteList;
         // private NativeArray<PointReadWrite> pointReadWriteListCopy;
         private TransformAccessArray pointTransformsList;
-
+        private NativeList<JobHandle> handleList = new NativeList<JobHandle>(8, Allocator.TempJob);
 
         public DataPackage()
         {
@@ -81,6 +81,8 @@ namespace ADBRuntime
 
                 return false;
             }
+            handleList.Dispose();
+            handleList = new NativeList<JobHandle>(8, Allocator.TempJob);
 
             //OYM：当我用ADBRunTimeJobsTable.returnHJob时候,任务会在我调用的时候被强制完成,当我用本地的Hjob的时候,任务会在异步进行
             //OYM:  注意,JH底层很可能也是单例
@@ -110,7 +112,9 @@ namespace ADBRuntime
             pointGet.TryExecute(pointTransformsList, Hjob);
 #else
             Hjob = colliderGet.Schedule(colliderTransformsList);
+            handleList.Add(Hjob);
             Hjob = pointGet.Schedule(pointTransformsList);
+            handleList.Add(Hjob);
 #endif
 
             for (int i = 0; i < iteration; i++)
@@ -127,15 +131,36 @@ namespace ADBRuntime
                 if (isFuzzyCompute)
                 {
                     Hjob = colliderUpdate.Schedule(collidersReadList.Length, batchLength);
+                    handleList.Add(Hjob); //OYM:防止未完成导致释放失败
                     Hjob = pointUpdate.Schedule(pointReadList.Length, batchLength);
-                    //Hjob = constraintUpdates1.Schedule(constraintReadList1.Length, batchLength);
-                   Hjob= constraintForceUpdateByPoint.Schedule(pointReadList.Length, batchLength);
+                    handleList.Add(Hjob);
+
+                    if (colliderCollisionType==ColliderCollisionType.Constraint|| colliderCollisionType == ColliderCollisionType.Both)
+                    {
+                        Hjob = constraintUpdates1.Schedule(constraintReadList1.Length, batchLength);
+                    }
+                    else
+                    {
+                        Hjob = constraintForceUpdateByPoint.Schedule(pointReadList.Length, batchLength);
+                    }
+                    handleList.Add(Hjob);
+                    //
                 }
                 else
                 {
                     Hjob = colliderUpdate.Schedule(collidersReadList.Length, batchLength, Hjob);
+                    handleList.Add(Hjob);
                     Hjob = pointUpdate.Schedule(pointReadList.Length, batchLength, Hjob);
-                    Hjob = constraintForceUpdateByPoint.Schedule(pointReadList.Length, batchLength, Hjob);
+                    handleList.Add(Hjob);
+                    if (colliderCollisionType == ColliderCollisionType.Constraint || colliderCollisionType == ColliderCollisionType.Both)
+                    {
+                        Hjob = constraintUpdates1.Schedule(constraintReadList1.Length, batchLength, Hjob);
+                    }
+                    else
+                    {
+                        Hjob = constraintForceUpdateByPoint.Schedule(pointReadList.Length, batchLength, Hjob);
+                    }
+                    handleList.Add(Hjob);
                 }
 #endif
             }
@@ -143,10 +168,10 @@ namespace ADBRuntime
 #if ADB_DEBUG
             pointToTransform.TryExecute(pointTransformsList, Hjob);
 #else
-            Hjob = pointToTransform.Schedule(pointTransformsList);
+            Hjob = pointToTransform.Schedule(pointTransformsList, Hjob);
+            handleList.Add(Hjob);
 #endif
             #endregion
-            JobHandle.ScheduleBatchedJobs();
             return true;
         }
 
@@ -296,7 +321,8 @@ namespace ADBRuntime
         /// <param name="isReset"></param>
         public void Dispose(bool isReset)
         {
-            Hjob.Complete();
+            JobHandle.CompleteAll(handleList.AsArray());
+            handleList.Dispose();
             pointReadList.Dispose();
             pointReadWriteList.Dispose();
             pointTransformsList.Dispose();

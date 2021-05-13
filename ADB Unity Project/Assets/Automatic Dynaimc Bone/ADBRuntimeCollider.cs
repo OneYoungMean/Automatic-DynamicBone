@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System;
+using Unity.Mathematics;
 
 namespace ADBRuntime
 {
@@ -294,10 +295,10 @@ namespace ADBRuntime
         public ColliderType colliderType;
         public CollideFunc collideFunc;
         public ColliderChoice colliderChoice;
-        public Vector3 positionOffset;
-        public Quaternion staticRotation;
-        public Vector3 staticDirection;
-        public Vector3 boxSize;
+        public float3 positionOffset;
+        public quaternion staticRotation;
+        public float3 staticDirection;
+        public float3 boxSize;
         //public Vector3 pointB;
         //public Vector3 pointC;
 
@@ -311,10 +312,10 @@ namespace ADBRuntime
                 other.colliderType == colliderType &&
                 other.collideFunc == collideFunc &&
                 other.colliderChoice == colliderChoice &&
-                other.positionOffset == positionOffset &&
-                other.staticRotation == staticRotation &&
-                other.staticDirection == staticDirection &&
-                other.boxSize == boxSize &&
+                other.positionOffset .Equals( positionOffset) &&
+                other.staticRotation .Equals( staticRotation) &&
+                other.staticDirection .Equals(staticDirection) &&
+                other.boxSize.Equals( boxSize) &&
                 other.radius == radius &&
                 other.length == length &&
                 other.isConnectWithBody == isConnectWithBody;
@@ -331,8 +332,7 @@ namespace ADBRuntime
                     colliderType = ColliderType.Sphere;
                 }
             }
-            boxSize = boxSize.normalized * boxSize.magnitude;//OYM：我当初为啥要写这一段啊...
-            staticDirection = staticDirection == Vector3.zero ? Vector3.up : staticDirection;
+            staticDirection = math.all(staticDirection == float3.zero) ? new float3(0, 1, 0) : math.normalize(staticDirection); //OYM:float3.up
             staticRotation = Quaternion.FromToRotation(Vector3.up, staticDirection);
             if (((int)colliderChoice) == 0)
             {
@@ -342,12 +342,12 @@ namespace ADBRuntime
     }
     public struct ColliderReadWrite
     {
-        public Vector3 position;
-        public Vector3 direction; 
-        public Quaternion rotation;
-        public Vector3 deltaPosition;
-        public Vector3 deltaDirection;
-        public Quaternion deltaRotation;
+        public float3 position;
+        public float3 direction; 
+        public quaternion rotation;
+        public float3 deltaPosition;
+        public float3 deltaDirection;
+        public quaternion deltaRotation;
     }
 }//OYM：写死我了....历时四个月有余
 /*
