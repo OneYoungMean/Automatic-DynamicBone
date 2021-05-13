@@ -486,7 +486,7 @@ MonoBehaviour:
   gravityScaleGlobal: 1
   moveByFixedPointGlobal: 1
   distanceCompensationGlobal: 1
-  massGlobal: 1.5
+  massGlobal: 0.5
   moveByPrePointGlobal: 0
   freezeGlobal: 0
   structuralShrinkVerticalScaleGlobal: 1

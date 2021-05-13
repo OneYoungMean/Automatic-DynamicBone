@@ -501,12 +501,12 @@ MonoBehaviour:
     m_RotationOrder: 4
   frictionGlobal: 0
   addForceScaleGlobal: 1
-  gravityScaleGlobal: 0
+  gravityScaleGlobal: 1
   moveByFixedPointGlobal: 0.5
   distanceCompensationGlobal: 1
   massGlobal: 0.95
   moveByPrePointGlobal: 0
-  freezeGlobal: 0.5
+  freezeGlobal: 0
   structuralShrinkVerticalScaleGlobal: 1
   structuralStretchVerticalScaleGlobal: 1
   structuralShrinkHorizontalScaleGlobal: 1

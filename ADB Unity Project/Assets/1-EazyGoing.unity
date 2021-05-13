@@ -597,8 +597,8 @@ MonoBehaviour:
         value:
           x: 0
           y: 0
-          z: 0
-          w: 0
+          z: -0.7071068
+          w: 0.7071068
       staticDirection:
         x: 1
         y: 0
@@ -612,7 +612,7 @@ MonoBehaviour:
       isConnectWithBody: 0
     appendTransform: {fileID: 207396805}
     isDraw: 1
-  isGlobal: 0
+  isGlobal: 1
 --- !u!4 &207396805
 Transform:
   m_ObjectHideFlags: 0
@@ -621,7 +621,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 207396803}
   m_LocalRotation: {x: -0, y: 0.7071068, z: -0, w: 0.7071068}
-  m_LocalPosition: {x: 0.022000061, y: -0.096, z: 0.41900003}
+  m_LocalPosition: {x: 0.485, y: -0.096, z: 0.419}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -1241,6 +1241,79 @@ Transform:
   m_Father: {fileID: 777026278}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &425176135
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 425176137}
+  - component: {fileID: 425176136}
+  m_Layer: 0
+  m_Name: Hi~ (1)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &425176136
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 425176135}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 25e612241b3efde498e3e1cce664bed6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  editor:
+    colliderRead:
+      isOpen: 1
+      colliderType: 2
+      collideFunc: 3
+      colliderChoice: 512
+      positionOffset:
+        x: 0
+        y: 0
+        z: 0
+      staticRotation:
+        value:
+          x: 0
+          y: 0
+          z: -0.7071068
+          w: 0.7071068
+      staticDirection:
+        x: 1
+        y: 0
+        z: 0
+      boxSize:
+        x: 0.5
+        y: 0.3
+        z: 1
+      radius: 0.05
+      length: 1
+      isConnectWithBody: 0
+    appendTransform: {fileID: 425176137}
+    isDraw: 1
+  isGlobal: 1
+--- !u!4 &425176137
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 425176135}
+  m_LocalRotation: {x: -0, y: 0.7071068, z: -0, w: 0.7071068}
+  m_LocalPosition: {x: 0.68, y: -0.675, z: 0.419}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 1
+  m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
 --- !u!1 &432124669
 GameObject:
   m_ObjectHideFlags: 0
@@ -2538,6 +2611,79 @@ Transform:
   m_Father: {fileID: 868136450}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &939982926
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 939982928}
+  - component: {fileID: 939982927}
+  m_Layer: 0
+  m_Name: Hi~ (2)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &939982927
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 939982926}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 25e612241b3efde498e3e1cce664bed6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  editor:
+    colliderRead:
+      isOpen: 1
+      colliderType: 0
+      collideFunc: 3
+      colliderChoice: 512
+      positionOffset:
+        x: 0
+        y: 0
+        z: 0
+      staticRotation:
+        value:
+          x: 0
+          y: 0
+          z: -0.7071068
+          w: 0.7071068
+      staticDirection:
+        x: 1
+        y: 0
+        z: 0
+      boxSize:
+        x: 0
+        y: 0
+        z: 0
+      radius: 0.2
+      length: 1
+      isConnectWithBody: 0
+    appendTransform: {fileID: 939982928}
+    isDraw: 1
+  isGlobal: 1
+--- !u!4 &939982928
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 939982926}
+  m_LocalRotation: {x: -0, y: 0.7071068, z: -0, w: 0.7071068}
+  m_LocalPosition: {x: 0.974, y: -0.096, z: 0.419}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 2
+  m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
 --- !u!1 &942793395
 GameObject:
   m_ObjectHideFlags: 0
@@ -2885,7 +3031,7 @@ Transform:
   - {fileID: 2088641320}
   - {fileID: 1965717501}
   m_Father: {fileID: 0}
-  m_RootOrder: 3
+  m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1061651524
 GameObject:
@@ -3746,7 +3892,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 1
+  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 12.2, y: -30, z: 0}
 --- !u!1 &1484483239
 GameObject:
@@ -4100,7 +4246,7 @@ Transform:
   - {fileID: 1006841126}
   - {fileID: 330557150}
   m_Father: {fileID: 0}
-  m_RootOrder: 2
+  m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
 --- !u!114 &1606778521
 MonoBehaviour:
@@ -4115,7 +4261,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   inspectorPointList:
-  - setting: {fileID: 0}
+  - setting: {fileID: 11400000, guid: 27cf1b38658f2ac48a72e759eefc18f4, type: 2}
     points:
     - {fileID: 1686950310}
     - {fileID: 203179178}
@@ -4227,14 +4373,15 @@ MonoBehaviour:
     - {fileID: 1924945149}
   isGenerateColliderAutomaitc: 0
   isGenerateByAllPoint: 1
-  delayTime: 1
+  isGenerateFinger: 0
+  bufferTime: 1
   iteration: 16
   windForceScale: 0
   isDebug: 1
-  isOptimize: 0
+  isOptimize: 1
   isResetPoint: 0
   settings: {fileID: 11400000, guid: 9460316c98846ae4fb50d1faa655f79d, type: 2}
-  colliderCollisionType: 4
+  colliderCollisionType: 2
   generateKeyWordWhiteList:
   - hair
   generateKeyWordBlackList:

@@ -55,7 +55,7 @@ namespace ADBRuntime.Internal
 
                 if (pReadPoint->fixedIndex == index)
                 {
-                    //Debug.Log(pReadPoint->localRotation==Quaternion.Inverse(transform.localRotation));这里没问题
+                    //Debug.Log(pReadPoint->localRotation==quaternion.Inverse(transform.localRotation));这里没问题
                     transform.localRotation = pReadPoint->initialLocalRotation;//OYM：这里改变之后,rotation也会改变
 
                     pReadWritePoint->rotation = transform.rotation;
@@ -63,7 +63,7 @@ namespace ADBRuntime.Internal
                     //Debug.Log(pReadWritePoint->rotation+" "+index);
                     pReadWritePoint->position = transform.position;
 
-                    pReadWritePoint->deltaRotationY = pReadWritePoint->deltaRotation = Quaternion.identity;
+                    pReadWritePoint->deltaRotationY = pReadWritePoint->deltaRotation = quaternion.identity;
                     pReadWritePoint->deltaPosition = float3.zero;
 
                 }
@@ -116,7 +116,7 @@ namespace ADBRuntime.Internal
                 pReadWriteCollider->rotation = transform.rotation * pReadCollider->staticRotation;
                 pReadWriteCollider->deltaPosition = float3.zero;
                 pReadWriteCollider->deltaDirection = float3.zero;
-                pReadWriteCollider->deltaRotation = Quaternion.identity;
+                pReadWriteCollider->deltaRotation = quaternion.identity;
             }
         }
 
@@ -257,9 +257,10 @@ namespace ADBRuntime.Internal
 
 
                     //OYM：做笔记 unity当中 child.rotation =parent.rotation*child.localrotation;
-                    Quaternion rotationTemp = (transform.rotation * Quaternion.Inverse(transform.localRotation)) * pReadPoint->initialLocalRotation;
-                    pReadWritePoint->deltaRotation = Quaternion.LerpUnclamped(Quaternion.identity, rotationTemp * Quaternion.Inverse(pReadWritePoint->rotation), oneDivideIteration);
-                    //  pReadWritePoint->deltaRotationY = Quaternion.AngleAxis(pReadWritePoint->deltaRotation.eulerAngles.y, float3.up);
+                    quaternion rotationTemp = (transform.rotation * math.inverse(transform.localRotation)) * pReadPoint->initialLocalRotation;
+                    pReadWritePoint->deltaRotation = math.nlerp(quaternion.identity,math.mul( rotationTemp , math.inverse(pReadWritePoint->rotation)), oneDivideIteration);
+                    Quaternion q = (pReadWritePoint->deltaRotation);
+                     pReadWritePoint->deltaRotationY = quaternion.AxisAngle(new float3(0,1,0),q.eulerAngles.y);
 
                 }
                 else
@@ -382,7 +383,7 @@ namespace ADBRuntime.Internal
                 //OYM：获取归位的向量
                 if (pReadPoint->isFixGravityAxis)//OYM:  固定重力方向,这个值会受到fix节点初始rotation的影响
                 {
-                    gravity = ((pFixedPointReadWrite->rotation * Quaternion.Inverse(pFixedPointRead->initialRotation)) * pReadPoint->gravity) * (deltaTime * deltaTime) * globalScale;//OYM：重力
+                    gravity = math.mul(math.mul(pFixedPointReadWrite->rotation , math.inverse(pFixedPointRead->initialRotation)) , pReadPoint->gravity) * (deltaTime * deltaTime) * globalScale;//OYM：重力
                 }
                 else
                 {
@@ -415,26 +416,29 @@ namespace ADBRuntime.Internal
                 //OYM：计算离心力(理想状态
                 deltaPosition += deltaTime * (math.mul(pFixedPointReadWrite->deltaRotation, direction) - direction);
 
-                //OYM：计算重力
-
+                //OYM：传回
+                pReadWritePoint->deltaPosition = deltaPosition; //OYM:   
                 if (isOptimize)
                 {
                     //OYM：减少对于骨骼的拉长
+                    deltaPosition -= (math.dot(deltaPosition, direction) / math.lengthsq(direction)) * direction * 0.1f;
                     //OYM:  注意,这个操作会让你的骨骼看上去更加的卷,更加的带有动漫风
-                    deltaPosition -= math.dot(deltaPosition, direction) / math.lengthsq(direction) * direction;
-                    deltaPosition += GetRotateForce(deltaPosition, direction);
+                    deltaPosition += GetRotateForce(deltaPosition *0.015f, direction) ;
+
+
                 }
 
                 pReadWritePoint->position += oneDivideIteration * deltaPosition;//OYM：这里我想了很久,应该是这样,如果是迭代n次的话,那么deltaposition将会被加上n次,正规应该是只加一次
 
-                pReadWritePoint->deltaPosition = deltaPosition; //OYM:   
+
                 // if (index == 19) {}
 
                 //Debug.Log(index + " : " + pFixedPointReadWrite->position + " " + positionA + " " + pFixedPointReadWrite->deltaPosition * pReadPoint->distanceCompensation + "  " + positionB);
             }
             float3 GetRotateForce(float3 force, float3 direction)//OYM：返回一个不存在的力,使得其向受力方向卷曲,在一些动漫里面会经常出现这种曲线的头发
             {
-                return (math.mul(quaternion.Euler(-Mathf.Rad2Deg * force.z, 0, -Mathf.Rad2Deg * force.x), direction) - direction);
+                var result = math.mul(quaternion.Euler( Mathf.Rad2Deg* force.z, 0, Mathf.Rad2Deg * force.x), direction) - direction;
+                return new float3( result.x,0,result.z);
             }
             private void ColliderCheck(PointRead* pPointRead, PointReadWrite* pReadWritePoint, ColliderRead* pReadCollider, ColliderReadWrite* pReadWriteCollider)
             {
@@ -765,7 +769,7 @@ namespace ADBRuntime.Internal
                                 float3 boxSize = scale * pReadCollider->boxSize + new float3(globalScale * constraint->radius, globalScale * constraint->radius, globalScale * constraint->radius);
                                 float t1, t2;
                                 //OYM：这个方法可以求出直线与obbbox的两个交点
-                                SegmentToOBB(pReadWritePointA->position, pReadWritePointB->position, pReadWriteCollider->position, boxSize, Quaternion.Inverse(pReadWriteCollider->rotation), out t1, out t2);
+                                SegmentToOBB(pReadWritePointA->position, pReadWritePointB->position, pReadWriteCollider->position, boxSize, math.inverse(pReadWriteCollider->rotation), out t1, out t2);
 
                                 t1 = Clamp01(t1);
                                 t2 = Clamp01(t2);
@@ -777,7 +781,7 @@ namespace ADBRuntime.Internal
                                     t = (t1 + t2) * 0.5f;
                                     float3 dir = pReadWritePointB->position - pReadWritePointA->position;
                                     float3 nearestPoint = pReadWritePointA->position + dir * t;
-                                    float3 pushout = Quaternion.Inverse(pReadWriteCollider->rotation) * (nearestPoint - pReadWriteCollider->position);
+                                    float3 pushout =math.mul( math.inverse(pReadWriteCollider->rotation) ,(nearestPoint - pReadWriteCollider->position));
                                     float pushoutX = pushout.x > 0 ? boxSize.x - pushout.x : -boxSize.x - pushout.x;
                                     float pushoutY = pushout.y > 0 ? boxSize.y - pushout.y : -boxSize.y - pushout.y;
                                     float pushoutZ = pushout.z > 0 ? boxSize.z - pushout.z : -boxSize.z - pushout.z;
@@ -940,10 +944,10 @@ out float tP, out float tQ, out float3 pointOnP, out float3 pointOnQ)
                 t = Clamp01(t);
                 return pos + dir * t;
             }
-            void SegmentToOBB(float3 start, float3 end, float3 center, float3 size, Quaternion InverseNormal, out float t1, out float t2)
+            void SegmentToOBB(float3 start, float3 end, float3 center, float3 size, quaternion InverseNormal, out float t1, out float t2)
             {
-                float3 startP = InverseNormal * (center - start);
-                float3 endP = InverseNormal * (center - end);
+                float3 startP =math.mul( InverseNormal , (center - start));
+                float3 endP = math.mul(InverseNormal , (center - end));
                 SegmentToAABB(startP, endP, center, -size, size, out t1, out t2);
             }
 
