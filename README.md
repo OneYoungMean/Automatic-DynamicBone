@@ -3,9 +3,17 @@
 * 如果您是第一次接触该项目,您可以选择在[此处下载示例](https://wws.lanzous.com/iotvcf8d3mb) 并访问[项目的wiki](https://github.com/OneYoungMean/Automatic-DynamicBone/wiki)  
 * [English version manual](https://github.com/OneYoungMean/Automatic-DynamicBone/wiki/English-version-manual)  sorry Im too busy to make the localization XD
 
-- **当前版本:0.9preview 最后更新日期:20/12/11**  
-- **除了修bug以外应该不会大改了..大概**   
-
+- **当前版本:1.1preview 最后更新日期:21/5/13**  
+- **史诗级更新大放送!业界良心不弃坑!**
+-##更新点速览    
+* 修复 #14,#13的问题,以及一些零散的bug
+* **利用数学库优化物理核心,现在运行速度是原来的四倍**
+* **解决了反复震颤的老毛病!更加稳定的节点!现在只需要一次迭代就能够得到相当稳定的动态骨骼**
+* **碰撞体修复!现在支持碰撞体,立场等四种不同模式的碰撞体了!**
+* **碰撞体算法优化,现在碰撞的消耗更加少了!**
+* **自动生成碰撞体增加生成手指的碰撞体选项**
+* **优化轨迹功能现在拥有更好的效果了!**
+* 
 # AutomaticDynamicBone
 **unity骨骼布料仿真插件**.  
 * 基于https://github.com/SPARK-inc/SPCRJointDynamics 
