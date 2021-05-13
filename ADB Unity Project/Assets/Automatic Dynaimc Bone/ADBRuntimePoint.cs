@@ -109,23 +109,23 @@ namespace ADBRuntime
         public float circumferenceShrink;
         public float circumferenceStretch;
         public float radius;
-        public float3 gravity;
-        public float3 initialLocalPosition;
-        public float3 initialPosition;//OYM：并不是直接的position ,二是相对于fixed点的position;
+        public Vector3 gravity;
+        public Vector3 initialLocalPosition;
+        public Vector3 initialPosition;//OYM：并不是直接的position ,二是相对于fixed点的position;
 
 
         internal float addForceScale;
         internal float distanceCompensation;
-        internal quaternion initialLocalRotation;
-        internal quaternion initialRotation;
+        internal Quaternion initialLocalRotation;
+        internal Quaternion initialRotation;
     }
 
     //OYM：写入系统
     public struct PointReadWrite
     {
-        public float3 position;
-        public quaternion rotation;
-        public quaternion rotationY;
+        public Vector3 position;
+        public Quaternion rotation;
+        public Quaternion rotationY;
         /* { get { return Position; }
             set {
                 if (float.IsNaN(value.x))
@@ -138,9 +138,8 @@ namespace ADBRuntime
                 }
             } }*/
 
-        public float3 deltaPosition;
-        public float3 deltaGravity;
-        public quaternion deltaRotation;
-        public quaternion deltaRotationY;
+        public Vector3 deltaPosition;
+        public Quaternion deltaRotation;
+        public Quaternion deltaRotationY;
     }
 }
