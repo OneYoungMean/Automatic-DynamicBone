@@ -6,7 +6,7 @@
 - **当前版本:1.1preview 最后更新日期:21/5/13**  
 - **史诗级更新大放送!业界良心不弃坑!**
 - 
-# 更新点速览    
+# 更新!1.1preview更新点速览    
 * 修复 #14,#13的问题,以及一些零散的bug
 * 迁移版本到19.4.21,原版本刻在[此处查看](https://github.com/OneYoungMean/Automatic-DynamicBone/commit/492bd01e25dc1fcb5641ff834de7637ba439125f)
 * **利用数学库优化物理核心,现在运行速度是原来的四倍**
