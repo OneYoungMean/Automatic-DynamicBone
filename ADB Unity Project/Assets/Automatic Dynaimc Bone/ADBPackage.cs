@@ -89,7 +89,8 @@ namespace ADBRuntime
 
             //OYM:  针对迭代的补偿
             //OYM:  赋参
-            constraintForceUpdateByPoint.oneDivideIteration= constraintUpdates1.oneDivideIteration = pointUpdate.oneDivideIteration = colliderGet.oneDivideIteration = pointGet.oneDivideIteration = 1.0f / iteration;
+            float oneDivideIteration = 1.0f / iteration;
+            constraintForceUpdateByPoint.oneDivideIteration = constraintUpdates1.oneDivideIteration = pointUpdate.oneDivideIteration = colliderGet.oneDivideIteration = pointGet.oneDivideIteration = oneDivideIteration;
             pointUpdate.deltaTime = deltaTime;
             pointUpdate.globalScale = scale;
             pointUpdate.isOptimize = isOptimize;

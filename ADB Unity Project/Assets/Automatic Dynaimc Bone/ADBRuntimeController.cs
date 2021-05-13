@@ -186,7 +186,7 @@ namespace ADBRuntime.Mono
                     jointAndPointControlls[i].GetData(dataPackage);//OYM：在这里对各种joint和point进行分类与编号
                 }
                 dataPackage.SetNativeArray();
-                delayTime = delayTime < 0.017f ? 0.017f : delayTime;
+                isResetPoint = true;
             }
         }
         public void RestorePoint()
