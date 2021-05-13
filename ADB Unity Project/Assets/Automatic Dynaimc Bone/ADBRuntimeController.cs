@@ -52,7 +52,7 @@ namespace ADBRuntime.Mono
         [SerializeField]
         public bool isGenerateByAllPoint = true;
         [SerializeField]
-        public float delayTime=0.0001f;
+        public float delayTime=1f;
         [SerializeField]
         public int iteration=4;
         [SerializeField]
@@ -117,22 +117,16 @@ namespace ADBRuntime.Mono
                 isInitialize = true;
             }
             delayTime = delayTime < 0.017f ? 0.017f : delayTime;
+            isResetPoint = true;
         }
 
         private void Update()
         {
             if (jointAndPointControlls == null) return;
-            deltaTime = Mathf.Lerp(deltaTime,Time.deltaTime, 1 / delayTime * 60);
-
-            if (delayTime - Time.deltaTime > 0)
+             deltaTime = Mathf.Lerp(deltaTime,Time.deltaTime, 1 / (delayTime * 60));
+ 
+             if (isResetPoint)
             {
-                delayTime -= Time.deltaTime;
-
-                return;
-            }
-            else if ((delayTime > 0 && delayTime - Time.deltaTime < 0) || isResetPoint)
-            {
-                delayTime -= Time.deltaTime;
                 isResetPoint = false;
                 RestorePoint();
                 return;

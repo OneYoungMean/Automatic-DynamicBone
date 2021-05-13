@@ -99,6 +99,7 @@ namespace ADBRuntime
             //OYM:  上面这个是防迭代顺序错乱而设置强制顺序
             for (int i = 0; i < constraintUpdates.Length; i++)
             {
+                constraintUpdates[i].oneDivideIteration= 1.0f / iteration;
                 constraintUpdates[i].globalScale = scale;
                 constraintUpdates[i].isCollision = (colliderCollisionType == ColliderCollisionType.Both || colliderCollisionType == ColliderCollisionType.Constraint);
             }
@@ -322,7 +323,6 @@ namespace ADBRuntime
         public void Dispose(bool isReset)
         {
             JobHandle.CompleteAll(handleList.AsArray());
-            handleList.Dispose();
             pointReadList.Dispose();
             pointReadWriteList.Dispose();
             pointTransformsList.Dispose();
@@ -341,6 +341,7 @@ namespace ADBRuntime
             }
             else
             {
+                handleList.Dispose();
                 collidersReadList.Dispose();
                 collidersReadWriteList.Dispose();
                 colliderTransformsList.Dispose();

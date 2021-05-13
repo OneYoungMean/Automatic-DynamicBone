@@ -674,10 +674,10 @@ namespace ADBRuntime.Internal
                 {
                     float3 Displacement =math.normalize( Direction) * (Force * ConstraintPower);
 
-                    pReadWritePointA->position += Displacement * WeightProportion;
-                    pReadWritePointA->deltaPosition += Displacement * WeightProportion;
-                    pReadWritePointB->position += -Displacement * (1 - WeightProportion);
-                    pReadWritePointB->deltaPosition += -Displacement * (1 - WeightProportion);
+                    pReadWritePointA->position += Displacement * WeightProportion*oneDivideIteration;
+                    pReadWritePointA->deltaPosition += Displacement * WeightProportion * oneDivideIteration;
+                    pReadWritePointB->position += -Displacement * (1 - WeightProportion) * oneDivideIteration;
+                    pReadWritePointB->deltaPosition += -Displacement * (1 - WeightProportion) * oneDivideIteration;
                 }
 
                 if (isCollision && constraint->isCollider)
