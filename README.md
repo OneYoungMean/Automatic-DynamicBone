@@ -1,4 +1,4 @@
-写在开头:  
+# 写在开头  
 * 想找实习(躺)
 * 如果您是第一次接触该项目,您可以选择在[此处下载示例](https://wws.lanzous.com/iotvcf8d3mb) 并访问[项目的wiki](https://github.com/OneYoungMean/Automatic-DynamicBone/wiki)  
 * [English version manual](https://github.com/OneYoungMean/Automatic-DynamicBone/wiki/English-version-manual)  sorry Im too busy to make the localization XD
@@ -6,7 +6,7 @@
 - **当前版本:1.1preview 最后更新日期:21/5/13**  
 - **史诗级更新大放送!业界良心不弃坑!**
 - 
-# 更新!1.1preview更新点速览    
+# 1.1preview更新点速览    
 * 修复 #14,#13的问题,以及一些零散的bug
 * 迁移版本到19.4.21,原版本刻在[此处查看](https://github.com/OneYoungMean/Automatic-DynamicBone/commit/492bd01e25dc1fcb5641ff834de7637ba439125f)
 * **利用数学库优化物理核心,现在运行速度是原来的四倍**
@@ -17,7 +17,7 @@
 * **优化轨迹功能现在拥有更好的效果了!**  
 ![](https://z3.ax1x.com/2021/05/13/gD7YkD.gif)
 
-# 更新注意事项
+## 更新注意事项
 **请确保您的mathmatica版本高于等于1.2.1**
 **如果遇到卡顿问题与未释放的nativeContainer,请尝试在jobs菜单下关闭SafelyCheck与enableJobDebuger选项**
 
