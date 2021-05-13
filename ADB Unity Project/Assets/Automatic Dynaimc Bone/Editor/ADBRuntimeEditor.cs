@@ -142,7 +142,7 @@ namespace ADBRuntime
             controller.isDebug = EditorGUILayout.Toggle("是否绘制所有辅助线", controller.isDebug);
             controller.isOptimize = EditorGUILayout.Toggle("轨迹优化", controller.isOptimize);
             controller.isFuzzyCompute = EditorGUILayout.Toggle("高性能模式", controller.isFuzzyCompute);
-            controller.iteration = EditorGUILayout.IntSlider("迭代次数", controller.iteration, 1, max * (controller.isFuzzyCompute?8:1)*(controller.isDebug?2:1));
+            controller.iteration = EditorGUILayout.IntSlider("迭代次数", controller.iteration, 1, max * (controller.isFuzzyCompute?8:8)*(controller.isDebug?2:1));
             if (controller.iteration > 256)
             {
                 controller.isDetectAsync = EditorGUILayout.Toggle("自动优化迭代次数", controller.isDetectAsync);

@@ -12,10 +12,11 @@ namespace ADBRuntime
 {
     using Internal;
     using Mono;
+    using static ADBRuntime.Internal.ADBRunTimeJobsTable;
+
     public unsafe class DataPackage
     {
         static int batchLength = 64;
-
         private JobHandle Hjob;
         private ADBRunTimeJobsTable ADBRunTimeJobsTable;
 
@@ -25,9 +26,11 @@ namespace ADBRuntime
         private ADBRunTimeJobsTable.ColliderUpdate colliderUpdate;
         private ADBRunTimeJobsTable.ConstraintUpdate[] constraintUpdates;
         private ADBRunTimeJobsTable.ConstraintUpdate constraintUpdates1;
+        private ADBRunTimeJobsTable.ConstraintForceUpdateByPoint constraintForceUpdateByPoint;
         private ADBRunTimeJobsTable.JobPointToTransform pointToTransform;
 
         private NativeArray<ColliderRead> collidersReadList;
+        private NativeMultiHashMap<int, ConstraintRead> ConstraintReadByPointIndex;
         private NativeArray<ColliderReadWrite> collidersReadWriteList;
         private TransformAccessArray colliderTransformsList;
         private List<ConstraintRead[]> m_constraintList;
@@ -47,8 +50,10 @@ namespace ADBRuntime
             m_constraintList = new List<ConstraintRead[]>();
             m_pointReadList = new List<PointRead>();
             m_pointReadWriteList = new List<PointReadWrite>();
+
             pointTransformsList = new TransformAccessArray(0);
             colliderTransformsList = new TransformAccessArray(0);
+
         }
         /// <summary>
         /// 物理接口,如果要更新物理数据,需要在里面填入相关的信息
@@ -82,14 +87,15 @@ namespace ADBRuntime
             //OYM：当我用ADBRunTimeJobsTable.returnHJob时候,任务会在我调用的时候被强制完成,当我用本地的Hjob的时候,任务会在异步进行
             //OYM:  注意,JH底层很可能也是单例
 
+            //OYM:  针对迭代的补偿
             //OYM:  赋参
-            constraintUpdates1.oneDivideIteration = pointUpdate.oneDivideIteration = colliderGet.oneDivideIteration = pointGet.oneDivideIteration = 1.0f / iteration;
+            constraintForceUpdateByPoint.oneDivideIteration= constraintUpdates1.oneDivideIteration = pointUpdate.oneDivideIteration = colliderGet.oneDivideIteration = pointGet.oneDivideIteration = 1.0f / iteration;
             pointUpdate.deltaTime = deltaTime;
             pointUpdate.globalScale = scale;
             pointUpdate.isOptimize = isOptimize;
             pointUpdate.addForcePower = addForce;
             pointUpdate.isCollision = (colliderCollisionType == ColliderCollisionType.Both || colliderCollisionType == ColliderCollisionType.Point);
-
+            
             //OYM:  上面这个是防迭代顺序错乱而设置强制顺序
             for (int i = 0; i < constraintUpdates.Length; i++)
             {
@@ -97,7 +103,7 @@ namespace ADBRuntime
                 constraintUpdates[i].isCollision = (colliderCollisionType == ColliderCollisionType.Both || colliderCollisionType == ColliderCollisionType.Constraint);
             }
             //OYM:  下面就是随机顺序了
-            constraintUpdates1.globalScale = scale;
+            constraintForceUpdateByPoint.globalScale = constraintUpdates1.globalScale = scale;
             constraintUpdates1.isCollision = (colliderCollisionType == ColliderCollisionType.Both || colliderCollisionType == ColliderCollisionType.Constraint); ;
 
             #region LifeCycle
@@ -127,14 +133,34 @@ namespace ADBRuntime
                     Hjob = colliderUpdate.Schedule(collidersReadList.Length, batchLength);
                     handleList.Add(Hjob); //OYM:防止未完成导致释放失败
                     Hjob = pointUpdate.Schedule(pointReadList.Length, batchLength);
-                    Hjob = constraintUpdates1.Schedule(constraintReadList1.Length, batchLength);
+                    handleList.Add(Hjob);
+
+                    if (colliderCollisionType==ColliderCollisionType.Constraint|| colliderCollisionType == ColliderCollisionType.Both)
+                    {
+                        Hjob = constraintUpdates1.Schedule(constraintReadList1.Length, batchLength);
+                    }
+                    else
+                    {
+                        Hjob = constraintForceUpdateByPoint.Schedule(pointReadList.Length, batchLength);
+                    }
+                    handleList.Add(Hjob);
+                    //
                 }
                 else
                 {
                     Hjob = colliderUpdate.Schedule(collidersReadList.Length, batchLength, Hjob);
                     handleList.Add(Hjob);
                     Hjob = pointUpdate.Schedule(pointReadList.Length, batchLength, Hjob);
-                    Hjob = constraintUpdates1.Schedule(constraintReadList1.Length, batchLength, Hjob);
+                    handleList.Add(Hjob);
+                    if (colliderCollisionType == ColliderCollisionType.Constraint || colliderCollisionType == ColliderCollisionType.Both)
+                    {
+                        Hjob = constraintUpdates1.Schedule(constraintReadList1.Length, batchLength, Hjob);
+                    }
+                    else
+                    {
+                        Hjob = constraintForceUpdateByPoint.Schedule(pointReadList.Length, batchLength, Hjob);
+                    }
+                    handleList.Add(Hjob);
                 }
 #endif
             }
@@ -146,7 +172,6 @@ namespace ADBRuntime
             handleList.Add(Hjob);
 #endif
             #endregion
-
             return true;
         }
 
@@ -196,11 +221,23 @@ namespace ADBRuntime
             pointReadList = new NativeArray<PointRead>(m_pointReadList.ToArray(), Allocator.Persistent);
             pointReadWriteList = new NativeArray<PointReadWrite>(m_pointReadWriteList.ToArray(), Allocator.Persistent);
             constraintReadList = new NativeArray<ConstraintRead>[m_constraintList.Count];
+
             List<ConstraintRead> constraintReadList1Target = new List<ConstraintRead>();
+            ConstraintReadByPointIndex = new NativeMultiHashMap<int, ConstraintRead>(8, Allocator.Persistent);
             for (int i = 0; i < m_constraintList.Count; i++)
             {
                 constraintReadList1Target.AddRange(m_constraintList[i]);
                 constraintReadList[i] = new NativeArray<ConstraintRead>(m_constraintList[i], Allocator.Persistent);
+                for (int j = 0; j < m_constraintList[i].Length; j++)
+                {
+                    ConstraintRead temp = m_constraintList[i][j];
+                    ConstraintReadByPointIndex.Add(m_constraintList[i][j].indexA, temp);
+                    //OYM:  考虑到只会读取indexB,及相对的点,这里要交换一下顺序,避免读取到自己
+                    int exchange = temp.indexA;
+                    temp.indexA = temp.indexB;
+                    temp.indexB = exchange;
+                    ConstraintReadByPointIndex.Add(m_constraintList[i][j].indexB, temp);
+                }
             }
             constraintReadList1 = new NativeArray<ConstraintRead>(constraintReadList1Target.ToArray(), Allocator.Persistent);
 
@@ -210,6 +247,7 @@ namespace ADBRuntime
             colliderUpdate = new ADBRunTimeJobsTable.ColliderUpdate();
             constraintUpdates = new ADBRunTimeJobsTable.ConstraintUpdate[m_constraintList.Count];
             constraintUpdates1 = new ADBRunTimeJobsTable.ConstraintUpdate();
+            constraintForceUpdateByPoint = new ADBRunTimeJobsTable.ConstraintForceUpdateByPoint();
             pointToTransform = new ADBRunTimeJobsTable.JobPointToTransform();
 
             //OYM:  获取指针与赋值
@@ -245,7 +283,9 @@ namespace ADBRuntime
             constraintUpdates1.pConstraintsRead = (ConstraintRead*)constraintReadList1.GetUnsafePtr();
             constraintUpdates1.colliderCount = collidersReadList.Length;
 
-
+            constraintForceUpdateByPoint.pReadPoints = (PointRead*)pointReadList.GetUnsafePtr();
+            constraintForceUpdateByPoint.pReadWritePoints = (PointReadWrite*)pointReadWriteList.GetUnsafePtr();
+            constraintForceUpdateByPoint.constraintsRead = ConstraintReadByPointIndex;
 
             pointToTransform.pReadPoints = (PointRead*)pointReadList.GetUnsafePtr();
             pointToTransform.pReadWritePoints = (PointReadWrite*)pointReadWriteList.GetUnsafePtr();
@@ -287,6 +327,7 @@ namespace ADBRuntime
             pointReadWriteList.Dispose();
             pointTransformsList.Dispose();
             constraintReadList1.Dispose();
+            ConstraintReadByPointIndex.Dispose();
             for (int i = 0; i < constraintReadList.Length; i++)
             {
                 constraintReadList[i].Dispose();

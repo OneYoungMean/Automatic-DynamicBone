@@ -245,15 +245,7 @@ namespace ADBRuntime.Internal
                 }
                 else
                 {
-                    //OYM:  写成这样是为了在迭代的方式下尽可能的减少计算,所以用近似的方法减少速度,而不是damp
-                    if (pReadWritePoint->deltaPosition.sqrMagnitude > (pReadPoint->mass ) * (pReadPoint->mass )*0.1f)//OYM：>0.1*mass*mass,注意这里的mass被乘以了0.2f
-                    {
-                        pReadWritePoint->deltaPosition *=(0.8f+pReadPoint->mass);
-                    }
-                    else
-                    {
-                        pReadWritePoint->deltaPosition *= 0.97f;//OYM：测了一下感觉这个数最好,有需求自己改
-                    }
+                    pReadWritePoint->deltaPosition *= (0.8f + pReadPoint->mass);
                 }
             }
         }
@@ -261,6 +253,7 @@ namespace ADBRuntime.Internal
         [BurstCompile]
         public struct PointUpdate : IJobParallelFor
         {
+            const float gravityLimit = 0.1f;
             /// <summary>
             /// 所有点位置的指针
             /// </summary>
@@ -338,7 +331,6 @@ namespace ADBRuntime.Internal
                             {
                                 ColliderCheck(pReadPoint, pReadWritePoint, pReadCollider, pReadWriteCollider);
                             }
-
                         }
                     }
                 }
@@ -355,38 +347,55 @@ namespace ADBRuntime.Internal
             {
                 //OYM：如果你想要添加什么奇怪的力的话,可以在这底下添加
 
-                Vector3 deltaPosition = Vector3.zero;
+                float3 deltaPosition = pReadWritePoint->deltaPosition;
+                var temp = deltaPosition;
                 //OYM：获取固定点的信息
                 PointReadWrite* pFixedPointReadWrite = (pReadWritePoints + pReadPoint->fixedIndex);
                 PointRead* pFixedPointRead = (pReadPoints + pReadPoint->fixedIndex);
                 //OYM：获取以fixed位移进行为参考进行距离补偿(这里的delta已经乘以过onedivideItertation了)
-                pReadWritePoint->position +=pFixedPointReadWrite->deltaPosition * pReadPoint->distanceCompensation;
-                //OYM：获取当前相对fixed的向量
-                Vector3 direction = pReadWritePoint->position - pFixedPointReadWrite->position;
-                Vector3 back;
-                //OYM：获取归位的向量
 
+                pReadWritePoint->position +=pFixedPointReadWrite->deltaPosition * pReadPoint->distanceCompensation;
+
+
+                //OYM：获取当前相对fixed的向量
+                float3 direction = pReadWritePoint->position - pFixedPointReadWrite->position;
+                float3 gravity =float3 .zero;
+                //OYM：获取归位的向量
                 if (pReadPoint->isFixGravityAxis)//OYM:  固定重力方向,这个值会受到fix节点初始rotation的影响
                 {
-
-                    deltaPosition += oneDivideIteration * ((pFixedPointReadWrite->rotation *Quaternion.Inverse(pFixedPointRead->initialRotation) )*pReadPoint->gravity) * (0.5f * deltaTime * deltaTime) * globalScale;//OYM：重力
-                    back = pFixedPointReadWrite->rotation * pReadPoint->initialPosition * globalScale - direction;
+                    gravity =   ((pFixedPointReadWrite->rotation *Quaternion.Inverse(pFixedPointRead->initialRotation) )*pReadPoint->gravity) * ( deltaTime * deltaTime) * globalScale;//OYM：重力
                 }
                 else
                 {
-                    deltaPosition += oneDivideIteration * pReadPoint->gravity * (0.5f * deltaTime * deltaTime) * globalScale;//OYM：重力
-                    back = pFixedPointReadWrite->rotationY * pReadPoint->initialPosition * globalScale - direction;
+                    gravity= pReadPoint->gravity * ( deltaTime * deltaTime) * globalScale;//OYM：重力
                 }
 
-                //OYM：计算外来力
-                Vector3 addForce = oneDivideIteration * addForcePower * pReadPoint->addForceScale / pReadPoint->weight;
+                deltaPosition += gravity*oneDivideIteration;
+
+                float3 addForce = oneDivideIteration * addForcePower * pReadPoint->addForceScale / pReadPoint->weight;
                 deltaPosition += GetRotateForce(addForce, direction)+addForce;
-                //OYM：计算弹性形变的内部应力,当freeze很小的时候设置上限,很大的时候乘以系数
-                deltaPosition += oneDivideIteration* deltaTime * pReadPoint->freeze* Vector3.ClampMagnitude(back, pReadPoint->freeze * 0.1f);
-                //OYM：计算离心力(理想状态
-                deltaPosition += deltaTime *((pFixedPointReadWrite->deltaRotation * direction)-direction );
+                //OYM：计算回到原始位置的力,当freeze很小的时候设置上限,很大的时候乘以系数
+                float3 back = float3.zero;
+                if (pReadPoint->freeze>EPSILON)
+                {
+                    if (pReadPoint->isFixGravityAxis)//OYM:  固定重力方向,这个值会受到fix节点初始rotation的影响
+                    {
+                        back =math.mul( pFixedPointReadWrite->rotation , pReadPoint->initialPosition) * globalScale - direction;
+                    }
+                    else
+                    {
+                        back = math.mul(pFixedPointReadWrite->rotationY , pReadPoint->initialPosition) * globalScale - direction;
+                    }
+                    back = oneDivideIteration * deltaTime * pReadPoint->freeze * math.clamp(back, -pReadPoint->freeze * 0.1f, pReadPoint->freeze * 0.1f);
+                }
+                deltaPosition += back;
+
                 //OYM：计算以fixed位移进行为参考进行速度补偿
                 deltaPosition -= pFixedPointReadWrite->deltaPosition * pReadPoint->moveByFixedPoint * 0.2f;//OYM：测试了一下,0.2是个恰到好处的值,不会显得太大也不会太小
+                
+                //OYM：计算离心力(理想状态
+                deltaPosition += deltaTime *(math.mul (pFixedPointReadWrite->deltaRotation , direction)-direction );
+
                 //OYM：计算重力
 
                 if (isOptimize)
@@ -397,11 +406,10 @@ namespace ADBRuntime.Internal
                     deltaPosition += GetRotateForce(deltaPosition, direction);
                 }
 
-                //OYM：赋值给累积的速度
-                pReadWritePoint->deltaPosition += deltaPosition;
-                //OYM：赋值给距离
-                pReadWritePoint->position += oneDivideIteration * pReadWritePoint->deltaPosition;//OYM：这里我想了很久,应该是这样,如果是迭代n次的话,那么deltaposition将会被加上n次,正规应该是只加一次
+                pReadWritePoint->position += oneDivideIteration * deltaPosition;//OYM：这里我想了很久,应该是这样,如果是迭代n次的话,那么deltaposition将会被加上n次,正规应该是只加一次
 
+                pReadWritePoint->deltaPosition = deltaPosition; //OYM:   
+                // if (index == 19) {}
 
                 //Debug.Log(index + " : " + pFixedPointReadWrite->position + " " + positionA + " " + pFixedPointReadWrite->deltaPosition * pReadPoint->distanceCompensation + "  " + positionB);
             }
@@ -669,7 +677,7 @@ namespace ADBRuntime.Internal
                     pReadWritePointA->position += Displacement * WeightProportion;
                     pReadWritePointA->deltaPosition += Displacement * WeightProportion;
                     pReadWritePointB->position += -Displacement * (1 - WeightProportion);
-                    pReadWritePointB->deltaPosition +=- Displacement * (1 - WeightProportion);
+                    pReadWritePointB->deltaPosition += -Displacement * (1 - WeightProportion);
                 }
 
                 if (isCollision && constraint->isCollider)
@@ -932,9 +940,27 @@ out float tP, out float tQ, out float3 pointOnP, out float3 pointOnQ)
 
             void SegmentToAABB(float3 start, float3 end, float3 center, float3 min, float3 max, out float t1, out float t2)
             {
-                Vector3 dir = end - start;
-                t1 = Max(Min((min.x - start.x) / dir.x, (max.x - start.x) / dir.x), Min((min.y - start.y) / dir.y, (max.y - start.y) / dir.y), Min((min.z - start.z) / dir.z, (max.z - start.z) / dir.z));
-                t2 = Min(Max((min.x - start.x) / dir.x, (max.x - start.x) / dir.x), Max((min.y - start.y) / dir.y, (max.y - start.y) / dir.y), Max((min.z - start.z) / dir.z, (max.z - start.z) / dir.z));
+                float3 dir = end - start;
+                t1 = Max(
+                                Min(
+                                    (min.x - start.x) / dir.x,
+                                    (max.x - start.x) / dir.x), 
+                                Min(
+                                    (min.y - start.y) / dir.y, 
+                                    (max.y - start.y) / dir.y), 
+                                Min(
+                                    (min.z - start.z) / dir.z,
+                                    (max.z - start.z) / dir.z));
+                t2 = Min(
+                                Max(
+                                    (min.x - start.x) / dir.x, 
+                                    (max.x - start.x) / dir.x), 
+                                Max(
+                                    (min.y - start.y) / dir.y, 
+                                    (max.y - start.y) / dir.y), 
+                                Max(
+                                    (min.z - start.z) / dir.z, 
+                                    (max.z - start.z) / dir.z));
             }
             float Abs(float A)
             {
@@ -961,7 +987,145 @@ out float tP, out float tQ, out float3 pointOnP, out float3 pointOnQ)
                 return A > B ? A : B;
             }
         }
+        
+        [BurstCompile]
+        public struct ConstraintForceUpdateByPoint : IJobParallelFor //OYM:一个能避免粒子过于颤抖的 ConstraintForceUpdate,但是移除了 Constraint碰撞计算
+        {
+            /// <summary>
+            /// 指向所有可读的点
+            /// </summary>);
+            [ReadOnly, NativeDisableUnsafePtrRestriction]
+            public PointRead* pReadPoints;
+            /// <summary>
+            /// 指向所有可读写的点
+            /// </summary>);
+            [NativeDisableUnsafePtrRestriction]
+            public PointReadWrite* pReadWritePoints;
 
+            /// <summary>
+            /// 所有杆件
+            /// </summary>
+            [ReadOnly, NativeDisableUnsafePtrRestriction]
+            public NativeMultiHashMap<int ,ConstraintRead> constraintsRead;
+
+            [ReadOnly]
+            public float globalScale;
+            [ReadOnly]
+            internal float oneDivideIteration;
+#if! ADB_DEBUG
+            public JobHandle TryExecute(int index, int temp, JobHandle job)
+            {
+                if (!job.IsCompleted)
+                {
+                    job.Complete();
+                }
+                for (int i = 0; i < index; i++)
+                {
+                    Execute(i);
+                }
+                return job;
+            }
+#endif
+            public void Execute(int index)
+            {
+                PointRead* pPointReadA = pReadPoints + index;
+                if ( pPointReadA->parentIndex==-1)
+                {
+                    return;
+                }
+
+
+                NativeMultiHashMapIterator<int> iterator;
+                ConstraintRead constraint;
+                float3 move =float3.zero;
+
+                if (!constraintsRead.TryGetFirstValue(index, out constraint, out iterator)) //OYM:  在这里获取约束与迭代器
+                {
+                    return;
+                }
+                 PointReadWrite* pReadWritePointA = pReadWritePoints + index;
+                int count = 0;
+                do
+                {
+                    count++;
+                //OYM：获取约束的节点AB
+                PointRead* pPointReadB = pReadPoints + constraint.indexB;
+
+                //OYM：任意一点都不能小于极小值
+                //OYM：if ((WeightA <= EPSILON) && (WeightB <= EPSILON))
+                //OYM：获取可读写的点A
+
+
+                //OYM：获取可读写的点B
+                PointReadWrite* pReadWritePointB = pReadWritePoints + constraint.indexB;
+                //OYM：获取约束的朝向
+                var Direction = pReadWritePointB->position - (pReadWritePointA->position);
+
+
+                float Distance =math.length( Direction);
+                //OYM：力度等于距离减去长度除以弹性，这个值可以不存在，可以大于1但是没有什么卵用
+                float Force = Distance - constraint.length * globalScale;
+                //OYM：是否收缩，意味着力大于0
+                bool IsShrink = Force >= 0.0f;
+                float ConstraintPower;//OYM：这个值等于
+                switch (constraint.type)
+                //OYM：这下面都是一个意思，就是确认约束受到的力，然后根据这个获取杆件约束的属性，计算 ConstraintPower
+                //OYM：Shrink为杆件全局值，另外两个值为线性插值获取的值，同理Stretch，所以这里大概可以猜中只是一个简单的不大于1的值
+                {
+                    case ConstraintType.Structural_Vertical:
+                        ConstraintPower = IsShrink
+                            ? constraint.shrink * (pPointReadA->structuralShrinkVertical + pPointReadB->structuralShrinkVertical)
+                            : constraint.stretch * (pPointReadA->structuralStretchVertical + pPointReadB->structuralStretchVertical);
+                        break;
+                    case ConstraintType.Structural_Horizontal:
+                        ConstraintPower = IsShrink
+                            ? constraint.shrink * (pPointReadA->structuralShrinkHorizontal + pPointReadB->structuralShrinkHorizontal)
+                            : constraint.stretch * (pPointReadA->structuralStretchHorizontal + pPointReadB->structuralStretchHorizontal);
+                        break;
+                    case ConstraintType.Shear:
+                        ConstraintPower = IsShrink
+                            ? constraint.shrink * (pPointReadA->shearShrink + pPointReadB->shearShrink)
+                            : constraint.stretch * (pPointReadA->shearStretch + pPointReadB->shearStretch);
+                        break;
+                    case ConstraintType.Bending_Vertical:
+                        ConstraintPower = IsShrink
+                            ? constraint.shrink * (pPointReadA->bendingShrinkVertical + pPointReadB->bendingShrinkVertical)
+                            : constraint.stretch * (pPointReadA->bendingStretchVertical + pPointReadB->bendingStretchVertical);
+                        break;
+                    case ConstraintType.Bending_Horizontal:
+                        ConstraintPower = IsShrink
+                            ? constraint.shrink * (pPointReadA->bendingShrinkHorizontal + pPointReadB->bendingShrinkHorizontal)
+                            : constraint.stretch * (pPointReadA->bendingStretchHorizontal + pPointReadB->bendingStretchHorizontal);
+                        break;
+                    case ConstraintType.Circumference:
+                        ConstraintPower = IsShrink
+                            ? constraint.shrink * (pPointReadA->circumferenceShrink + pPointReadB->circumferenceShrink)
+                            : constraint.stretch * (pPointReadA->circumferenceStretch + pPointReadB->circumferenceStretch);
+                        break;
+                    default:
+                        ConstraintPower = 0.0f;
+                        break;
+                }
+
+
+                //OYM：获取AB点重量比值的比值,由于重量越大移动越慢,所以A的值实际上是B的重量的比
+
+                float WeightProportion = pPointReadB->weight / (pPointReadA->weight + pPointReadB->weight);
+
+                if (ConstraintPower > 0.0f)//OYM：这里不可能小于0吧（除非有人搞破坏）
+                {
+                    float3 Displacement =math.normalize( Direction) * (Force * ConstraintPower);
+                    move += Displacement * WeightProportion;
+                }
+            } while (constraintsRead.TryGetNextValue(out constraint,ref iterator));
+                if (count != 0)
+                {
+                    pReadWritePointA->deltaPosition += move / count;
+                    pReadWritePointA->position += move / count;
+                }
+            }
+        }
+        
         [BurstCompile]
         public struct JobPointToTransform : IJobParallelForTransform
         //OYM：把job的点转换成实际的点
