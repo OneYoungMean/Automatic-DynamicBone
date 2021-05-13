@@ -18,7 +18,7 @@
 ![](https://z3.ax1x.com/2021/05/13/gD7YkD.gif)
 
 ## 更新注意事项
-**请确保您的mathmatica版本高于等于1.2.1**
+**请确保您的mathmatica版本高于等于1.2.1**  
 **如果遇到卡顿问题与未释放的nativeContainer,请尝试在jobs菜单下关闭SafelyCheck与enableJobDebuger选项**
 
 # AutomaticDynamicBone
