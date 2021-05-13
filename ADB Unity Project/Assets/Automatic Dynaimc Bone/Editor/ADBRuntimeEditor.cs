@@ -69,6 +69,10 @@ namespace ADBRuntime
                 {
                     controller.isGenerateByAllPoint = EditorGUILayout.Toggle( "  ┗━以所有节点作为参照 ",controller.isGenerateByAllPoint);
                 }
+                if (controller.isGenerateColliderAutomaitc)
+                {
+                    controller.isGenerateFinger = EditorGUILayout.Toggle("  ┗━生成手指 ", controller.isGenerateFinger);
+                }
 
 
 
@@ -97,7 +101,7 @@ namespace ADBRuntime
 
 
                 Titlebar("=============== physical setting", new Color(0.7f, 1.0f, 0.7f));
-                controller.delayTime = EditorGUILayout.FloatField("延迟时间", controller.delayTime);
+                controller.bufferTime = EditorGUILayout.FloatField("延迟时间", controller.bufferTime);
             }
             else
             {

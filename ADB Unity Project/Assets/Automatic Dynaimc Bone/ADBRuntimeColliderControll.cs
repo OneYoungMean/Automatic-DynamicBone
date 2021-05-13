@@ -54,7 +54,7 @@ namespace ADBRuntime
         public float headToRootHigh;
         #endregion
 
-        public ADBRuntimeColliderControll(GameObject character, List<ADBRuntimePoint> allPointTrans, bool isGenerateBodyRuntimeCollider,bool isGenerateScript, out List<ADBEditorCollider> editorColliderList )
+        public ADBRuntimeColliderControll(GameObject character, List<ADBRuntimePoint> allPointTrans, bool isGenerateBodyRuntimeCollider,bool isGenerateScript,bool isGenerateFinger, out List<ADBEditorCollider> editorColliderList )
         {
             runtimeColliderList = new List<ADBRuntimeCollider>();
             editorColliderList = new List<ADBEditorCollider>();
@@ -63,7 +63,7 @@ namespace ADBRuntime
             bool iniA = false, iniB=false, iniC=false; 
             if (isGenerateBodyRuntimeCollider)
             {
-                iniA = GenerateBodyCollidersData(ref runtimeColliderList, character, allPointTrans);
+                iniA = GenerateBodyCollidersData(ref runtimeColliderList, character, allPointTrans, isGenerateFinger);
             }
             if (isGenerateScript)
             {
@@ -124,14 +124,14 @@ namespace ADBRuntime
             dataPackage.SetColliderPackage(collidersReadTable, collidersReadWriteTable, colliderTransform);
         }
 
-        private bool GenerateBodyCollidersData(ref List<ADBRuntimeCollider> runtimeColliderList, GameObject character, List<ADBRuntimePoint> allPointTrans)
+        private bool GenerateBodyCollidersData(ref List<ADBRuntimeCollider> runtimeColliderList, GameObject character, List<ADBRuntimePoint> allPointTrans,bool isGenerateFinger)
         {
             if (!character) return false;
 
             var animator = character.GetComponent<Animator>();
             if (animator != null && animator.avatar.isHuman)
             {
-                GenerateCollidersData(ref runtimeColliderList, allPointTrans, animator);
+                GenerateCollidersData(ref runtimeColliderList, allPointTrans, animator, isGenerateFinger);
                 return true;
 
             }
@@ -143,7 +143,7 @@ namespace ADBRuntime
                     bool isFind = false;
                     for (int i = 0; i < animators.Length; i++)
                     {
-                        isFind = isFind || GenerateBodyCollidersData(ref runtimeColliderList, animators[i].gameObject, allPointTrans);
+                        isFind = isFind || GenerateBodyCollidersData(ref runtimeColliderList, animators[i].gameObject, allPointTrans, isGenerateFinger);
                     }
                 }
                 else
@@ -187,7 +187,7 @@ namespace ADBRuntime
         }
 
 
-        private void GenerateCollidersData(ref List<ADBRuntimeCollider> runtimeColliders, List<ADBRuntimePoint> allPointTrans, Animator animator)
+        private void GenerateCollidersData(ref List<ADBRuntimeCollider> runtimeColliders, List<ADBRuntimePoint> allPointTrans, Animator animator,bool isGenerateFinger)
         {//OYM：这坨屎山我连写注释的兴趣都没有,你知道这玩意能大概把你角色圈进去就行
             //OYM：你问我怎么算的?当然是经验(试出来)啦 XD
             var head = animator.GetBoneTransform(HumanBodyBones.Head);
@@ -259,7 +259,8 @@ namespace ADBRuntime
             colliderList.Add(new CapsuleCollider(leftLowerArmWidth, leftLowerArm.position, leftHand.position, ColliderChoice.LowerArm, leftLowerArm));
             var leftHandCenterPoint = (leftFinger.position + leftHand.position) * 0.5f;
 
-            colliderList.Add(new SphereCollider(Vector3.Distance(leftHand.position, leftHandCenterPoint),  leftHand.InverseTransformPoint(leftHandCenterPoint), ColliderChoice.Hand,leftHand));
+
+
 
             // LeftLegs
             float leftLegWidth = Vector3.Distance(leftUpperLeg.position, leftLowerLeg.position) * 0.3f;
@@ -293,7 +294,7 @@ namespace ADBRuntime
             colliderList.Add(new CapsuleCollider(rightLowerArmWidth, rightLowerArm.position, rightHand.position, ColliderChoice.LowerArm, rightLowerArm));
             var rightHandCenterPoint = (rightFinger.position + rightHand.position) * 0.5f;
 
-            colliderList.Add(new SphereCollider(Vector3.Distance(rightHand.position, rightHandCenterPoint),  rightHand.InverseTransformPoint(rightHandCenterPoint), ColliderChoice.Hand, rightHand));
+
 
             // rightLegs
             float rightLegWidth = Vector3.Distance(rightUpperLeg.position, rightLowerLeg.position) * 0.3f;
@@ -317,84 +318,88 @@ namespace ADBRuntime
                 colliderList.Add(new CapsuleCollider(rightEndLegWidth, rightfootStartPoint, rightfootStopPoint, ColliderChoice.Foot, rightFoot));
             }
 
-            // fingre and other
-            /*
-            //OYM：Left
-            var leftThumb1= animator.GetBoneTransform(HumanBodyBones.LeftThumbProximal);
-            var leftThumb2 = animator.GetBoneTransform(HumanBodyBones.LeftThumbIntermediate);
-            var leftThumb3 = animator.GetBoneTransform(HumanBodyBones.LeftThumbDistal);
-            var leftIndex1 = animator.GetBoneTransform(HumanBodyBones.LeftIndexProximal);
-            var leftIndex2 = animator.GetBoneTransform(HumanBodyBones.LeftIndexIntermediate);
-            var leftIndex3 = animator.GetBoneTransform(HumanBodyBones.LeftIndexDistal);
-            var leftMiddle1 = animator.GetBoneTransform(HumanBodyBones.LeftMiddleProximal);
-            var leftMiddle2 = animator.GetBoneTransform(HumanBodyBones.LeftMiddleIntermediate);
-            var leftMiddle3 = animator.GetBoneTransform(HumanBodyBones.LeftMiddleDistal);
-            var leftRing1 = animator.GetBoneTransform(HumanBodyBones.LeftRingProximal);
-            var leftRing2 = animator.GetBoneTransform(HumanBodyBones.LeftRingIntermediate);
-            var leftRing3 = animator.GetBoneTransform(HumanBodyBones.LeftRingDistal);
-            var leftLittle1 = animator.GetBoneTransform(HumanBodyBones.LeftLittleProximal);
-            var leftLittle2 = animator.GetBoneTransform(HumanBodyBones.LeftLittleIntermediate);
-            var leftLittle3 = animator.GetBoneTransform(HumanBodyBones.LeftLittleDistal);
-
-            var leftHandLength = (leftMiddle2.position - leftHand.position).sqrMagnitude;
-            runtimeColliders.Add(new OBBBox( leftHandCenterPoint,new Vector3(leftHandLength*0.25f, leftHandLength, leftHandLength) , leftFinger.position - leftHand.position, leftHand));
-
-            runtimeColliders.Add(new CapsuleCollider((leftThumb1.position - leftThumb2.position).magnitude, leftThumb1.position, leftThumb2.position, leftThumb1));
-            runtimeColliders.Add(new CapsuleCollider((leftThumb2.position - leftThumb3.position).magnitude, leftThumb2.position, leftThumb3.position, leftThumb2));
-            runtimeColliders.Add(new CapsuleCollider((leftThumb2.position - leftThumb3.position).magnitude*0.8f, leftThumb3.position, leftThumb3.position+(leftThumb2.position - leftThumb3.position)*0.8f, leftThumb3));
-            runtimeColliders.Add(new CapsuleCollider((leftIndex1.position - leftIndex2.position).magnitude, leftIndex1.position, leftIndex2.position, leftIndex1));
-            runtimeColliders.Add(new CapsuleCollider((leftIndex2.position - leftIndex3.position).magnitude, leftIndex2.position, leftIndex3.position, leftIndex2));
-            runtimeColliders.Add(new CapsuleCollider((leftIndex2.position - leftIndex3.position).magnitude * 0.8f, leftIndex3.position, leftIndex3.position + (leftIndex2.position - leftIndex3.position) * 0.8f, leftIndex3));
-            runtimeColliders.Add(new CapsuleCollider((leftMiddle1.position - leftMiddle2.position).magnitude, leftMiddle1.position, leftMiddle2.position, leftMiddle1));
-            runtimeColliders.Add(new CapsuleCollider((leftMiddle2.position - leftMiddle3.position).magnitude, leftMiddle2.position, leftMiddle3.position, leftMiddle2));
-            runtimeColliders.Add(new CapsuleCollider((leftMiddle2.position - leftMiddle3.position).magnitude * 0.8f, leftMiddle3.position, leftMiddle3.position + (leftMiddle2.position - leftMiddle3.position) * 0.8f, leftMiddle3));
-            runtimeColliders.Add(new CapsuleCollider((leftRing1.position - leftRing2.position).magnitude, leftRing1.position, leftRing2.position, leftRing1));
-            runtimeColliders.Add(new CapsuleCollider((leftRing2.position - leftRing3.position).magnitude, leftRing2.position, leftRing3.position, leftRing2));
-            runtimeColliders.Add(new CapsuleCollider((leftRing2.position - leftRing3.position).magnitude * 0.8f, leftRing3.position, leftRing3.position + (leftRing2.position - leftRing3.position) * 0.8f, leftRing3));
-            runtimeColliders.Add(new CapsuleCollider((leftLittle1.position - leftLittle2.position).magnitude, leftLittle1.position, leftLittle2.position, leftLittle1));
-            runtimeColliders.Add(new CapsuleCollider((leftLittle2.position - leftLittle3.position).magnitude, leftLittle2.position, leftLittle3.position, leftLittle2));
-            runtimeColliders.Add(new CapsuleCollider((leftLittle2.position - leftLittle3.position).magnitude * 0.8f, leftLittle3.position, leftLittle3.position + (leftLittle2.position - leftLittle3.position) * 0.8f, leftLittle3));
-            // right
-            var rightThumb1 = animator.GetBoneTransform(HumanBodyBones.RightThumbProximal);
-            var rightThumb2 = animator.GetBoneTransform(HumanBodyBones.RightThumbIntermediate);
-            var rightThumb3 = animator.GetBoneTransform(HumanBodyBones.RightThumbDistal);
-            var rightIndex1 = animator.GetBoneTransform(HumanBodyBones.RightIndexProximal);
-            var rightIndex2 = animator.GetBoneTransform(HumanBodyBones.RightIndexIntermediate);
-            var rightIndex3 = animator.GetBoneTransform(HumanBodyBones.RightIndexDistal);
-            var rightMiddle1 = animator.GetBoneTransform(HumanBodyBones.RightMiddleProximal);
-            var rightMiddle2 = animator.GetBoneTransform(HumanBodyBones.RightMiddleIntermediate);
-            var rightMiddle3 = animator.GetBoneTransform(HumanBodyBones.RightMiddleDistal);
-            var rightRing1 = animator.GetBoneTransform(HumanBodyBones.RightRingProximal);
-            var rightRing2 = animator.GetBoneTransform(HumanBodyBones.RightRingIntermediate);
-            var rightRing3 = animator.GetBoneTransform(HumanBodyBones.RightRingDistal);
-            var rightLittle1 = animator.GetBoneTransform(HumanBodyBones.RightLittleProximal);
-            var rightLittle2 = animator.GetBoneTransform(HumanBodyBones.RightLittleIntermediate);
-            var rightLittle3 = animator.GetBoneTransform(HumanBodyBones.RightLittleDistal);
-
-            var rightHandLength = (rightMiddle2.position - rightHand.position).sqrMagnitude;
-            runtimeColliders.Add(new OBBBox(rightHandCenterPoint, new Vector3(rightHandLength * 0.25f, rightHandLength, rightHandLength), rightFinger.position - rightHand.position, rightHand));
-
-            runtimeColliders.Add(new CapsuleCollider((rightThumb1.position - rightThumb2.position).magnitude, rightThumb1.position, rightThumb2.position, rightThumb1));
-            runtimeColliders.Add(new CapsuleCollider((rightThumb2.position - rightThumb3.position).magnitude, rightThumb2.position, rightThumb3.position, rightThumb2));
-            runtimeColliders.Add(new CapsuleCollider((rightThumb2.position - rightThumb3.position).magnitude * 0.8f, rightThumb3.position, rightThumb3.position + (rightThumb2.position - rightThumb3.position) * 0.8f, rightThumb3));
-            runtimeColliders.Add(new CapsuleCollider((rightIndex1.position - rightIndex2.position).magnitude, rightIndex1.position, rightIndex2.position, rightIndex1));
-            runtimeColliders.Add(new CapsuleCollider((rightIndex2.position - rightIndex3.position).magnitude, rightIndex2.position, rightIndex3.position, rightIndex2));
-            runtimeColliders.Add(new CapsuleCollider((rightIndex2.position - rightIndex3.position).magnitude * 0.8f, rightIndex3.position, rightIndex3.position + (rightIndex2.position - rightIndex3.position) * 0.8f, rightIndex3));
-            runtimeColliders.Add(new CapsuleCollider((rightMiddle1.position - rightMiddle2.position).magnitude, rightMiddle1.position, rightMiddle2.position, rightMiddle1));
-            runtimeColliders.Add(new CapsuleCollider((rightMiddle2.position - rightMiddle3.position).magnitude, rightMiddle2.position, rightMiddle3.position, rightMiddle2));
-            runtimeColliders.Add(new CapsuleCollider((rightMiddle2.position - rightMiddle3.position).magnitude * 0.8f, rightMiddle3.position, rightMiddle3.position + (rightMiddle2.position - rightMiddle3.position) * 0.8f, rightMiddle3));
-            runtimeColliders.Add(new CapsuleCollider((rightRing1.position - rightRing2.position).magnitude, rightRing1.position, rightRing2.position, rightRing1));
-            runtimeColliders.Add(new CapsuleCollider((rightRing2.position - rightRing3.position).magnitude, rightRing2.position, rightRing3.position, rightRing2));
-            runtimeColliders.Add(new CapsuleCollider((rightRing2.position - rightRing3.position).magnitude * 0.8f, rightRing3.position, rightRing3.position + (rightRing2.position - rightRing3.position) * 0.8f, rightRing3));
-            runtimeColliders.Add(new CapsuleCollider((rightLittle1.position - rightLittle2.position).magnitude, rightLittle1.position, rightLittle2.position, rightLittle1));
-            runtimeColliders.Add(new CapsuleCollider((rightLittle2.position - rightLittle3.position).magnitude, rightLittle2.position, rightLittle3.position, rightLittle2));
-            runtimeColliders.Add(new CapsuleCollider((rightLittle2.position - rightLittle3.position).magnitude * 0.8f, rightLittle3.position, rightLittle3.position + (rightLittle2.position - rightLittle3.position) * 0.8f, rightLittle3));
-
-            for (int i =1; i <= 30; i++)
+            if (!isGenerateFinger)
             {
-                runtimeColliders[runtimeColliders.Count - i].colliderRead.isOpen = false;
+                colliderList.Add(new SphereCollider(Vector3.Distance(leftHand.position, leftHandCenterPoint), leftHand.InverseTransformPoint(leftHandCenterPoint), ColliderChoice.Hand, leftHand));//OYM:lefthand
+                colliderList.Add(new SphereCollider(Vector3.Distance(rightHand.position, rightHandCenterPoint), rightHand.InverseTransformPoint(rightHandCenterPoint), ColliderChoice.Hand, rightHand));//OYM:righthand
             }
-            */
+            else
+            {
+                //OYM：Left
+                var leftThumb1 = animator.GetBoneTransform(HumanBodyBones.LeftThumbProximal);
+                var leftThumb2 = animator.GetBoneTransform(HumanBodyBones.LeftThumbIntermediate);
+                var leftThumb3 = animator.GetBoneTransform(HumanBodyBones.LeftThumbDistal);
+                var leftIndex1 = animator.GetBoneTransform(HumanBodyBones.LeftIndexProximal);
+                var leftIndex2 = animator.GetBoneTransform(HumanBodyBones.LeftIndexIntermediate);
+                var leftIndex3 = animator.GetBoneTransform(HumanBodyBones.LeftIndexDistal);
+                var leftMiddle1 = animator.GetBoneTransform(HumanBodyBones.LeftMiddleProximal);
+                var leftMiddle2 = animator.GetBoneTransform(HumanBodyBones.LeftMiddleIntermediate);
+                var leftMiddle3 = animator.GetBoneTransform(HumanBodyBones.LeftMiddleDistal); 
+                var leftRing1 = animator.GetBoneTransform(HumanBodyBones.LeftRingProximal);
+                var leftRing2 = animator.GetBoneTransform(HumanBodyBones.LeftRingIntermediate);
+                var leftRing3 = animator.GetBoneTransform(HumanBodyBones.LeftRingDistal);
+                var leftLittle1 = animator.GetBoneTransform(HumanBodyBones.LeftLittleProximal);
+                var leftLittle2 = animator.GetBoneTransform(HumanBodyBones.LeftLittleIntermediate);
+                var leftLittle3 = animator.GetBoneTransform(HumanBodyBones.LeftLittleDistal);
+
+                var leftHandLength = (leftMiddle2.position - leftHand.position).magnitude;
+                //  colliderList.Add(new OBBBoxCollider(leftHandCenterPoint, new Vector3(leftHandLength * 0.25f, leftHandLength, leftHandLength), leftMiddle2.position - leftMiddle1.position , ColliderChoice.Hand, leftHand));
+
+                colliderList.Add(new CapsuleCollider((leftThumb1.position - leftThumb2.position).magnitude / 2, leftThumb1.position, leftThumb2.position, ColliderChoice.Hand, leftThumb1));
+                colliderList.Add(new CapsuleCollider((leftThumb2.position - leftThumb3.position).magnitude / 2, leftThumb2.position, leftThumb3.position, ColliderChoice.Hand, leftThumb2));
+                colliderList.Add(new CapsuleCollider((leftThumb2.position - leftThumb3.position).magnitude / 2 * 0.8f, leftThumb3.position, leftThumb3.position + (leftThumb3.position - leftThumb2.position) * 0.8f, ColliderChoice.Hand, leftThumb3));
+                colliderList.Add(new CapsuleCollider((leftIndex1.position - leftIndex2.position).magnitude / 2, leftIndex1.position, leftIndex2.position, ColliderChoice.Hand, leftIndex1));
+                colliderList.Add(new CapsuleCollider((leftIndex2.position - leftIndex3.position).magnitude / 2, leftIndex2.position, leftIndex3.position, ColliderChoice.Hand, leftIndex2));
+                colliderList.Add(new CapsuleCollider((leftIndex2.position - leftIndex3.position).magnitude / 2 * 0.8f, leftIndex3.position, leftIndex3.position + (leftIndex3.position - leftIndex2.position) * 0.8f, ColliderChoice.Hand, leftIndex3));
+                colliderList.Add(new CapsuleCollider((leftMiddle1.position - leftMiddle2.position).magnitude / 2, leftMiddle1.position, leftMiddle2.position, ColliderChoice.Hand, leftMiddle1));
+                colliderList.Add(new CapsuleCollider((leftMiddle2.position - leftMiddle3.position).magnitude / 2, leftMiddle2.position, leftMiddle3.position, ColliderChoice.Hand, leftMiddle2));
+                colliderList.Add(new CapsuleCollider((leftMiddle2.position - leftMiddle3.position).magnitude / 2 * 0.8f, leftMiddle3.position, leftMiddle3.position + (leftMiddle3.position - leftMiddle2.position) * 0.8f, ColliderChoice.Hand, leftMiddle3));
+                colliderList.Add(new CapsuleCollider((leftRing1.position - leftRing2.position).magnitude / 2, leftRing1.position, leftRing2.position, ColliderChoice.Hand, leftRing1));
+                colliderList.Add(new CapsuleCollider((leftRing2.position - leftRing3.position).magnitude / 2, leftRing2.position, leftRing3.position, ColliderChoice.Hand, leftRing2));
+                colliderList.Add(new CapsuleCollider((leftRing2.position - leftRing3.position).magnitude / 2 * 0.8f, leftRing3.position, leftRing3.position + (leftRing3.position - leftRing2.position) * 0.8f, ColliderChoice.Hand, leftRing3));
+                colliderList.Add(new CapsuleCollider((leftLittle1.position - leftLittle2.position).magnitude / 2, leftLittle1.position, leftLittle2.position, ColliderChoice.Hand, leftLittle1));
+                colliderList.Add(new CapsuleCollider((leftLittle2.position - leftLittle3.position).magnitude / 2, leftLittle2.position, leftLittle3.position, ColliderChoice.Hand, leftLittle2));
+                colliderList.Add(new CapsuleCollider((leftLittle2.position - leftLittle3.position).magnitude / 2 * 0.8f, leftLittle3.position, leftLittle3.position + (leftLittle3.position - leftLittle2.position) * 0.8f, ColliderChoice.Hand, leftLittle3));
+                // right
+                var rightThumb1 = animator.GetBoneTransform(HumanBodyBones.RightThumbProximal);
+                var rightThumb2 = animator.GetBoneTransform(HumanBodyBones.RightThumbIntermediate);
+                var rightThumb3 = animator.GetBoneTransform(HumanBodyBones.RightThumbDistal);
+                var rightIndex1 = animator.GetBoneTransform(HumanBodyBones.RightIndexProximal);
+                var rightIndex2 = animator.GetBoneTransform(HumanBodyBones.RightIndexIntermediate);
+                var rightIndex3 = animator.GetBoneTransform(HumanBodyBones.RightIndexDistal);
+                var rightMiddle1 = animator.GetBoneTransform(HumanBodyBones.RightMiddleProximal);
+                var rightMiddle2 = animator.GetBoneTransform(HumanBodyBones.RightMiddleIntermediate);
+                var rightMiddle3 = animator.GetBoneTransform(HumanBodyBones.RightMiddleDistal);
+                var rightRing1 = animator.GetBoneTransform(HumanBodyBones.RightRingProximal);
+                var rightRing2 = animator.GetBoneTransform(HumanBodyBones.RightRingIntermediate);
+                var rightRing3 = animator.GetBoneTransform(HumanBodyBones.RightRingDistal);
+                var rightLittle1 = animator.GetBoneTransform(HumanBodyBones.RightLittleProximal);
+                var rightLittle2 = animator.GetBoneTransform(HumanBodyBones.RightLittleIntermediate);
+                var rightLittle3 = animator.GetBoneTransform(HumanBodyBones.RightLittleDistal);
+
+                var rightHandLength = (rightMiddle2.position - rightHand.position).magnitude;
+                //colliderList.Add(new OBBBoxCollider(rightHandCenterPoint, new Vector3(rightHandLength * 0.25f, rightHandLength, rightHandLength), rightMiddle2.position - rightMiddle1.position, ColliderChoice.Hand, rightHand));
+
+                colliderList.Add(new CapsuleCollider((rightThumb1.position - rightThumb2.position).magnitude / 2, rightThumb1.position, rightThumb2.position, ColliderChoice.Hand, rightThumb1));
+                colliderList.Add(new CapsuleCollider((rightThumb2.position - rightThumb3.position).magnitude / 2, rightThumb2.position, rightThumb3.position, ColliderChoice.Hand, rightThumb2));
+                colliderList.Add(new CapsuleCollider((rightThumb2.position - rightThumb3.position).magnitude / 2 * 0.8f, rightThumb3.position, rightThumb3.position + (rightThumb3.position- rightThumb2.position ) * 0.8f, ColliderChoice.Hand, rightThumb3));
+                colliderList.Add(new CapsuleCollider((rightIndex1.position - rightIndex2.position).magnitude / 2, rightIndex1.position, rightIndex2.position, ColliderChoice.Hand, rightIndex1));
+                colliderList.Add(new CapsuleCollider((rightIndex2.position - rightIndex3.position).magnitude / 2, rightIndex2.position, rightIndex3.position, ColliderChoice.Hand, rightIndex2));
+                colliderList.Add(new CapsuleCollider((rightIndex2.position - rightIndex3.position).magnitude / 2 * 0.8f, rightIndex3.position, rightIndex3.position + (rightIndex3.position - rightIndex2.position) * 0.8f, ColliderChoice.Hand, rightIndex3));
+                colliderList.Add(new CapsuleCollider((rightMiddle1.position - rightMiddle2.position).magnitude / 2, rightMiddle1.position, rightMiddle2.position, ColliderChoice.Hand, rightMiddle1));
+                colliderList.Add(new CapsuleCollider((rightMiddle2.position - rightMiddle3.position).magnitude / 2, rightMiddle2.position, rightMiddle3.position, ColliderChoice.Hand, rightMiddle2));
+                colliderList.Add(new CapsuleCollider((rightMiddle2.position - rightMiddle3.position).magnitude / 2 * 0.8f, rightMiddle3.position, rightMiddle3.position + (rightMiddle3.position - rightMiddle2.position) * 0.8f, ColliderChoice.Hand, rightMiddle3));
+                colliderList.Add(new CapsuleCollider((rightRing1.position - rightRing2.position).magnitude / 2, rightRing1.position, rightRing2.position, ColliderChoice.Hand, rightRing1));
+                colliderList.Add(new CapsuleCollider((rightRing2.position - rightRing3.position).magnitude / 2, rightRing2.position, rightRing3.position, ColliderChoice.Hand, rightRing2));
+                colliderList.Add(new CapsuleCollider((rightRing2.position - rightRing3.position).magnitude / 2 * 0.8f, rightRing3.position, rightRing3.position + (rightRing3.position - rightRing2.position) * 0.8f, ColliderChoice.Hand, rightRing3));
+                colliderList.Add(new CapsuleCollider((rightLittle1.position - rightLittle2.position).magnitude / 2, rightLittle1.position, rightLittle2.position, ColliderChoice.Hand, rightLittle1));
+                colliderList.Add(new CapsuleCollider((rightLittle2.position - rightLittle3.position).magnitude / 2, rightLittle2.position, rightLittle3.position, ColliderChoice.Hand, rightLittle2));
+                colliderList.Add(new CapsuleCollider((rightLittle2.position - rightLittle3.position).magnitude / 2 * 0.8f, rightLittle3.position, rightLittle3.position + (rightLittle3.position - rightLittle2.position) * 0.8f, ColliderChoice.Hand, rightLittle3));
+            }
+     
+
+
+
             for (int i = 0; i < colliderList.Count; i++)
             {
                 colliderList[i].colliderRead.isConnectWithBody = true;

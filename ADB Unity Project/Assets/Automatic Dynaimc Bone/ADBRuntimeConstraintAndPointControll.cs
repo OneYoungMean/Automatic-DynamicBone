@@ -12,6 +12,7 @@ namespace ADBRuntime
     //OYM：virtualpoint,不存在的点,只迭代一次,用于计算那种指起到旋转作用的节点
     public class ADBConstraintReadAndPointControll
     {
+        const string virtualKey = " virtual";
         public ADBSetting aDBSetting { get; private set; }
         public string keyWord { get; private set; }
         //OYM：pointList
@@ -101,9 +102,9 @@ namespace ADBRuntime
 
             if (point.childNode == null)
             {//OYM：没有子节点
-                if (Application.isPlaying&&aDBSetting.isComputeVirtual && (!point.trans.name.Contains("virtual")))//OYM：创建一个延长的节点
+                if (Application.isPlaying&&aDBSetting.isComputeVirtual && (!point.trans.name.Contains(virtualKey)))//OYM：创建一个延长的节点
                 {
-                    Transform childPointTrans = new GameObject(point.trans.name + " virtual").transform;
+                    Transform childPointTrans = new GameObject(point.trans.name + virtualKey).transform;
                     childPointTrans.position = point.trans.position + ((point.parent!=null&& point.parent.depth != -1) ?
                         (point.trans.position - point.parent.trans.position).normalized * aDBSetting.virtualPointAxisLength :
                         Vector3.down * aDBSetting.virtualPointAxisLength );
@@ -828,7 +829,7 @@ namespace ADBRuntime
                         if (whiteKey == null ) continue;
                         if (childName.Contains(whiteKey))
                         {
-                            point = new ADBRuntimePoint(childNodeTarns, depth, whiteKey);//OYM:  创建fixed节点
+                            point = new ADBRuntimePoint(childNodeTarns, depth, whiteKey, !childName.Contains(virtualKey));//OYM: 创建活动节点
                             break;
                         }
                     }

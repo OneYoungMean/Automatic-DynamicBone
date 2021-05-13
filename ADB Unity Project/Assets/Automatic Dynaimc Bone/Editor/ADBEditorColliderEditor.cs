@@ -26,7 +26,7 @@ namespace ADBRuntime
                 碰撞体_约束在内=2,
                 力场_向外排斥=3,
                 力场_约束在内=4,
-                冻结在表面 = 5,
+              //  冻结在表面 = 5,
             }
             private enum ColliderChoiceZh
             {

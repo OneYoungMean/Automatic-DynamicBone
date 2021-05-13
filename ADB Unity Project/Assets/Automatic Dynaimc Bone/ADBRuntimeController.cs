@@ -52,7 +52,9 @@ namespace ADBRuntime.Mono
         [SerializeField]
         public bool isGenerateByAllPoint = true;
         [SerializeField]
-        public float delayTime=1f;
+        public bool isGenerateFinger = false;
+        [SerializeField]
+        public float bufferTime=1f;
         [SerializeField]
         public int iteration=4;
         [SerializeField]
@@ -76,6 +78,7 @@ namespace ADBRuntime.Mono
         public List<Transform> allPointTrans;
         [SerializeField]
         public List<ADBEditorCollider> editorColliderList;
+
         [SerializeField]
         public bool isDetectAsync = false;
         [SerializeField]
@@ -116,14 +119,14 @@ namespace ADBRuntime.Mono
                 initializeScale = transform.lossyScale.x;
                 isInitialize = true;
             }
-            delayTime = delayTime < 0.017f ? 0.017f : delayTime;
+            bufferTime = bufferTime < 0.017f ? 0.017f : bufferTime;
             isResetPoint = true;
         }
 
         private void Update()
         {
             if (jointAndPointControlls == null) return;
-             deltaTime = Mathf.Lerp(deltaTime,Time.deltaTime, 1 / (delayTime * 60));
+             deltaTime = Mathf.Lerp(deltaTime,Time.deltaTime, 1 / (bufferTime * 60));
  
              if (isResetPoint)
             {
@@ -331,7 +334,7 @@ namespace ADBRuntime.Mono
                     }
                 }
             }
-            colliderControll = new ADBRuntimeColliderControll(generateTransform.gameObject, pointList, isGenerateColliderAutomaitc,!(Application.isPlaying),out editorColliderList);//OYM：在这里获取collider
+            colliderControll = new ADBRuntimeColliderControll(generateTransform.gameObject, pointList, isGenerateColliderAutomaitc,!(Application.isPlaying),isGenerateFinger,out editorColliderList);//OYM：在这里获取collider
             for (int i = 0; i < editorColliderList.Count; i++)
             {
                 editorColliderList[i].Refresh();

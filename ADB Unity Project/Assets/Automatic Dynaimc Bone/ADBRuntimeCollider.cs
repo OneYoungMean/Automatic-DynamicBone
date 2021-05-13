@@ -109,7 +109,7 @@ namespace ADBRuntime
             colliderRead.radius = radius;
 
             colliderRead.colliderType = ColliderType.Sphere;
-            colliderRead.collideFunc = CollideFunc.OutsideLimit;
+            colliderRead.collideFunc = collideFunc;
             colliderRead.colliderChoice = colliderChoice;
             if (appendTransform != null)
             {
@@ -252,7 +252,7 @@ namespace ADBRuntime
             colliderRead.positionOffset = appendTransform ? appendTransform.InverseTransformPoint(center) : center;
             colliderRead.boxSize = new Vector3(Mathf.Abs(size.x ), Mathf.Abs(size.y), Mathf.Abs(size.z ));
             colliderRead.colliderType = ColliderType.OBB;
-            colliderRead.collideFunc = CollideFunc.OutsideLimit;
+            colliderRead.collideFunc = collideFunc;
             colliderRead.colliderChoice = colliderChoice;
         }
         public OBBBoxCollider(Vector3 center, Vector3 size, Quaternion rotation, ColliderChoice colliderChoice, Transform appendTransform = null, CollideFunc collideFunc = CollideFunc.OutsideLimit)
@@ -264,7 +264,7 @@ namespace ADBRuntime
             colliderRead.positionOffset = appendTransform ? appendTransform.InverseTransformPoint(center) : center;
             colliderRead.boxSize = new Vector3(Mathf.Abs(size.x), Mathf.Abs(size.y), Mathf.Abs(size.z));
             colliderRead.colliderType = ColliderType.OBB;
-            colliderRead.collideFunc = CollideFunc.OutsideLimit;
+            colliderRead.collideFunc = collideFunc;
             colliderRead.colliderChoice = colliderChoice;
         }
         public override void OnDrawGizmos()
@@ -298,7 +298,10 @@ namespace ADBRuntime
         public float3 positionOffset;
         public quaternion staticRotation;
         public float3 staticDirection;
-        public float3 boxSize;
+        /// <summary>
+        /// 半尺寸
+        /// </summary>
+        public float3 boxSize; 
         //public Vector3 pointB;
         //public Vector3 pointC;
 
@@ -348,6 +351,7 @@ namespace ADBRuntime
         public float3 deltaPosition;
         public float3 deltaDirection;
         public quaternion deltaRotation;
+        public MinMaxAABB AABB;
     }
 }//OYM：写死我了....历时四个月有余
 /*
