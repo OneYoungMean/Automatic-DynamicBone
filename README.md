@@ -8,7 +8,7 @@
 - 
 # 1.1preview更新点速览    
 * 修复 #14,#13的问题,以及一些零散的bug
-* 迁移版本到19.4.21,原版本刻在[此处查看](https://github.com/OneYoungMean/Automatic-DynamicBone/commit/492bd01e25dc1fcb5641ff834de7637ba439125f)
+* 迁移版本到19.4.21,早期原版本在[此处查看](https://github.com/OneYoungMean/Automatic-DynamicBone/tree/492bd01e25dc1fcb5641ff834de7637ba439125f)
 * **利用数学库优化物理核心,现在运行速度是原来的四倍**
 * **解决了反复震颤的老毛病!更加稳定的节点!现在只需要一次迭代就能够得到相当稳定的动态骨骼**
 * **碰撞体功能修复!现在支持碰撞体,立场等四种不同模式的碰撞体了!**
