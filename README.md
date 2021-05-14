@@ -1,10 +1,25 @@
-写在开头:  
-* 过些日子可能会更新?
+# 写在开头  
+* 想找实习(躺)
 * 如果您是第一次接触该项目,您可以选择在[此处下载示例](https://wws.lanzous.com/iotvcf8d3mb) 并访问[项目的wiki](https://github.com/OneYoungMean/Automatic-DynamicBone/wiki)  
 * [English version manual](https://github.com/OneYoungMean/Automatic-DynamicBone/wiki/English-version-manual)  sorry Im too busy to make the localization XD
 
-- **当前版本:0.9preview 最后更新日期:20/12/11**  
-- **除了修bug以外应该不会大改了..大概**   
+- **当前版本:1.1preview 最后更新日期:21/5/13**  
+- **史诗级更新大放送!业界良心不弃坑!**
+- 
+# 1.1preview更新点速览    
+* 修复 #14,#13的问题,以及一些零散的bug
+* 迁移版本到19.4.21,原版本刻在[此处查看](https://github.com/OneYoungMean/Automatic-DynamicBone/commit/492bd01e25dc1fcb5641ff834de7637ba439125f)
+* **利用数学库优化物理核心,现在运行速度是原来的四倍**
+* **解决了反复震颤的老毛病!更加稳定的节点!现在只需要一次迭代就能够得到相当稳定的动态骨骼**
+* **碰撞体功能修复!现在支持碰撞体,立场等四种不同模式的碰撞体了!**
+* **碰撞体算法优化,现在碰撞的消耗更加少了!**
+* **自动生成碰撞体增加生成手指的碰撞体选项**
+* **优化轨迹功能现在拥有更好的效果了!**  
+![](https://z3.ax1x.com/2021/05/13/gD7YkD.gif)
+
+## 更新注意事项
+**请确保您的mathmatica版本高于等于1.2.1**  
+**如果遇到卡顿问题与未释放的nativeContainer,请尝试在jobs菜单下关闭SafelyCheck与enableJobDebuger选项**
 
 # AutomaticDynamicBone
 **unity骨骼布料仿真插件**.  
