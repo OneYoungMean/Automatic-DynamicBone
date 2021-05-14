@@ -440,12 +440,12 @@ namespace ADBRuntime.Internal
                 var result = math.mul(quaternion.Euler( Mathf.Rad2Deg* force.z, 0, Mathf.Rad2Deg * force.x), direction) - direction;
                 return new float3( result.x,0,result.z);
             }
-            private void ColliderCheck(PointRead* pPointRead, PointReadWrite* pReadWritePoint, ColliderRead* pReadCollider, ColliderReadWrite* pReadWriteCollider)
+            private void ColliderCheck(PointRead* pReadPoint, PointReadWrite* pReadWritePoint, ColliderRead* pReadCollider, ColliderReadWrite* pReadWriteCollider)
             {
                 float3 pushout;
                 float radiusSum;
                 float colliderScale = pReadCollider->isConnectWithBody ? globalScale : 1;
-                float pointRadius = pPointRead->radius * colliderScale;
+                float pointRadius = pReadPoint->radius * colliderScale;
                 bool isColliderInsideMode =! (pReadCollider->collideFunc == CollideFunc.OutsideLimit || pReadCollider->collideFunc == CollideFunc.OutsideNoLimit); //OYM:用于判断是否需要翻转AABB结果
                 //OYM:判断AABB
                 MinMaxAABB AABB = pReadWriteCollider->AABB;
@@ -460,7 +460,7 @@ namespace ADBRuntime.Internal
                     case ColliderType.Sphere: //OYM:球体
                         radiusSum = pReadCollider->radius * colliderScale+ pointRadius;
                         pushout = pReadWritePoint->position - pReadWriteCollider->position;
-                        DistributionPower(pushout, radiusSum, pReadWritePoint, pReadCollider->collideFunc);
+                        ClacPowerWhenCollision(pushout, radiusSum,  pReadPoint, pReadWritePoint, pReadCollider->collideFunc);
 
                         break;
 
@@ -468,7 +468,7 @@ namespace ADBRuntime.Internal
                         radiusSum =pointRadius+ pReadCollider->radius * colliderScale;
 
                         pushout = pReadWritePoint->position - ConstrainToSegment(pReadWritePoint->position, pReadWriteCollider->position, pReadWriteCollider->direction * pReadCollider->length * colliderScale);
-                        DistributionPower(pushout, radiusSum, pReadWritePoint, pReadCollider->collideFunc);
+                        ClacPowerWhenCollision(pushout, radiusSum, pReadPoint, pReadWritePoint, pReadCollider->collideFunc);
 
                         break;
                     case ColliderType.OBB: //OYM:OBB
@@ -476,41 +476,40 @@ namespace ADBRuntime.Internal
                         var localPosition =math.mul( math.inverse(pReadWriteCollider->rotation) ,(pReadWritePoint->position - pReadWriteCollider->position)); //OYM:获取localPosition
                         MinMaxAABB localOBB = MinMaxAABB.CreateFromCenterAndHalfExtents(0, colliderScale * pReadCollider->boxSize + pointRadius);
 
-                        if (localOBB.Contains(localPosition))
+                        if (localOBB.Contains(localPosition) ^ isColliderInsideMode)
                         {
-                            float3 toMax = localOBB.Max - localPosition;
-                            float3 toMin = localOBB.Min - localPosition;
-
-                            float3 min3 = new float3
+                            if (isColliderInsideMode)
+                            {
+                                pushout = math.clamp(localPosition, localOBB.Min, localOBB.Max)- localPosition;
+                            }
+                            else
+                            {
+                                float3 toMax = localOBB.Max - localPosition;
+                                float3 toMin = localOBB.Min - localPosition;
+                                float3 min3 = new float3
                                 (
                                 math.abs(toMax.x) < math.abs(toMin.x) ? toMax.x : toMin.x,
                                 math.abs(toMax.y) < math.abs(toMin.y) ? toMax.y : toMin.y,
                                 math.abs(toMax.z) < math.abs(toMin.z) ? toMax.z : toMin.z
-                                ) ;
-                            float3 min3Abs = math.abs(min3);
-                            if (min3Abs.x<= min3Abs.y&& min3Abs.x <= min3Abs.z)
-                            {
-                                pushout = new float3(min3.x, 0, 0);
+                                );
+                                float3 min3Abs = math.abs(min3);
+                                if (min3Abs.x <= min3Abs.y && min3Abs.x <= min3Abs.z)
+                                {
+                                    pushout = new float3(min3.x, 0, 0);
+                                }
+                                else if (min3Abs.y <= min3Abs.x && min3Abs.y <= min3Abs.z)
+                                {
+                                    pushout = new float3(0, min3.y, 0);
+                                }
+                                else
+                                {
+                                    pushout = new float3(0, 0, min3.z);
+                                }
                             }
-                            else if (min3Abs.y <= min3Abs.x && min3Abs.y<= min3Abs.z)
-                            {
-                                pushout = new float3(0, min3.y, 0);
-                            }
-                            else
-                            {
-                                pushout = new float3(0, 0 , min3.z);
-                            }
+
                             pushout =math.mul( pReadWriteCollider->rotation, pushout);
 
-                            if (pReadCollider->collideFunc == CollideFunc.InsideNoLimit || pReadCollider->collideFunc == CollideFunc.OutsideNoLimit)
-                            {
-                                pReadWritePoint->deltaPosition += 0.001f * oneDivideIteration * pushout;
-                            }
-                            else
-                            {
-                                pReadWritePoint->position += pushout;
-                                pReadWritePoint->deltaPosition += pushout;
-                            }
+                            DistributionPower(pushout,pReadPoint ,pReadWritePoint, pReadCollider->collideFunc);
 
                         }
                         break;
@@ -518,7 +517,7 @@ namespace ADBRuntime.Internal
                         return;
                 }
             }
-            void DistributionPower(float3 pushout, float radius, PointReadWrite* pReadWritePoint, CollideFunc collideFunc)
+            void ClacPowerWhenCollision(float3 pushout, float radius, PointRead* pReadPoint, PointReadWrite* pReadWritePoint, CollideFunc collideFunc)
             {
                 float sqrPushout = math.lengthsq(pushout);
                 switch (collideFunc)
@@ -544,14 +543,21 @@ namespace ADBRuntime.Internal
                     default: { return; }
 
                 }
-                pushout = pushout * (radius / math.sqrt(sqrPushout) - 1);//OYM：这里简单解释一下,首先我要计算的是推出的距离,及半径长度减去原始的pushout度之后剩下的值,即pushout/pushout.magnitude*radius-pushout.即pushout*((radius/magnitude -1));
 
+                pushout = pushout * (radius / math.sqrt(sqrPushout) - 1);//OYM：这里简单解释一下,首先我要计算的是推出的距离,及半径长度减去原始的pushout度之后剩下的值,即pushout/pushout.magnitude*radius-pushout.即pushout*((radius/magnitude -1));
+                DistributionPower(pushout, pReadPoint, pReadWritePoint, collideFunc);
+
+            }
+            void DistributionPower(float3 pushout,PointRead* pReadPoint,PointReadWrite* pReadWritePoint, CollideFunc collideFunc)
+            {
+                float sqrPushout =math.lengthsq(pushout);
                 if (collideFunc == CollideFunc.InsideNoLimit || collideFunc == CollideFunc.OutsideNoLimit)
                 {
-                     pReadWritePoint->deltaPosition += 0.001f * oneDivideIteration * pushout;
+                     pReadWritePoint->deltaPosition += 0.001f * oneDivideIteration * pReadPoint->addForceScale * pushout;
                 }
                 else
                 {
+                    pReadWritePoint->deltaPosition *= (1 - pReadPoint-> friction* sqrPushout);
                     pReadWritePoint->position += pushout;
                     pReadWritePoint->deltaPosition += pushout;
                 }
@@ -711,17 +717,19 @@ namespace ADBRuntime.Internal
                             ColliderReadWrite* pReadWriteCollider = pReadWriteColliders + i;
                             ComputeCollider(
                                 pReadCollider, pReadWriteCollider,
+                                pPointReadA, pPointReadB,
                                 pReadWritePointA, pReadWritePointB,
                                 constraint,
-                                WeightProportion,
-                                pPointReadA->friction, pPointReadB->friction
+                                WeightProportion
+                             
                                 );
                         }
                     }
                 }
             }
-            private void ComputeCollider(ColliderRead* pReadCollider, ColliderReadWrite* pReadWriteCollider, PointReadWrite* pReadWritePointA, PointReadWrite* pReadWritePointB, ConstraintRead* constraint, float WeightProportion,
-                float frictionA, float frictionB)
+            private void ComputeCollider(ColliderRead* pReadCollider, ColliderReadWrite* pReadWriteCollider, 
+                PointRead* pReadPointA, PointRead* pReadPointB ,PointReadWrite* pReadWritePointA, PointReadWrite* pReadWritePointB,
+                ConstraintRead* constraint, float WeightProportion )
             {
                 float throwTemp;//OYM:丢掉的数据
                 float t, radius;
@@ -745,7 +753,10 @@ namespace ADBRuntime.Internal
 
                             {
                                 float3 pointOnLine = ConstrainToSegment(pReadWriteCollider->position, pReadWritePointA->position, pReadWritePointB->position - pReadWritePointA->position, out t);
-                                DistributionPower(pointOnLine - pReadWriteCollider->position, radius, pReadWritePointA, pReadWritePointB, WeightProportion, t, frictionA, frictionB, pReadCollider->collideFunc);
+                                ClacPowerWhenCollision(pointOnLine - pReadWriteCollider->position, radius,
+                                    pReadPointA, pReadPointB, pReadWritePointA, pReadWritePointB, 
+                                    WeightProportion, t, 
+                                    pReadCollider->collideFunc);
                             }
                         }
 
@@ -757,7 +768,10 @@ namespace ADBRuntime.Internal
                             {
                                 float3 pointOnCollider, pointOnLine;
                                 SqrComputeNearestPoints(pReadWriteCollider->position, pReadWriteCollider->direction * scale, pReadWritePointA->position, pReadWritePointB->position - pReadWritePointA->position, out throwTemp, out t, out pointOnCollider, out pointOnLine);
-                                DistributionPower(pointOnLine - pointOnCollider, radius, pReadWritePointA, pReadWritePointB, WeightProportion, t, frictionA, frictionB, pReadCollider->collideFunc);
+                                ClacPowerWhenCollision(pointOnLine - pointOnCollider, radius, 
+                                    pReadPointA, pReadPointB, pReadWritePointA, pReadWritePointB, 
+                                    WeightProportion, t, 
+                                    pReadCollider->collideFunc);
                             }
                         }
 
@@ -775,68 +789,79 @@ namespace ADBRuntime.Internal
                                 t2 = Clamp01(t2);
                                 //OYM：如果存在,那么t2>t1,且至少有一个点不在边界上
                                 bool bHit = t1 >= 0f && t2 > t1 && t2 <= 1.0f;
-                                if (bHit)
-                                {
-                                    //OYM：这里不是取最近的点,而是取中点,最近的点效果并不理想
-                                    t = (t1 + t2) * 0.5f;
-                                    float3 dir = pReadWritePointB->position - pReadWritePointA->position;
-                                    float3 nearestPoint = pReadWritePointA->position + dir * t;
-                                    float3 pushout =math.mul( math.inverse(pReadWriteCollider->rotation) ,(nearestPoint - pReadWriteCollider->position));
-                                    float pushoutX = pushout.x > 0 ? boxSize.x - pushout.x : -boxSize.x - pushout.x;
-                                    float pushoutY = pushout.y > 0 ? boxSize.y - pushout.y : -boxSize.y - pushout.y;
-                                    float pushoutZ = pushout.z > 0 ? boxSize.z - pushout.z : -boxSize.z - pushout.z;
-                                    //OYM：这里我自己都不太记得了 XD
-                                    //OYM：这里是选推出点离的最近的位置,然后推出
-                                    //OYM：Abs(pushoutZ) < Abs(pushoutY)是错的 ,可能会出现两者都为0的情况
-                                    if (Abs(pushoutZ) <= Abs(pushoutY) && Abs(pushoutZ) <= Abs(pushoutX))
-                                    {
-                                        pushout = math.mul(pReadWriteCollider->rotation, new float3(0, 0, pushoutZ));
 
-                                    }
-                                    else if (Abs(pushoutY) <= Abs(pushoutX) && Abs(pushoutY) <= Abs(pushoutZ))
+                                if (bHit&&!isColliderInsideMode)
+                                {
+                                    float3 pushout;
+                                //OYM：这里不是取最近的点,而是取中点,最近的点效果并不理想
+                                t = (t1 + t2) * 0.5f;
+                                float3 dir = pReadWritePointB->position - pReadWritePointA->position;
+                                float3 nearestPoint = pReadWritePointA->position + dir * t;
+                                pushout = math.mul(math.inverse(pReadWriteCollider->rotation), (nearestPoint - pReadWriteCollider->position));
+                                float pushoutX = pushout.x > 0 ? boxSize.x - pushout.x : -boxSize.x - pushout.x;
+                                float pushoutY = pushout.y > 0 ? boxSize.y - pushout.y : -boxSize.y - pushout.y;
+                                float pushoutZ = pushout.z > 0 ? boxSize.z - pushout.z : -boxSize.z - pushout.z;
+                                //OYM：这里我自己都不太记得了 XD
+                                //OYM：这里是选推出点离的最近的位置,然后推出
+                                //OYM：Abs(pushoutZ) < Abs(pushoutY)是错的 ,可能会出现两者都为0的情况
+                                if (Abs(pushoutZ) <= Abs(pushoutY) && Abs(pushoutZ) <= Abs(pushoutX))
+                                {
+                                    pushout = math.mul(pReadWriteCollider->rotation, new float3(0, 0, pushoutZ));
+
+                                }
+                                else if (Abs(pushoutY) <= Abs(pushoutX) && Abs(pushoutY) <= Abs(pushoutZ))
+                                {
+                                    pushout = math.mul(pReadWriteCollider->rotation, new float3(0, pushoutY, 0));
+                                }
+                                else
+                                {
+                                    pushout = math.mul(pReadWriteCollider->rotation, new float3(pushoutX, 0, 0));
+                                }
+                                DistributionPower(pushout,
+                                pReadPointA, pReadPointB, pReadWritePointA, pReadWritePointB,
+                                WeightProportion, t,
+                                pReadCollider->collideFunc);
+                                   
+                                }
+                                bool bOutside = t1 <= 0f || t1 >= 1f || t2 <= 0 || t2 >= 1f;
+                                if (bOutside&& isColliderInsideMode)
+                                {
+
+                                    float3 localPositionA = math.mul(math.inverse(pReadWriteCollider->rotation), pReadWritePointA->position - pReadWriteCollider->position);
+                                    float3 localPositionB = math.mul(math.inverse(pReadWriteCollider->rotation), pReadWritePointB->position - pReadWriteCollider->position);
+                                    float3 pushA = math.clamp(localPositionA, -boxSize, boxSize) - localPositionA;
+                                    float3 pushB = math.clamp(localPositionB, -boxSize, boxSize) - localPositionB;
+
+                                    pushA = math.mul(pReadWriteCollider->rotation, pushA);
+                                    pushB = math.mul(pReadWriteCollider->rotation, pushB);
+                                    bool isFixedA = WeightProportion < EPSILON;
+                                    if (!isFixedA) //OYM:A点可能固定
                                     {
-                                        pushout = math.mul(pReadWriteCollider->rotation, new float3(0, pushoutY, 0));
+                                        if (pReadCollider->collideFunc == CollideFunc.InsideNoLimit)
+                                        {
+                                            pReadWritePointA->deltaPosition += 0.001f * oneDivideIteration * pReadPointA->addForceScale * pushA;
+                                        }
+                                        else
+                                        {
+                                            pReadWritePointA->deltaPosition *= (1 - pReadPointA->friction * math.lengthsq(pushA));//OYM:增加摩擦力,同时避免摩擦力过大
+
+                                            pReadWritePointA->position += pushA;
+                                            pReadWritePointA->deltaPosition += pushA;
+                                        }
+                                    }
+
+                                    if (pReadCollider->collideFunc == CollideFunc.InsideNoLimit) //OYM:B点一般不固定
+                                    {
+                                        pReadWritePointB->deltaPosition += 0.001f * oneDivideIteration * pReadPointB->addForceScale * pushB;
                                     }
                                     else
                                     {
-                                        pushout = math.mul(pReadWriteCollider->rotation, new float3(pushoutX, 0, 0));
-                                    }
-                                    if (math.lengthsq(pushout) != 0)
-                                    {
-                                        //float inverse1Velocity = float3.Dot(pushout, pReadWritePointA->velocity) / pushout.sqrMagnitude;
-                                        //pReadWritePointA->velocity -= pushout * inverse1Velocity;
-                                        //pReadWritePointB->velocity -= pushout * inverse1Velocity;
-                                        pReadWritePointA->deltaPosition *= (1 - frictionA);
-                                        pReadWritePointB->deltaPosition *= (1 - frictionB);
+                                        pReadWritePointB->deltaPosition *= (1 - pReadPointB->friction * math.lengthsq(pushB));//OYM:增加摩擦力,同时避免摩擦力过大
 
-                                        //float Propotion = WeightProportion * t / (1 - WeightProportion - t + 2 * WeightProportion * t);
-                                        if (WeightProportion > EPSILON)
-                                        {
-                                            if (pReadCollider->collideFunc == CollideFunc.InsideNoLimit || pReadCollider->collideFunc == CollideFunc.OutsideNoLimit)
-                                            {
-                                                pReadWritePointA->deltaPosition += 0.01f * oneDivideIteration * (pushout * (1 - t));
-                                            }
-                                            else
-                                            {
-                                                pReadWritePointA->position += (pushout * (1 - t));
-                                                pReadWritePointA->deltaPosition += (pushout * (1 - t));
-                                            }
-
-                                        }
-                                        else
-                                        {
-                                            t = 1;
-                                        }
-                                        if (pReadCollider->collideFunc == CollideFunc.InsideNoLimit || pReadCollider->collideFunc == CollideFunc.OutsideNoLimit)
-                                        {
-                                            pReadWritePointB->deltaPosition += 0.01f * oneDivideIteration * (pushout * t);
-                                        }
-                                        else
-                                        {
-                                            pReadWritePointB->position += (pushout * t);
-                                            pReadWritePointB->deltaPosition += (pushout * t);
-                                        }
+                                        pReadWritePointB->position += pushB;
+                                        pReadWritePointB->deltaPosition += pushB;
                                     }
+                                    
                                 }
                             }
                             break;
@@ -846,10 +871,12 @@ namespace ADBRuntime.Internal
 
                 }
             }
-
-            void DistributionPower(float3 pushout, float radius, PointReadWrite* pReadWritePointA, PointReadWrite* pReadWritePointB, float WeightProportion, float lengthPropotion, float frictionA, float frictionB, CollideFunc collideFunc)
+            void ClacPowerWhenCollision(float3 pushout, float radius,
+                 PointRead* pReadPointA, PointRead* pReadPointB,
+                PointReadWrite* pReadWritePointA, PointReadWrite* pReadWritePointB,
+                float WeightProportion, float lengthPropotion,
+                CollideFunc collideFunc)
             {
-
                 float sqrPushout = math.lengthsq(pushout);
                 switch (collideFunc)
                 {
@@ -875,29 +902,32 @@ namespace ADBRuntime.Internal
                         break;
 
                 }
-                //OYM：把pushout方向多余的力给减掉
-                //OYM：没有也不需要
-                // pReadWritePointA->velocity -= pushout * (float3.Dot(pushout, pReadWritePointA->velocity) / sqrPushout);
-                //pReadWritePointB->velocity -= pushout * (float3.Dot(pushout, pReadWritePointB->velocity) / sqrPushout);
-                pReadWritePointA->deltaPosition *= (1 - frictionA);
-                pReadWritePointB->deltaPosition *= (1 - frictionB);
+                pushout = pushout * (radius / Mathf.Sqrt(sqrPushout) - 1);
+                DistributionPower(pushout, 
+                    pReadPointA, pReadPointB, pReadWritePointA, pReadWritePointB, 
+                    WeightProportion, lengthPropotion, 
+                    collideFunc);
+            }
 
-                pushout = pushout * (radius / Mathf.Sqrt(sqrPushout) - 1);//OYM：这里简单解释一下,首先我要计算的是推出的距离,及半径长度减去原始的pushout度之后剩下的值,即pushout/pushout.magnitude*radius-pushout.即pushout*((radius/magnitude -1));
-
-                //  float Propotion = WeightProportion * lengthPropotion / (1 - WeightProportion - lengthPropotion + 2 * WeightProportion * lengthPropotion);
-
+            void DistributionPower(float3 pushout,
+                 PointRead* pReadPointA, PointRead* pReadPointB, PointReadWrite* pReadWritePointA, PointReadWrite* pReadWritePointB,
+                float WeightProportion, float lengthPropotion,
+                CollideFunc collideFunc)
+            {
+                float sqrPushout = math.lengthsq(pushout);
                 if (WeightProportion > EPSILON)
                 {
                     if (collideFunc == CollideFunc.InsideNoLimit || collideFunc == CollideFunc.OutsideNoLimit)
                     {
-                        pReadWritePointA->deltaPosition += 0.001f * oneDivideIteration * (1 - lengthPropotion) * pushout;
+                        pReadWritePointA->deltaPosition += 0.001f * oneDivideIteration * (1 - lengthPropotion) * pReadPointA->addForceScale * pushout;
                     }
                     else
                     {
+                        pReadWritePointA->deltaPosition *= (1 - pReadPointA-> friction * sqrPushout);//OYM:增加摩擦力,同时避免摩擦力过大
+
                         pReadWritePointA->position += (pushout * (1 - lengthPropotion));
                         pReadWritePointA->deltaPosition += (pushout * (1 - lengthPropotion));
                     }
-
                 }
                 else
                 {
@@ -906,10 +936,13 @@ namespace ADBRuntime.Internal
 
                 if (collideFunc == CollideFunc.InsideNoLimit || collideFunc == CollideFunc.OutsideNoLimit)
                 {
-                    pReadWritePointB->deltaPosition += 0.001f * oneDivideIteration * (lengthPropotion) * pushout;
+                    pReadWritePointB->deltaPosition += 0.001f * oneDivideIteration * (lengthPropotion) * pReadPointB->addForceScale * pushout;
                 }
                 else
                 {
+
+                    pReadWritePointB->deltaPosition *= (1 - pReadPointB->friction * sqrPushout);//OYM:增加摩擦力,同时避免摩擦力过大
+
                     pReadWritePointB->position += (pushout * lengthPropotion);
                     pReadWritePointB->deltaPosition += (pushout * lengthPropotion);
                 }
