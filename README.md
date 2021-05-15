@@ -20,7 +20,7 @@
 
 ## 更新注意事项
 **请确保您的mathmatica版本高于等于1.2.1**  
-**如果遇到卡顿问题与未释放的nativeContainer,请尝试在jobs菜单下关闭SafelyCheck与enableJobDebuger选项**
+**如果遇到卡顿问题与未释放的nativeContainer请尝试在jobs菜单下关闭SafelyCheck与enableJobDebuger选项**  
 
 # AutomaticDynamicBone
 **unity骨骼布料仿真插件**.  
@@ -89,4 +89,4 @@
 ```
 ***
 ### 已知存在问题
-节点的点碰撞目前只支持碰撞体-向外排斥.   
+0BB盒碰撞体在碰撞体->约束在内的时候会出现一些奇怪的现象
