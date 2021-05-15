@@ -8,10 +8,11 @@
 - 
 # 1.1preview更新点速览    
 * 修复 #14,#13的问题,以及一些零散的bug
-* 迁移版本到19.4.21,原版本刻在[此处查看](https://github.com/OneYoungMean/Automatic-DynamicBone/commit/492bd01e25dc1fcb5641ff834de7637ba439125f)
+* 迁移版本到19.4.21,早期原版本在[此处查看](https://github.com/OneYoungMean/Automatic-DynamicBone/tree/492bd01e25dc1fcb5641ff834de7637ba439125f)
 * **利用数学库优化物理核心,现在运行速度是原来的四倍**
 * **解决了反复震颤的老毛病!更加稳定的节点!现在只需要一次迭代就能够得到相当稳定的动态骨骼**
-* **碰撞体功能修复!现在支持碰撞体,立场等四种不同模式的碰撞体了!**
+* **碰撞体功能修复!现在支持碰撞体,立场等四种不同模式的碰撞体了!**  
+![](https://z3.ax1x.com/2021/05/14/gsE1UO.gif)
 * **碰撞体算法优化,现在碰撞的消耗更加少了!**
 * **自动生成碰撞体增加生成手指的碰撞体选项**
 * **优化轨迹功能现在拥有更好的效果了!**  
@@ -19,7 +20,7 @@
 
 ## 更新注意事项
 **请确保您的mathmatica版本高于等于1.2.1**  
-**如果遇到卡顿问题与未释放的nativeContainer,请尝试在jobs菜单下关闭SafelyCheck与enableJobDebuger选项**
+**如果遇到卡顿问题与未释放的nativeContainer请尝试在jobs菜单下关闭SafelyCheck与enableJobDebuger选项**  
 
 # AutomaticDynamicBone
 **unity骨骼布料仿真插件**.  
@@ -88,4 +89,4 @@
 ```
 ***
 ### 已知存在问题
-节点的点碰撞目前只支持碰撞体-向外排斥.   
+0BB盒碰撞体在碰撞体->约束在内的时候会出现一些奇怪的现象
