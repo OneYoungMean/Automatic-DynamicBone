@@ -216,7 +216,7 @@ namespace ADBRuntime.Mono
         public void ListCheck()
         {//OYM：一个简单的防报错和把关键词tolower的方法
 
-            if (!(generateKeyWordWhiteList?.Count != 0))
+            if (generateKeyWordWhiteList==null||generateKeyWordWhiteList.Count == 0)
             {
                 generateKeyWordWhiteList = settings.defaultKeyWord;
                 if (generateKeyWordWhiteList == null)

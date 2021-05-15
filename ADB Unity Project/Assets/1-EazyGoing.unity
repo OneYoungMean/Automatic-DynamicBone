@@ -1137,7 +1137,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &267936826
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2253,7 +2253,7 @@ MonoBehaviour:
     colliderRead:
       isOpen: 1
       colliderType: 2
-      collideFunc: 3
+      collideFunc: 2
       colliderChoice: 512
       positionOffset:
         x: 0
@@ -2270,8 +2270,8 @@ MonoBehaviour:
         y: 0
         z: 0
       boxSize:
-        x: 0.5
-        y: 0.3
+        x: 2
+        y: 2
         z: 1
       radius: 0.05
       length: 1
@@ -2287,7 +2287,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 425176135}
   m_LocalRotation: {x: -0, y: 0.7071068, z: -0, w: 0.7071068}
-  m_LocalPosition: {x: 0.68, y: -0.675, z: 0.419}
+  m_LocalPosition: {x: 0.68, y: -0.14, z: 0.419}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
