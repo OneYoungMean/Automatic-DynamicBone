@@ -92,7 +92,7 @@ namespace ADBRuntime
             float oneDivideIteration = 1.0f / iteration;
             constraintForceUpdateByPoint.oneDivideIteration = constraintUpdates1.oneDivideIteration = pointUpdate.oneDivideIteration = colliderGet.oneDivideIteration = pointGet.oneDivideIteration = oneDivideIteration;
             pointUpdate.deltaTime = deltaTime;
-            pointUpdate.globalScale = scale;
+            colliderGet.globalScale= pointUpdate.globalScale = scale;
             pointUpdate.isOptimize = isOptimize;
             pointUpdate.addForcePower = addForce;
             pointUpdate.isCollision = (colliderCollisionType == ColliderCollisionType.Both || colliderCollisionType == ColliderCollisionType.Point);

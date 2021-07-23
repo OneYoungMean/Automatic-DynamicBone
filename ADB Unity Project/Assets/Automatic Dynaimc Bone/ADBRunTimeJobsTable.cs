@@ -130,21 +130,26 @@ namespace ADBRuntime.Internal
             public ColliderReadWrite* pReadWriteColliders;
             [ReadOnly]
             public float oneDivideIteration;
+            [ReadOnly]
+            public float globalScale;
             public void Execute(int index, TransformAccess transform)
             {
                 ColliderReadWrite* pReadWriteCollider = pReadWriteColliders + index;
                 ColliderRead* pReadCollider = pReadColliders + index;
+               float colliderScale =  pReadCollider->isConnectWithBody ? globalScale : 1;
+
                 MinMaxAABB AABB;
                 float3 currentPosition = (float3)transform.position + math.mul((quaternion)transform.rotation, pReadCollider->positionOffset);
                 switch (pReadCollider->colliderType)
                 {
-                    case ColliderType.Sphere:
+                    case ColliderType.Sphere://OYM:包含上一帧的位置与这一帧的位置的球体的AABB
 
-                        pReadWriteCollider->deltaPosition = oneDivideIteration * (currentPosition - pReadWriteCollider->position);
+                        pReadWriteCollider->deltaPosition = oneDivideIteration * (currentPosition - pReadWriteCollider->position); 
                         AABB = new MinMaxAABB(currentPosition, pReadWriteCollider->position);
-                        AABB.Expand(pReadCollider->radius);
+                        AABB.Expand(pReadCollider->radius* colliderScale);
                         break;
-                    case ColliderType.Capsule:
+                    case ColliderType.Capsule://OYM:包含上一帧的位置与这一帧的位置的胶囊体的AABB
+                        //OYM:这儿有点难,需要先判断两个AABB,然后形成一个更大的
                         float3 currentDirection = math.mul((quaternion)transform.rotation, pReadCollider->staticDirection);
                         pReadWriteCollider->deltaPosition = oneDivideIteration * (currentPosition - pReadWriteCollider->position);
                         pReadWriteCollider->deltaDirection = oneDivideIteration * (currentDirection - pReadWriteCollider->direction);
@@ -152,18 +157,18 @@ namespace ADBRuntime.Internal
                         MinMaxAABB temp1 = new MinMaxAABB(currentPosition, pReadWriteCollider->position); //OYM:起点形成的AABB
                         MinMaxAABB temp2 = new MinMaxAABB(currentPosition + currentDirection * pReadCollider->length, pReadWriteCollider->position + pReadWriteCollider->direction * pReadCollider->length); //OYM:终点形成的AABB
                         AABB = new MinMaxAABB(temp1, temp2);
-                        AABB.Expand(pReadCollider->radius);
+                        AABB.Expand(pReadCollider->radius* colliderScale);
 
                         break;
-                    case ColliderType.OBB:
+                    case ColliderType.OBB://OYM:还好它有内置的旋转函数,否则不太好写
                         quaternion currentRotation = (transform.rotation * pReadCollider->staticRotation);
                         pReadWriteCollider->deltaPosition = oneDivideIteration * (currentPosition - pReadWriteCollider->position);
                         pReadWriteCollider->deltaRotation = math.nlerp(quaternion.identity, math.mul(currentRotation, math.inverse(pReadWriteCollider->rotation)), oneDivideIteration);
 
-                        MinMaxAABB temp3 = MinMaxAABB.CreateFromCenterAndHalfExtents(currentPosition, pReadCollider->boxSize);
-                        MinMaxAABB temp4 = MinMaxAABB.Rotate(currentRotation, temp3);
-                        temp3 = MinMaxAABB.Rotate(pReadWriteCollider->rotation, temp3);
-                        AABB = new MinMaxAABB(temp3, temp4);
+                        MinMaxAABB temp3 = MinMaxAABB.CreateFromCenterAndHalfExtents(currentPosition, pReadCollider->boxSize * colliderScale); //OYM:创建一个与OBB大小一致的AABB
+                        MinMaxAABB temp4 = MinMaxAABB.Rotate(currentRotation, temp3);//OYM:旋转它到OBB的位置,得到一个更大的AABB
+                        temp3 = MinMaxAABB.Rotate(pReadWriteCollider->rotation, temp3); //OYM:重复利用一下temp3,得到上一次位置的AABB
+                        AABB = new MinMaxAABB(temp3, temp4);//OYM:扩大包围盒
 
                         break;
                     default:
