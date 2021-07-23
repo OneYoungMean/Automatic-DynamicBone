@@ -1,6 +1,5 @@
 # 写在开头  
-* 想找实习(躺)
-* 如果您是第一次接触该项目,您可以选择在[此处下载示例](https://wws.lanzous.com/iotvcf8d3mb) 并访问[项目的wiki](https://github.com/OneYoungMean/Automatic-DynamicBone/wiki)  
+* 如果您是第一次接触该项目,您可以选择在[此处下载示例](https://wwe.lanzoui.com/iotvcf8d3mb) 并访问[项目的wiki](https://github.com/OneYoungMean/Automatic-DynamicBone/wiki)  
 * [English version manual](https://github.com/OneYoungMean/Automatic-DynamicBone/wiki/English-version-manual)  sorry Im too busy to make the localization XD
 
 - **当前版本:1.1preview 最后更新日期:21/5/13**  
