@@ -43,6 +43,13 @@ namespace ADBRuntime
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("distanceCompensationCurve"), new GUIContent("距离补偿曲线"), true); 
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("frictionCurve"), new GUIContent("摩擦力曲线"), true);
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("addForceScaleCurve"), new GUIContent("附加力系数曲线"), true);
+
+                                if (controller.isCollideShear || controller.isCollideStructuralHorizontal || controller.isCollideStructuralVertical)
+                {
+                    GUILayout.Space(5);
+                    EditorGUILayout.PropertyField(serializedObject.FindProperty("pointRadiuCurve"), new GUIContent("节点碰撞体积半径曲线"), true);
+                }
+
                 GUILayout.Space(10);
                 showConstraintGlobal = EditorGUILayout.Foldout(showConstraintGlobal,"杆件系数曲线");
                 if (showConstraintGlobal)
@@ -70,8 +77,12 @@ namespace ADBRuntime
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("distanceCompensationGlobal"), new GUIContent("距离补偿值"), true);
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("frictionGlobal"), new GUIContent("摩擦力值"), true);
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("addForceScaleGlobal"), new GUIContent("附加力系数值"), true);
-              //  EditorGUILayout.PropertyField(serializedObject.FindProperty("moveByPrePointGlobal"), new GUIContent("Move By PrePoint 值"), true);
-
+                //  EditorGUILayout.PropertyField(serializedObject.FindProperty("moveByPrePointGlobal"), new GUIContent("Move By PrePoint 值"), true);
+                if (controller.isCollideShear || controller.isCollideStructuralHorizontal || controller.isCollideStructuralVertical)
+                {
+                    GUILayout.Space(5);
+                    EditorGUILayout.PropertyField(serializedObject.FindProperty("pointRadiuCurve"), new GUIContent("节点碰撞体积半径曲线"), true);
+                }
 
                 GUILayout.Space(10);
                 showConstraintGlobal = EditorGUILayout.Foldout(showConstraintGlobal, "杆件力系数值");
@@ -91,11 +102,7 @@ namespace ADBRuntime
                     EditorGUILayout.PropertyField(serializedObject.FindProperty("circumferenceStretchScaleGlobal"), new GUIContent("放射分布-杆件-拉伸力-系数值"), true);
                 }
 
-                if (controller.isCollideShear || controller.isCollideStructuralHorizontal || controller.isCollideStructuralVertical)
-                {
-                    GUILayout.Space(5);
-                    EditorGUILayout.PropertyField(serializedObject.FindProperty("pointRadiuCurve"), new GUIContent("节点碰撞体积半径曲线"), true);
-                }
+
             }
             Titlebar("杆件设置", Color.green);
             showConstrainForce = EditorGUILayout.Foldout(showConstrainForce, "杆件基础力");
