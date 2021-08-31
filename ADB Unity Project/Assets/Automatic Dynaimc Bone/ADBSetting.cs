@@ -75,6 +75,7 @@ namespace ADBRuntime
         public bool isComputeVirtual = true;//OYM：计算虚拟
         public bool isAllowComputeOtherConstraint = false;
         public float virtualPointAxisLength =  0.1f;
+        public bool ForceLookDown=false;//OYM:强制朝下
         //质量
         public bool isAutoComputeWeight = true;//OYM：算质量
         public AnimationCurve weightCurve = new AnimationCurve(new Keyframe[] { new Keyframe(0.0f, 0.0f), new Keyframe(1.0f, 10.0f) });
@@ -94,6 +95,8 @@ namespace ADBRuntime
         public bool isFixGravityAxis = true;
         public Vector3 gravity = new Vector3(0.0f, -9.81f, 0.0f);//OYM：重力
         public ColliderChoice colliderChoice = (ColliderChoice)(1 << 10 - 1);
+
+
     }
 
     public enum ColliderChoice

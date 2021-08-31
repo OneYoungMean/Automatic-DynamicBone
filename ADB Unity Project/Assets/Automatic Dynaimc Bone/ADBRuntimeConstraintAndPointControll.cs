@@ -105,7 +105,7 @@ namespace ADBRuntime
                 if (Application.isPlaying&&aDBSetting.isComputeVirtual && (!point.trans.name.Contains(virtualKey)))//OYM：创建一个延长的节点
                 {
                     Transform childPointTrans = new GameObject(point.trans.name + virtualKey).transform;
-                    childPointTrans.position = point.trans.position + ((point.parent!=null&& point.parent.depth != -1) ?
+                    childPointTrans.position = point.trans.position + ((point.parent!=null&& point.parent.depth != -1&& !aDBSetting.ForceLookDown) ?
                         (point.trans.position - point.parent.trans.position).normalized * aDBSetting.virtualPointAxisLength :
                         Vector3.down * aDBSetting.virtualPointAxisLength );
 
@@ -126,7 +126,7 @@ namespace ADBRuntime
             }
 
             point.pointRead.childFirstIndex = allPointList.Count;//OYM：记录第一个子节点的位置
-            point.pointRead.childLastIndex = point.pointRead.childFirstIndex + point.childNode.Count;//OYM：记录最后一个子节点的位置
+            point.pointRead.childLastIndex = point.pointRead.childFirstIndex + point.childNode.Count;//OYM：记录边界的位置
 
             maxPointDepth = point.depth;
             //OYM：广度遍历

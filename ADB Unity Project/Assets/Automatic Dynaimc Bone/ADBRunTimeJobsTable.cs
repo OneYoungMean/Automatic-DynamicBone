@@ -136,7 +136,7 @@ namespace ADBRuntime.Internal
             {
                 ColliderReadWrite* pReadWriteCollider = pReadWriteColliders + index;
                 ColliderRead* pReadCollider = pReadColliders + index;
-               float colliderScale =  pReadCollider->isConnectWithBody ? globalScale : 1;
+                float colliderScale = pReadCollider->isConnectWithBody ? globalScale : 1;
 
                 MinMaxAABB AABB;
                 float3 currentPosition = (float3)transform.position + math.mul((quaternion)transform.rotation, pReadCollider->positionOffset);
@@ -144,9 +144,9 @@ namespace ADBRuntime.Internal
                 {
                     case ColliderType.Sphere://OYM:包含上一帧的位置与这一帧的位置的球体的AABB
 
-                        pReadWriteCollider->deltaPosition = oneDivideIteration * (currentPosition - pReadWriteCollider->position); 
+                        pReadWriteCollider->deltaPosition = oneDivideIteration * (currentPosition - pReadWriteCollider->position);
                         AABB = new MinMaxAABB(currentPosition, pReadWriteCollider->position);
-                        AABB.Expand(pReadCollider->radius* colliderScale);
+                        AABB.Expand(pReadCollider->radius * colliderScale);
                         break;
                     case ColliderType.Capsule://OYM:包含上一帧的位置与这一帧的位置的胶囊体的AABB
                         //OYM:这儿有点难,需要先判断两个AABB,然后形成一个更大的
@@ -157,7 +157,7 @@ namespace ADBRuntime.Internal
                         MinMaxAABB temp1 = new MinMaxAABB(currentPosition, pReadWriteCollider->position); //OYM:起点形成的AABB
                         MinMaxAABB temp2 = new MinMaxAABB(currentPosition + currentDirection * pReadCollider->length, pReadWriteCollider->position + pReadWriteCollider->direction * pReadCollider->length); //OYM:终点形成的AABB
                         AABB = new MinMaxAABB(temp1, temp2);
-                        AABB.Expand(pReadCollider->radius* colliderScale);
+                        AABB.Expand(pReadCollider->radius * colliderScale);
 
                         break;
                     case ColliderType.OBB://OYM:还好它有内置的旋转函数,否则不太好写
@@ -373,7 +373,6 @@ namespace ADBRuntime.Internal
                 //OYM：如果你想要添加什么奇怪的力的话,可以在这底下添加
 
                 float3 deltaPosition = pReadWritePoint->deltaPosition;
-                var temp = deltaPosition;
                 //OYM：获取固定点的信息
                 PointReadWrite* pFixedPointReadWrite = (pReadWritePoints + pReadPoint->fixedIndex);
                 PointRead* pFixedPointRead = (pReadPoints + pReadPoint->fixedIndex);
@@ -429,8 +428,6 @@ namespace ADBRuntime.Internal
                     deltaPosition -= (math.dot(deltaPosition, direction) / math.lengthsq(direction)) * direction * 0.1f;
                     //OYM:  注意,这个操作会让你的骨骼看上去更加的卷,更加的带有动漫风
                     deltaPosition += GetRotateForce(deltaPosition *0.015f, direction) ;
-
-
                 }
 
                 pReadWritePoint->position += oneDivideIteration * deltaPosition;//OYM：这里我想了很久,应该是这样,如果是迭代n次的话,那么deltaposition将会被加上n次,正规应该是只加一次
@@ -1216,23 +1213,28 @@ out float tP, out float tQ, out float3 pointOnP, out float3 pointOnQ)
 
                 //OYM:  旋转节点
                 //OYM:  这里有个bug,当初考虑的时候是存在多个子节点的,但是实际上并没有
-                if (pReadPoint->childFirstIndex > -1)
+                if (pReadPoint->childFirstIndex > -1&& pReadPoint->childLastIndex>-1)
                 {
                     transform.localRotation = pReadPoint->initialLocalRotation;
-                    var child = pReadWritePoints + pReadPoint->childFirstIndex;
-                    var parent = pReadWritePoints + pReadPoint->parentIndex;
-                    var childRead = pReadPoints + pReadPoint->childFirstIndex;
+                    int childCount = pReadPoint->childLastIndex- pReadPoint->childFirstIndex;
 
-                    float3 ToDirection = child->position - pReadWritePoint->position;//OYM：朝向等于面向子节点的方向
-                    float3 FixedDirection = parent->position - pReadWritePoint->position;
+                    float3 ToDirection=0;
+                    float3 FromDirection = 0;
+                    for (int i = pReadPoint->childFirstIndex; i < pReadPoint->childLastIndex; i++)
+                    {
+                        var targetChild = pReadWritePoints + i;
+                        var targetChildRead = pReadPoints + i;
+                        FromDirection += math.normalize(math.mul( (quaternion)transform.rotation , targetChildRead->initialLocalPosition));//OYM：将BoneAxis按照transform.rotation进行旋转
+                        ToDirection += math.normalize(targetChild->position - pReadWritePoint->position);//OYM：朝向等于面向子节点的方向
+
+                    }
+
                     if (math.lengthsq(ToDirection) > EPSILON * EPSILON)//OYM：两点不再一起
                     {
-                        float3 FromDirection = transform.rotation * childRead->initialLocalPosition;//OYM：将BoneAxis按照transform.rotation进行旋转
-
-                        Quaternion AimRotation = Quaternion.FromToRotation(FromDirection, ToDirection);//OYM：我仔细考虑了下,fromto用在这里不一定是最好,但是一定是最快
-
+                        Quaternion AimRotation = Quaternion.FromToRotation(FromDirection, ToDirection);
                         transform.rotation = AimRotation * transform.rotation;
                     }
+
                 }
             }
         }

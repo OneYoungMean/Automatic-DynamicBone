@@ -82,12 +82,10 @@ namespace ADBRuntime
                 return false;
             }
             handleList.Dispose();
-            handleList = new NativeList<JobHandle>(8, Allocator.TempJob);
+            handleList = new NativeList<JobHandle>(8, Allocator.Persistent);
 
             //OYM：当我用ADBRunTimeJobsTable.returnHJob时候,任务会在我调用的时候被强制完成,当我用本地的Hjob的时候,任务会在异步进行
             //OYM:  注意,JH底层很可能也是单例
-
-            //OYM:  针对迭代的补偿
             //OYM:  赋参
             float oneDivideIteration = 1.0f / iteration;
             constraintForceUpdateByPoint.oneDivideIteration = constraintUpdates1.oneDivideIteration = pointUpdate.oneDivideIteration = colliderGet.oneDivideIteration = pointGet.oneDivideIteration = oneDivideIteration;

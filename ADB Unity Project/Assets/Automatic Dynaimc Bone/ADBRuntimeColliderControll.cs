@@ -54,6 +54,27 @@ namespace ADBRuntime
         public float headToRootHigh;
         #endregion
 
+        public ADBRuntimeColliderControll(List<ADBRuntimeCollider> colliderList)
+        {
+            initialized = true;
+            this.runtimeColliderList = colliderList;
+            SetColliderReadData();
+        }
+        private void SetColliderReadData()
+        {
+            if (initialized && Application.isPlaying)
+            {
+                colliderTransform = new Transform[runtimeColliderList.Count];
+                collidersReadTable = new ColliderRead[runtimeColliderList.Count];
+                collidersReadWriteTable = new ColliderReadWrite[runtimeColliderList.Count];
+
+                for (int i = 0; i < runtimeColliderList.Count; i++)
+                {
+                    collidersReadTable[i] = runtimeColliderList[i].GetColliderRead();
+                    colliderTransform[i] = runtimeColliderList[i].appendTransform;
+                }
+            }
+        }
         public ADBRuntimeColliderControll(GameObject character, List<ADBRuntimePoint> allPointTrans, bool isGenerateBodyRuntimeCollider,bool isGenerateScript,bool isGenerateFinger, out List<ADBEditorCollider> editorColliderList )
         {
             runtimeColliderList = new List<ADBRuntimeCollider>();

@@ -109,6 +109,7 @@ namespace ADBRuntime.Mono
             dataPackage = new DataPackage();
             if (Application.isPlaying)
             {
+                
                 isInitialize = true;
                 for (int i = 0; i < jointAndPointControlls.Length; i++)
                 {
@@ -123,7 +124,7 @@ namespace ADBRuntime.Mono
             isResetPoint = true;
         }
 
-        private void Update()
+        private void FixedUpdate()
         {
             if (jointAndPointControlls == null) return;
              deltaTime = Mathf.Lerp(deltaTime,Time.deltaTime, 1 / (bufferTime * 60));
@@ -172,6 +173,7 @@ namespace ADBRuntime.Mono
                                                               !isDetectAsync,
                                                               isFuzzyCompute
                                                               );
+
             if (isSuccessfulRun)
             {
                 addForce = Vector3.zero;
@@ -191,6 +193,11 @@ namespace ADBRuntime.Mono
                 dataPackage.SetNativeArray();
                 isResetPoint = true;
             }
+        }
+        public void SetPhysicData(ADBRuntimeColliderControll colliderControll, ADBConstraintReadAndPointControll[] jointAndPointControlls)
+        {
+            this.colliderControll = colliderControll;
+            this.jointAndPointControlls = jointAndPointControlls;
         }
         public void RestorePoint()
         {

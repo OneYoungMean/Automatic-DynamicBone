@@ -65,7 +65,7 @@ namespace ADBRuntime
         /// </summary>
         public int childFirstIndex;
         /// <summary>
-        /// 子节点结尾编号
+        /// 子节点结尾编号的后一个编号
         /// </summary>
         public int childLastIndex;
         /// <summary>
