@@ -1,7 +1,9 @@
 # 写在开头  
 * 如果您是第一次接触该项目,您可以选择在[此处下载示例](https://wwe.lanzoui.com/iotvcf8d3mb) 并访问[项目的wiki](https://github.com/OneYoungMean/Automatic-DynamicBone/wiki)  
-* [English version manual](https://github.com/OneYoungMean/Automatic-DynamicBone/wiki/English-version-manual)  sorry Im too busy to make the localization XD
+* [English version manual](https://github.com/OneYoungMean/Automatic-DynamicBone/wiki/English-version-manual)  sorry Im too busy to make the localization XD  
 
+  有没有大佬能够给推荐一份工作的,应届生,可怜,弱小,还没工作QAQ,联系QQ:3303609008
+  
 - **当前版本:1.1preview 最后更新日期:21/5/13**  
 - **史诗级更新大放送!业界良心不弃坑!**
 - 
@@ -84,7 +86,7 @@
 [省略掉的吐槽很辛苦的话]
 [省略掉的吐槽自己真的很穷的话]
 [省略掉的小声BB的话]
-要加油鸭
+需要一份工作!
 ```
 ***
 ### 已知存在问题
