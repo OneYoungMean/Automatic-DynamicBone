@@ -58,21 +58,18 @@ sysinfo.txt
 # Crashlytics generated file
 crashlytics-build.properties
 
-Automatic Dynaimc Bone/Automatic-Dynamic-Bone/
-Automatic Dynaimc Bone/Manual GIF
-ADB Unity Project.7z
-ADB Unity Project.zip
-ADB Unity Project/Library/
-ADB Unity Project/Temp/
-ADB Unity Project/obj/
-ADB Unity Project/Assets/Automatic Dynaimc Bone/Resources/Setting/ADB hair/hair-3.asset
-ADB Unity Project/Assets/Automatic Dynaimc Bone/Resources/Setting/ADB hair/hair-4.asset
-ADB Unity Project/Assets/Automatic Dynaimc Bone/Resources/Setting/ADBGlobalSettingFile.asset
-ADB Unity Project/Assets/Automatic Dynaimc Bone/Resources/Setting/ADBGlobalSettingFile.asset.meta
-ADB Unity Project/Assets/Automatic Dynaimc Bone/Resources/Setting/MikuGloabalSetting.asset
-ADB Unity Project/obj/Debug/Assembly-CSharp-Editor.csprojAssemblyReference.cache
-ADB Unity Project/obj/Debug/Assembly-CSharp.csprojAssemblyReference.cache
-ADB Unity Project/Packages/manifest.json
-ADB Unity Project/Packages/packages-lock.json
-ADB Unity Project/ProjectSettings/EditorSettings.asset
-ADB Unity Project/ProjectSettings/ProjectVersion.txt
+Library/*
+Temp/*
+Logs/*
+obj/
+*.debug.xml
+*.debug.xml.meta
+*.idea
+*.csproj
+*.sln
+*.rsp
+.vs
+
+
+ADB Unity Project/Assets/Example/scene4-6/Model/Animations/
+ADB Unity Project/Assets/Example/scene4-6/Model/MikuV4X_Digitrevx/
