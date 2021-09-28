@@ -156,7 +156,7 @@ namespace ADBRuntime.Mono
         }
         void CheckParentOwner()
         {
-            var parentOwner = gameObject.GetComponentInParent<ADBRuntimeController>(true);
+            var parentOwner = gameObject.GetComponentInParent<ADBRuntimeController>();
             if (parentOwner != null)
             {
                 owners.Add(parentOwner);

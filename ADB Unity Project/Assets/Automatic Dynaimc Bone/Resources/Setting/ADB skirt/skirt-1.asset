@@ -187,6 +187,30 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+  rigidScaleCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0.1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 0.1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
   structuralShrinkVerticalScaleCurve:
     serializedVersion: 2
     m_Curve:
@@ -507,6 +531,7 @@ MonoBehaviour:
   massGlobal: 0.95
   moveByPrePointGlobal: 0
   freezeGlobal: 2
+  rigidScaleGlobal: 0
   structuralShrinkVerticalScaleGlobal: 1
   structuralStretchVerticalScaleGlobal: 1
   structuralShrinkHorizontalScaleGlobal: 1
@@ -534,6 +559,7 @@ MonoBehaviour:
   isComputeVirtual: 0
   isAllowComputeOtherConstraint: 0
   virtualPointAxisLength: 0.1
+  ForceLookDown: 0
   isAutoComputeWeight: 1
   weightCurve:
     serializedVersion: 2
@@ -572,4 +598,5 @@ MonoBehaviour:
   isDebugDraw: 1
   isFixGravityAxis: 1
   gravity: {x: 0, y: -9.81, z: 0}
-  colliderChoice: 8
+  colliderChoice: 520
+  isFixedPointFreezeRotation: 0
