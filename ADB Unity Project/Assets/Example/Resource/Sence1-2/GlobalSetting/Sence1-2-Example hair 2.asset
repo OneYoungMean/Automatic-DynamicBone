@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f1ba92be77609464fbfa8ed13b2748bc, type: 3}
+  m_Name: Sence1-2-Example hair 2
+  m_EditorClassIdentifier: 
+  settings:
+  - setting: {fileID: 11400000, guid: 4fd15b3e4e9a91547adb950cc0ce3069, type: 2}
+    keyWord:
+    - hair
+  defaultKeyWord: []

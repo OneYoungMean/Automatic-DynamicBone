@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Unity.Mathematics;
 using System.ComponentModel;
+using UnityEngine.SceneManagement;
 
 namespace ADBRuntime.Mono
 {
@@ -29,6 +30,13 @@ namespace ADBRuntime.Mono
         /// </summary>
 
         Null = 4
+    }
+
+    public enum UpdateMode
+    {
+        Update=1,
+        FixedUpdate=2,
+        LateUpdate=3,
     }
     [DisallowMultipleComponent]
     public class ADBRuntimeController : MonoBehaviour
@@ -58,7 +66,7 @@ namespace ADBRuntime.Mono
         [SerializeField]
         public int iteration=4;
         [SerializeField]
-        public float windForceScale=0.5f;
+        public float windForceScale=0f;
         public bool isDebug;
         public bool isOptimize = false;
         public bool isResetPoint;
@@ -76,14 +84,18 @@ namespace ADBRuntime.Mono
         public bool isAdvance;
         public Transform generateTransform;
         public List<Transform> allPointTrans;
-        [SerializeField]
-        public List<ADBEditorCollider> editorColliderList;
 
         [SerializeField]
-        public bool isDetectAsync = false;
+        public bool isRunAsync = false;
         [SerializeField]
-        public bool isFuzzyCompute=false;
-        private ADBRuntimeColliderControll colliderControll;
+        public bool isParallel=false;
+
+        public ADBAvatarReader colliderControll;
+
+        [SerializeField]
+        public List<ADBColliderReader> overlapsColliderList;
+        [SerializeField]
+        public UpdateMode updateMode=UpdateMode.Update;
         private ADBConstraintReadAndPointControll[] jointAndPointControlls;
         private DataPackage dataPackage;
         private bool isInitialize = false;
@@ -92,7 +104,12 @@ namespace ADBRuntime.Mono
         private float initializeScale;
         private float scale;
         private Vector3 addForce;
+        public bool isAsync;
+        private Collider[] colliders;
 
+        //OYM:Advanced
+        private const int maxColliderCount = 512;
+     
 
         private void Start()//OYM：滚回来自己来趟这趟屎山
         {
@@ -115,52 +132,74 @@ namespace ADBRuntime.Mono
                 {
                     jointAndPointControlls[i].GetData( dataPackage);//OYM：在这里对各种joint和point进行分类与编号
                 }
-                colliderControll.GetData(ref dataPackage);
+                //colliderControll.GetData(ref dataPackage);
                 dataPackage.SetNativeArray();
-                initializeScale = transform.lossyScale.x;
+                initializeScale = generateTransform.lossyScale.x;
                 isInitialize = true;
             }
             bufferTime = bufferTime < 0.017f ? 0.017f : bufferTime;
             isResetPoint = true;
         }
-
+        private void Update()
+        {
+            if (updateMode==UpdateMode.Update)
+            {
+                Run(Time.deltaTime);
+            }
+        }
         private void FixedUpdate()
         {
-            if (jointAndPointControlls == null) return;
-             deltaTime = Mathf.Lerp(deltaTime,Time.deltaTime, 1 / (bufferTime * 60));
- 
-             if (isResetPoint)
+            if (updateMode == UpdateMode.FixedUpdate)
             {
-                isResetPoint = false;
-                RestorePoint();
-                return;
+                Run(Time.fixedDeltaTime);
             }
 
-            //  deltaTime =Mathf.Lerp(deltaTime, Mathf.Min(Time.deltaTime,0.0166f),0.1f);//OYM：用time.deltaTime并不理想,或许是我笔记本太烂的缘故?
+        }
 
-            scale = transform.lossyScale.x;
-            addForce += ADBWindZone.getaddForceForce(transform.position ) * windForceScale* deltaTime;
-
-             UpdateDataPakage();
-
-            //OYM：理论上你多执行几次UpdateDataPakage()也没啥关系
-
+        private void LateUpdate()
+        {
+            if (updateMode == UpdateMode.LateUpdate)
+            {
+                Run(Time.deltaTime);
+            }
         }
         private void OnDisable()
         {
             if (dataPackage != null)
             {
-                RestorePoint();
+                RestoreRuntimePoint();
             }
         }
         private void OnDestroy()
         {
             if (dataPackage != null)
             {
-                RestorePoint();
+                RestoreRuntimePoint();
                 dataPackage.Dispose(false);
             }
 
+        }
+
+        private void Run(float inputDeltaTime)
+        {
+            if (jointAndPointControlls == null) return;
+            deltaTime = Mathf.Lerp(deltaTime, inputDeltaTime, 1 / (bufferTime * 60));
+
+            if (isResetPoint)
+            {
+                isResetPoint = false;
+                RestoreRuntimePoint();
+                return;
+            }
+
+            //  deltaTime =Mathf.Lerp(deltaTime, Mathf.Min(Time.deltaTime,0.0166f),0.1f);//OYM：用time.deltaTime并不理想,或许是我笔记本太烂的缘故?
+
+            scale = generateTransform.lossyScale.x;
+            addForce += ADBWindZone.getaddForceForce(generateTransform.position) * windForceScale * deltaTime;
+            UpdateOverlapsCollider();
+            UpdateDataPakage();
+
+            //OYM：理论上你多执行几次UpdateDataPakage()也没啥关系
         }
         private void UpdateDataPakage()
         {
@@ -170,8 +209,8 @@ namespace ADBRuntime.Mono
                                                               addForce,
                                                               colliderCollisionType,
                                                               isOptimize,
-                                                              !isDetectAsync,
-                                                              isFuzzyCompute
+                                                              isRunAsync,
+                                                              isParallel
                                                               );
 
             if (isSuccessfulRun)
@@ -179,27 +218,76 @@ namespace ADBRuntime.Mono
                 addForce = Vector3.zero;
             }
         }
+
+        public void UpdateOverlapsCollider()
+        {
+            overlapsColliderList.Clear();
+            if (colliders==null||colliders.Length != maxColliderCount)
+            {
+                colliders = new Collider[maxColliderCount];
+            }
+
+            if (!Application.isPlaying)
+            {
+                overlapsColliderList.AddRange(gameObject.GetComponentsInChildren<ADBColliderReader>());
+                return;
+            }
+
+            int count = Physics.OverlapBoxNonAlloc(
+                                generateTransform.position+ generateTransform.rotation* (Vector3)colliderControll.AABB.Center,
+                                scale / initializeScale * colliderControll.AABB.HalfExtents,
+                                colliders, Quaternion.identity, int.MaxValue, QueryTriggerInteraction.Collide
+                                );
+            ColliderRead[] colliderReads =new ColliderRead[count];
+            for (int i = 0; i < count; i++)
+            {
+                if (ADBColliderReader.ColliderTokenDic.TryGetValue(colliders[i].GetInstanceID(),out ADBColliderReader colliderToken))
+                {
+                    if (colliderToken.IsOwner(this))
+                    {
+                        colliderReads[overlapsColliderList.Count] = colliderToken.runtimeCollider.colliderRead;
+                        overlapsColliderList.Add(colliderToken);
+                    }
+                }
+            }
+            
+
+            if (isInitialize)
+            {
+                Array.Resize(ref colliderReads, overlapsColliderList.Count);
+                dataPackage.SetRuntimeCollider(colliderReads);
+            }
+            
+        }
         public void Reset()
         {
             if (Application.isPlaying)
             {
-                RestorePoint();
-                InitializePoint();
-                dataPackage.Dispose(true);
-                for (int i = 0; i < jointAndPointControlls.Length; i++)
+                try
                 {
-                    jointAndPointControlls[i].GetData(dataPackage);//OYM：在这里对各种joint和point进行分类与编号
+                    RestoreRuntimePoint();
+                    InitializePoint();
+                    dataPackage.Dispose(true);
+                    for (int i = 0; i < jointAndPointControlls.Length; i++)
+                    {
+                        jointAndPointControlls[i].GetData(dataPackage);//OYM：在这里对各种joint和point进行分类与编号
+                    }
+                    dataPackage.SetNativeArray();
+                    isResetPoint = true;
                 }
-                dataPackage.SetNativeArray();
-                isResetPoint = true;
+                catch (Exception)
+                {
+                    throw;
+                }
+
             }
         }
-        public void SetPhysicData(ADBRuntimeColliderControll colliderControll, ADBConstraintReadAndPointControll[] jointAndPointControlls)
+        public void SetPhysicData(ADBAvatarReader colliderControll, ADBConstraintReadAndPointControll[] jointAndPointControlls)
         {
             this.colliderControll = colliderControll;
             this.jointAndPointControlls = jointAndPointControlls;
         }
-        public void RestorePoint()
+        public void RestoreRuntimePoint()
         {
             if (!Application.isPlaying)
             {
@@ -210,10 +298,10 @@ namespace ADBRuntime.Mono
         }
         public void ParentCheck()
         {
-            var parentRuntimeController = transform.parent?.GetComponentInParent<ADBRuntimeController>();
+            var parentRuntimeController = generateTransform.parent?.GetComponentInParent<ADBRuntimeController>();
             if (parentRuntimeController != null)
             {
-                Debug.Log(transform.name + " find the parent has  ADB Runtime Controller in" + parentRuntimeController.transform.name + ", if it is not you want ,check it ");
+                Debug.Log(generateTransform.name + " find the parent has  ADB Runtime Controller in" + parentRuntimeController.generateTransform.name + ", if it is not you want ,check it ");
             }
         }
         public bool PointCheck()
@@ -258,51 +346,37 @@ namespace ADBRuntime.Mono
             {
                 settings = Resources.Load("Setting/ADBGlobalSettingFile") as ADBGlobalSetting;
             }
+            if (overlapsColliderList == null)
+            {
+                overlapsColliderList = new List<ADBColliderReader>();
+            }
+            if (colliders==null)
+            {
+                colliders = new Collider[maxColliderCount];
+            }
+            
         }
         public void InitializePoint()
         {
-
             jointAndPointControlls = ADBConstraintReadAndPointControll.GetJointAndPointControllList(generateTransform, generateKeyWordWhiteList, generateKeyWordBlackList, blackListOfGenerateTransform,settings);//OYM：在这里搜索所有的节点和杆件的controll
 
             if (jointAndPointControlls != null)
             {
                 allPointTrans = new List<Transform>();
-                /*
-                 * 这段代码被我废弃掉了,作用是允许你修改所有节点中对应的设置,但是由于无法确切的知道用户到底要怎么改(比如改了Global又改这里),为了保持正常的工作流,这段代码不会被采纳.
-                 * 如果你希望能够自由的更改你设置的面板,你可以启用它.
-                if (inspectorPointList != null && inspectorPointList.Length == jointAndPointControlls.Length)//OYM：两者存在且相等
-                { 
-                    for (int i = 0; i < jointAndPointControlls.Length; i++)
-                    {
-                        if (jointAndPointControlls[i].aDBSetting != inspectorPointList[i].setting)
-                        {
-                            jointAndPointControlls[i].SetADBSetting ( inspectorPointList[i].setting);
-                        }
-                        jointAndPointControlls[i].Initialize();
-                        for (int j = 0; j < jointAndPointControlls[i].allNodeList.Count; j++)
-                        {
-                            allPointTrans.Add(jointAndPointControlls[i].allNodeList[j].trans);
-                        }
-                    }
-                }
-                else
+
+                inspectorPointList = new ConnectWithADBSettingAndADBRuntimePoint[jointAndPointControlls.Length];
+
+                for (int i = 0; i < jointAndPointControlls.Length; i++)
                 {
-                */
-                    inspectorPointList = new ConnectWithADBSettingAndADBRuntimePoint[jointAndPointControlls.Length];
-
-                    for (int i = 0; i < jointAndPointControlls.Length; i++)
+                    jointAndPointControlls[i].Initialize();//OYM：在这里对各种joint和point进行分类与编号
+                    List<Transform> transformArray = new List<Transform>();
+                    for (int j = 0; j < jointAndPointControlls[i].allNodeList.Count; j++)
                     {
-                        jointAndPointControlls[i].Initialize();//OYM：在这里对各种joint和point进行分类与编号
-                        List<Transform> transformArray = new List<Transform>();
-                        for (int j = 0; j < jointAndPointControlls[i].allNodeList.Count; j++)
-                        {
-                            transformArray.Add(jointAndPointControlls[i].allNodeList[j].trans);
-                        }
-                        inspectorPointList[i] = new ConnectWithADBSettingAndADBRuntimePoint(jointAndPointControlls[i].aDBSetting, transformArray.ToArray());
-                        allPointTrans.AddRange(transformArray);
+                        transformArray.Add(jointAndPointControlls[i].allNodeList[j].trans);
                     }
-
-                
+                    inspectorPointList[i] = new ConnectWithADBSettingAndADBRuntimePoint(jointAndPointControlls[i].aDBSetting, transformArray.ToArray());
+                    allPointTrans.AddRange(transformArray);
+                }
             }
             else
             {
@@ -311,41 +385,48 @@ namespace ADBRuntime.Mono
         }
         public void initializeCollider()
         {
+
+
+            if (colliderControll!=null&& colliderControll.generateColliderList!=null)
+            {
+                Debug.LogWarning("Pleace delete old generate collider before you want to generate new!" );
+                return; 
+            }
+            colliderControll = new ADBAvatarReader(this);//OYM：在这里生成collider和AABB;
+
+            if (!isGenerateColliderAutomaitc)
+            {
+                return;
+            }
+
             if (!PointCheck())
             {
                 ListCheck();
                 InitializePoint();
             }
-            List<ADBRuntimePoint> pointList = null;
+            List<ADBRuntimePoint> pointList = new List<ADBRuntimePoint>();
+
             if (jointAndPointControlls == null || jointAndPointControlls.Length == 0)
             {
-                Debug.Log("If you want to generate body Collider,try to use <generate Point> Buttom again !");
+                Debug.LogWarning("Lost point data.try to use <generate Point> buttom to generate accurate collider!");
             }
             else
             {
-                pointList = new List<ADBRuntimePoint>();
-                if (isGenerateColliderAutomaitc)
+                for (int i = 0; i < jointAndPointControlls.Length; i++)
                 {
-                    for (int i = 0; i < jointAndPointControlls.Length; i++)
+                    if (isGenerateByAllPoint)
                     {
-                        if (isGenerateByAllPoint)
-                        {
-                            pointList.AddRange(jointAndPointControlls[i].allNodeList);
-                        }
-                        else
-                        {
-                            pointList.AddRange(jointAndPointControlls[i].
-                                fixedNodeList);
-
-                        }
+                        pointList.AddRange(jointAndPointControlls[i].allNodeList);
+                    }
+                    else
+                    {
+                        pointList.AddRange(jointAndPointControlls[i].
+                            fixedNodeList);
                     }
                 }
             }
-            colliderControll = new ADBRuntimeColliderControll(generateTransform.gameObject, pointList, isGenerateColliderAutomaitc,!(Application.isPlaying),isGenerateFinger,out editorColliderList);//OYM：在这里获取collider
-            for (int i = 0; i < editorColliderList.Count; i++)
-            {
-                editorColliderList[i].Refresh();
-            }
+            colliderControll.GenerateBodyCollidersData(pointList,isGenerateFinger);
+
             isGenerateColliderAutomaitc = false;
         }
         public void AddForce(Vector3 force)
@@ -370,7 +451,7 @@ namespace ADBRuntime.Mono
 
         private void OnDrawGizmos()
         {
-            if (!isDebug) return;
+            if (!isDebug && isActiveAndEnabled) return;
 
             if (jointAndPointControlls != null)
             {
@@ -380,11 +461,11 @@ namespace ADBRuntime.Mono
                 }
             }
 
-
-            if (colliderControll != null && Application.isPlaying)
+            if (colliderControll!=null)
             {
                 Gizmos.color = Color.red;
-                colliderControll.OnDrawGizmos();
+                Gizmos.DrawWireCube(generateTransform.position+ generateTransform.rotation*colliderControll.AABB.Center, colliderControll.AABB.Extents);
+                //colliderControll.OnDrawGizmos();
             }
         }
     }

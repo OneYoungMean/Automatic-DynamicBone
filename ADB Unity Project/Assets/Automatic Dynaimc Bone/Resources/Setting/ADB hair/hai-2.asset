@@ -37,12 +37,12 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  windScaleCurve:
+  addForceScaleCurve:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 0
+      value: 1
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -50,8 +50,8 @@ MonoBehaviour:
       inWeight: 0
       outWeight: 0
     - serializedVersion: 3
-      time: 0.9750061
-      value: 0.5081978
+      time: 1
+      value: 1
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -475,8 +475,32 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+  pointRadiuCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
   frictionGlobal: 0
-  windScaleGlobal: 1
+  addForceScaleGlobal: 1
   gravityScaleGlobal: 1
   moveByFixedPointGlobal: 1
   distanceCompensationGlobal: 1
@@ -507,8 +531,10 @@ MonoBehaviour:
   bendingStretchHorizontal: 1
   circumferenceShrink: 1
   circumferenceStretch: 1
-  isComputeVirtual: 0
-  virtualPointRate: 0
+  isComputeVirtual: 1
+  isAllowComputeOtherConstraint: 1
+  virtualPointAxisLength: 0.1
+  ForceLookDown: 1
   isAutoComputeWeight: 1
   weightCurve:
     serializedVersion: 2
@@ -535,15 +561,16 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   isComputeStructuralVertical: 1
-  isComputeStructuralHorizontal: 0
-  isComputeShear: 0
+  isComputeStructuralHorizontal: 1
+  isComputeShear: 1
   isComputeBendingVertical: 1
-  isComputeBendingHorizontal: 0
-  isComputeCircumference: 0
+  isComputeBendingHorizontal: 1
+  isComputeCircumference: 1
   isCollideStructuralVertical: 1
-  isCollideStructuralHorizontal: 0
-  isCollideShear: 0
-  isLoopRootPoints: 0
+  isCollideStructuralHorizontal: 1
+  isCollideShear: 1
+  isLoopRootPoints: 1
   isDebugDraw: 1
+  isFixGravityAxis: 1
   gravity: {x: 0, y: -9.81, z: 0}
   colliderChoice: 371

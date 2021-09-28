@@ -37,7 +37,7 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  windScaleCurve:
+  addForceScaleCurve:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
@@ -196,6 +196,30 @@ MonoBehaviour:
     - serializedVersion: 3
       time: 1
       value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  rigidScaleCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0.1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 0.1
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -493,14 +517,39 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+  pointRadiuCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
   frictionGlobal: 0
-  windScaleGlobal: 1
+  addForceScaleGlobal: 1
   gravityScaleGlobal: 0
   moveByFixedPointGlobal: 0
   distanceCompensationGlobal: 0.5
-  massGlobal: 0.95
+  massGlobal: 0.5
   moveByPrePointGlobal: 0
   freezeGlobal: 5
+  rigidScaleGlobal: 0
   structuralShrinkVerticalScaleGlobal: 1
   structuralStretchVerticalScaleGlobal: 1
   structuralShrinkHorizontalScaleGlobal: 1
@@ -526,7 +575,9 @@ MonoBehaviour:
   circumferenceShrink: 1
   circumferenceStretch: 1
   isComputeVirtual: 0
-  virtualPointRate: 0.5
+  isAllowComputeOtherConstraint: 0
+  virtualPointAxisLength: 0.1
+  ForceLookDown: 0
   isAutoComputeWeight: 1
   weightCurve:
     serializedVersion: 2
@@ -563,5 +614,7 @@ MonoBehaviour:
   isCollideShear: 1
   isLoopRootPoints: 0
   isDebugDraw: 1
+  isFixGravityAxis: 1
   gravity: {x: 0, y: -9.81, z: 0}
   colliderChoice: 12
+  isFixedPointFreezeRotation: 0

@@ -16,6 +16,8 @@ namespace ADBRuntime
     [System.Serializable]
     public struct MinMaxAABB : IEquatable<MinMaxAABB>
     {
+        public static MinMaxAABB identity { get { return new MinMaxAABB(); } }
+
         /// <summary>
         /// The minimum point contained by the AABB.
         /// </summary>
@@ -93,7 +95,16 @@ namespace ADBRuntime
         /// <remarks>
         /// Extents is the componentwise distance between min and max.
         /// </remarks>
-        public float3 Extents => Max - Min;
+        public float3 Extents
+        { get { return Max - Min; }
+            set {
+                HalfExtents = value *0.5f;
+            }
+        }
+            
+            
+
+
 
         /// <summary>
         /// Computes the half extents of the AABB.
@@ -102,12 +113,26 @@ namespace ADBRuntime
         /// HalfExtents is half of the componentwise distance between min and max. Subtracting HalfExtents from Center
         /// gives Min and adding HalfExtents to Center gives Max.
         /// </remarks>
-        public float3 HalfExtents => (Max - Min) * 0.5f;
+        public float3 HalfExtents { get { return (Max - Min) * 0.5f; }
+            set { 
+                Max = Center + math.abs(value);
+                Min = Center - math.abs(value);
+            }
+        }
 
         /// <summary>
         /// Computes the center of the AABB.
         /// </summary>
-        public float3 Center => (Max + Min) * 0.5f;
+        public float3 Center
+        {
+            get { return (Max + Min) * 0.5f; }
+            set {
+                var distance =  value- Center;
+                Max += distance;
+                Min += distance;
+            }
+        }
+            
 
         /// <summary>
         /// Check if the AABB is valid.
@@ -173,7 +198,12 @@ namespace ADBRuntime
             Min -= signedDistance;
             Max += signedDistance;
         }
-
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Expand(float3 signedDistance)
+        {
+            Min -= signedDistance;
+            Max += signedDistance;
+        }
         /// <summary>
         /// Encapsulates the given AABB.
         /// </summary>

@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: MikuGloabalSetting
   m_EditorClassIdentifier: 
   settings:
-  - setting: {fileID: 11400000, guid: 199f03aef82f34b458678ff2ceccef92, type: 2}
+  - setting: {fileID: 11400000, guid: 45e8af7c995f0994e8da012604f8981e, type: 2}
     keyWord:
     - hair
   - setting: {fileID: 11400000, guid: ca7cd362f42d23c46a1acb4d930e2524, type: 2}
@@ -25,4 +25,3 @@ MonoBehaviour:
   - setting: {fileID: 11400000, guid: e0704258c643a0b41b40a213439b275a, type: 2}
     keyWord:
     - skirt
-  defaultKeyWord: []

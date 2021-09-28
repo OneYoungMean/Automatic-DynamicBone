@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace ADBRuntime
@@ -9,8 +10,8 @@ namespace ADBRuntime
     {
 
         public List<KeyWordSetting> settings;
-        public List<string> defaultKeyWord;
-        public ADBSetting GetSetting(string keyword)
+        public List<string> defaultKeyWord { get { return settings.SelectMany(x => x.keyWord, (x, y) => y).ToList(); } }
+        public bool GetSetting(string keyword,out ADBSetting setting)
         {
             if (!(settings == null || settings.Count == 0))
             {
@@ -24,13 +25,36 @@ namespace ADBRuntime
                               keyword +" keyword");
                             settings[i].setting = (ADBSetting)ScriptableObject.CreateInstance("ADBSetting");
                         }
-                        return settings[i].setting;
+                        setting= settings[i].setting;
+                        return true;
                     }                       
                 }
             }
 
             Debug.Log("You dont add the keyword : "+ keyword + " In ADBGlobalSetting! Check the ADBGlobalSetting File ");
-            return (ADBSetting)ScriptableObject.CreateInstance(typeof(ADBSetting));
+            setting = (ADBSetting)ScriptableObject.CreateInstance(typeof(ADBSetting));
+            return false;
+        }
+
+        public bool isContain(string keyword)
+        {
+            if (!(settings == null || settings.Count == 0))
+            {
+                for (int i = 0; i < settings.Count; i++)
+                {
+                    if (settings[i].HasKey(keyword))
+                    {
+                        if (settings[i].setting == null)
+                        {
+                            Debug.LogError("you global setting file has lost the setting file ,please check the " +
+                              keyword + " keyword");
+                            settings[i].setting = (ADBSetting)ScriptableObject.CreateInstance("ADBSetting");
+                        }
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
 
     }
@@ -40,9 +64,10 @@ namespace ADBRuntime
 
         public ADBSetting setting;
         [SerializeField]
-        List<string> keyWord;
+        public List<string> keyWord;
         public bool HasKey(string key)
         {
+            key = key.ToLower();
             if (keyWord != null)
             {
                 for (int i = 0; i < keyWord?.Count; i++)

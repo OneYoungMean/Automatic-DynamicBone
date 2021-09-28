@@ -16,6 +16,7 @@ namespace ADBRuntime
         public AnimationCurve moveByPrePointCurve = new AnimationCurve(new Keyframe[] { new Keyframe(0.0f, 0.0f), new Keyframe(1.0f, 0.0f) });
         public AnimationCurve distanceCompensationCurve = new AnimationCurve(new Keyframe[] { new Keyframe(0.0f, 0.0f), new Keyframe(1.0f, 0.0f) });
         public AnimationCurve freezeCurve = new AnimationCurve(new Keyframe[] { new Keyframe(0.0f, 0.0f), new Keyframe(1.0f, 1.0f) });
+        public AnimationCurve rigidScaleCurve = new AnimationCurve(new Keyframe[] { new Keyframe(0.0f, 0.1f), new Keyframe(1.0f, 0.1f) });
         public AnimationCurve structuralShrinkVerticalScaleCurve = new AnimationCurve(new Keyframe[] { new Keyframe(0.0f, 1.0f), new Keyframe(1.0f, 1.0f) });
         public AnimationCurve structuralStretchVerticalScaleCurve = new AnimationCurve(new Keyframe[] { new Keyframe(0.0f, 1.0f), new Keyframe(1.0f, 1.0f) });
         public AnimationCurve structuralShrinkHorizontalScaleCurve = new AnimationCurve(new Keyframe[] { new Keyframe(0.0f, 1.0f), new Keyframe(1.0f, 1.0f) });
@@ -32,16 +33,16 @@ namespace ADBRuntime
         public AnimationCurve pointRadiuCurve = new AnimationCurve(new Keyframe[] { new Keyframe(0.0f, 0.0f), new Keyframe(1.0f, 0.0f) });
         //OYM：调试情况用这一套
 
-        public float frictionGlobal = 0f;
+        public float frictionGlobal = 0f;//OYM:摩擦力比值
 
-        public float addForceScaleGlobal =1f;
-        public float gravityScaleGlobal = 1f;
-        public float moveByFixedPointGlobal = 0f;
-        public float distanceCompensationGlobal = 0f;
-        public float massGlobal = 0.99f;
-        public float moveByPrePointGlobal = 0f;
-        public float freezeGlobal = 0f;
-
+        public float addForceScaleGlobal = 1f;//OYM:附加力比值
+        public float gravityScaleGlobal = 1f;//OYM:重力比值
+        public float moveByFixedPointGlobal = 0f;//OYM:fixed节点传递下来的速度
+        public float distanceCompensationGlobal = 0f;//OYM:位移距离压缩
+        public float massGlobal = 0.99f;//OYM:怠速
+        public float moveByPrePointGlobal = 0f;//OYM:废弃
+        public float freezeGlobal = 0f;//OYM:冻结性
+        public float rigidScaleGlobal;//OYM:刚性
 
 
         public float structuralShrinkVerticalScaleGlobal = 1.0f;
@@ -91,11 +92,11 @@ namespace ADBRuntime
         public bool isCollideShear = true;
         public bool isLoopRootPoints = true;//OYM：与首节点循环链接（非刚体尽量别点
 
-        public bool isDebugDraw=true;
-        public bool isFixGravityAxis = true;
-        public Vector3 gravity = new Vector3(0.0f, -9.81f, 0.0f);//OYM：重力
-        public ColliderChoice colliderChoice = (ColliderChoice)(1 << 10 - 1);
-
+        public bool isDebugDraw = true;//OYM:debug绘制,
+        public bool isFixGravityAxis = true;//OYM:废弃
+        public Vector3 gravity = new Vector3(0.0f, -9.81f, 0.0f);//OYM：重力(注意会跟随角色旋转而旋转)
+        public ColliderChoice colliderChoice = (ColliderChoice)(1 << 10 - 1);//OYM:collider选择
+        public bool isFixedPointFreezeRotation;//OYM:fixed节点固定旋转,用来解决一些坑爹的头发
 
     }
 

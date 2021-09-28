@@ -71,7 +71,7 @@ namespace ADBRuntime
             if (isInitialize) return;
             fixedNodeList = rootNode.childNode;
             SerializeAndSearchAllPoints(rootNode, ref allNodeList, out maxNodeDepth);//OYM：递归搜索子节点,获取所有节点的List,计算所有节点的deepRate
-            CreatePointStructList(allNodeList);//OYM：建立各种Point初始数据
+            CreatePointStruct1(allNodeList);//OYM：建立各种Point初始数据
 
             UpdateJointConnection(fixedNodeList);//OYM：这里是给所有的节点进行设置，同时获取所有可以搜索到的两点中间的约束并对其进行分类
             CreationConstraintList();//OYM：建立constraint的struct供给jobs使用
@@ -139,7 +139,7 @@ namespace ADBRuntime
                 childPoint.pointRead.fixedIndex = point.pointRead.fixedIndex;
                 childPoint.parent = point;
 
-                childPoint.pointRead.initialLocalPosition = point.trans? Quaternion.Inverse(point.trans.rotation) * (childPoint.trans.position - point.trans.position) : childPoint.trans.position;
+                childPoint.pointRead.initialLocalPosition = Quaternion.Inverse(point.trans.rotation) * (childPoint.trans.position - point.trans.position);
                 childPoint.pointRead.initialLocalRotation = childPoint.trans.localRotation;
                 childPoint.pointRead.initialRotation = childPoint.trans.rotation;
                 childPoint.index = allPointList.Count;
@@ -154,7 +154,7 @@ namespace ADBRuntime
                     childPoint.pointRead.fixedIndex = point.pointRead.fixedIndex;
                     var fixedPoint = allPointList[childPoint.pointRead.fixedIndex];
 
-                    childPoint.pointRead.initialPosition = Quaternion.FromToRotation(Vector3.down, aDBSetting.gravity) * Quaternion.Inverse(fixedPoint.trans.rotation) * (childPoint.trans.position - fixedPoint.trans.position);
+                    childPoint.pointRead.initialPosition =  Quaternion.Inverse(fixedPoint.trans.rotation) * (childPoint.trans.position - fixedPoint.trans.position);
 
                 }
                 allPointList.Add(childPoint);
@@ -172,7 +172,7 @@ namespace ADBRuntime
                 }
             }
         }
-        private void CreatePointStructList(List<ADBRuntimePoint> allPointList)
+        private void CreatePointStruct1(List<ADBRuntimePoint> allPointList)
         {
 
             pointReadList = new PointRead[allPointList.Count];
@@ -185,8 +185,9 @@ namespace ADBRuntime
                 float rate = point.pointDepthRateMaxPointDepth;
 
                 point.pointRead.colliderChoice = aDBSetting.colliderChoice;
-                point.pointRead.isFixGravityAxis = aDBSetting.isFixGravityAxis;
-                point.pointRead.radius = aDBSetting.pointRadiuCurve.Evaluate(rate);
+                //point.pointRead.isFixGravityAxis = aDBSetting.isFixGravityAxis;
+                point.pointRead.isFixedPointFreezeRotation = aDBSetting.isFixedPointFreezeRotation;
+               point.pointRead.radius = aDBSetting.pointRadiuCurve.Evaluate(rate);
 
                 if (!aDBSetting.useGlobal)
                 {
@@ -198,7 +199,9 @@ namespace ADBRuntime
                     point.pointRead.mass =aDBSetting.massCurve.Evaluate(rate) * 0.2f;//OYM：只取0.8-1这一段
                     point.pointRead.moveByPrePoint = aDBSetting.moveByPrePointCurve.Evaluate(rate);
                     point.pointRead.distanceCompensation = aDBSetting.distanceCompensationCurve.Evaluate(rate);
-                    point.pointRead.freeze = aDBSetting.freezeCurve.Evaluate(rate);
+                    point.pointRead.freezeScale = aDBSetting.freezeCurve.Evaluate(rate);
+                    point.pointRead.freezeLimit = 1f;
+                    point.pointRead.rigidScale = aDBSetting.rigidScaleCurve.Evaluate(rate)*0.5f;
                     point.pointRead.gravity = aDBSetting.gravity * aDBSetting.gravityScaleCurve.Evaluate(rate);
                     point.pointRead.circumferenceShrink = 0.5f * aDBSetting.circumferenceShrinkScaleCurve.Evaluate(rate);
                     point.pointRead.circumferenceStretch = 0.5f * aDBSetting.circumferenceStretchScaleCurve.Evaluate(rate);
@@ -221,8 +224,10 @@ namespace ADBRuntime
                     point.pointRead.mass =aDBSetting.massGlobal * 0.2f;
                     point.pointRead.moveByPrePoint = aDBSetting.moveByPrePointGlobal;
                     point.pointRead.distanceCompensation = aDBSetting.distanceCompensationGlobal;
-                    point.pointRead.freeze = aDBSetting.freezeGlobal;
-                    point.pointRead.gravity = aDBSetting.gravity*aDBSetting.gravityScaleGlobal;
+                    point.pointRead.freezeScale = aDBSetting.freezeGlobal;
+                    point.pointRead.freezeLimit = 1;//OYM:防止运动过快导致过于Q弹
+                    point.pointRead.rigidScale = aDBSetting.rigidScaleGlobal*0.5f;
+                   point.pointRead.gravity = aDBSetting.gravity*aDBSetting.gravityScaleGlobal;
                     point.pointRead.circumferenceShrink = 0.5f * aDBSetting.circumferenceShrinkScaleGlobal;
                     point.pointRead.circumferenceStretch = 0.5f * aDBSetting.circumferenceStretchScaleGlobal;
                     point.pointRead.structuralShrinkVertical = 0.5f * aDBSetting.structuralShrinkVerticalScaleGlobal;
@@ -329,6 +334,11 @@ namespace ADBRuntime
         private void CreationConstraintList()
         {
             var ConstraintReadList = new List<List<ConstraintRead>>();
+            int jobcount = Unity.Jobs.LowLevel.Unsafe.JobsUtility.JobWorkerCount;
+            for (int i = 0; i < jobcount; i++)
+            {
+                ConstraintReadList.Add(new List<ConstraintRead>());
+            }
             int constraintindex = 0;
             CheckAndAddConstraint(aDBSetting.isComputeStructuralVertical, ref constraintindex, constraintsStructuralVertical, ref ConstraintReadList);
             CheckAndAddConstraint(aDBSetting.isComputeStructuralHorizontal, ref constraintindex, constraintsStructuralHorizontal, ref ConstraintReadList);
@@ -346,28 +356,41 @@ namespace ADBRuntime
 
         private void CheckAndAddConstraint(bool isCompute, ref int constraintIndex, List<ADBRuntimeConstraint> constraintList, ref List<List<ConstraintRead>> ConstraintReadList)
         {
-            if (isCompute)
+            if (!isCompute)
             {
-                for (int i = 0; i < constraintList.Count; i++)
+                return;
+            }
+            int k = 0;
+            for (int i = 0; i < constraintList.Count; i++)
+            {
+                
+                var constraint = i%2==0? constraintList[i/2]: constraintList[constraintList.Count-1-i / 2];
+                //OYM:临时插入一段,解决一下bug 
+
+                var isAdd = false;
+
+                for (int j = 0; j < ConstraintReadList.Count; j++, k++)
                 {
-                    var isAdd = false;
-                    for (int j0 = 0; j0 < ConstraintReadList.Count; j0++)
+                    if (k == ConstraintReadList.Count)
                     {
-                        if (!ConstraintReadList[j0].Contains(constraintList[i].constraintRead))
-                        {
-                            ConstraintReadList[j0].Add(constraintList[i].constraintRead);
-                            isAdd = true;
-                            break;
-                        }
+                        k = 0;
                     }
-                    if (!isAdd)
-                    {//if all table contain this 
-                        var list = new List<ConstraintRead>();
-                        list.Add(constraintList[i].constraintRead);
-                        ConstraintReadList.Add(list);
+
+                    if (!ConstraintReadList[k].Contains(constraint.constraintRead))
+                    {
+                        ConstraintReadList[k].Add(constraint.constraintRead);
+                        isAdd = true;
+                        break;
                     }
                 }
+                if (!isAdd)
+                {//if all table contain this 
+                    var list = new List<ConstraintRead>();
+                    list.Add(constraint.constraintRead);
+                    ConstraintReadList.Add(list);
+                }
             }
+            
         }
 
         private void UpdateJointConnection(List<ADBRuntimePoint> fixedPointList)
@@ -600,7 +623,7 @@ namespace ADBRuntime
             {
 
                 if (!point.childNode[i].allowCreateAllConstraint) continue;//OYM：不允许创建则跳过
-                if (deep != 0 && (aDBSetting.isComputeBendingVertical && deep != 1)) //OYM:  第0层通常都有ConstraintStructuralVertical,第一层如果打开ComputeBendingVertical也会重复,所以排除这两种情况.
+                if (!(aDBSetting.isComputeStructuralVertical&& deep == 0 )&& !(aDBSetting.isComputeBendingVertical && deep == 1)) //OYM:  第0层通常都有ConstraintStructuralVertical,第一层如果打开ComputeBendingVertical也会重复,所以排除这两种情况.
                 {
                     ConstraintList.Add(new ADBRuntimeConstraint(ConstraintType.Circumference, point, point.childNode[i], shrink, stretch, false));
                 }
@@ -619,7 +642,7 @@ namespace ADBRuntime
                 {
                     var isRepetA = aDBSetting.isComputeStructuralVertical && (childPointB[i].depth == 1);
                     var isRepetB = aDBSetting.isComputeBendingVertical && (childPointB[i].depth == 2);
-                    if (!isRepetA && !isRepetB)
+                    if (!(isRepetA||isRepetB))
                     {
                         ConstraintList.Add(new ADBRuntimeConstraint(ConstraintType.Circumference, PointA, childPointB[i], shrink, stretch,false));
                     }
@@ -710,7 +733,7 @@ namespace ADBRuntime
                         }
                         else
                         {
-                            setting = settings.GetSetting(keyWord);
+                            settings.GetSetting(keyWord,out setting);
                         }
 
                         ADBRuntimeJointAndPointControlls.Add(new ADBConstraintReadAndPointControll(parentPoint, keyWord, setting));
@@ -866,7 +889,7 @@ namespace ADBRuntime
 
             foreach (var point in allNodeList)
             {
-                point.OnDrawGizmos(colliderCollisionType);
+                point.OnDrawGizmos();
             }
             if (aDBSetting.isComputeStructuralVertical)
             {

@@ -36,7 +36,8 @@ namespace ADBRuntime
             if (!controller.useGlobal)
             {
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("gravityScaleCurve"), new GUIContent("重力系数曲线"), true);
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("freezeCurve"), new GUIContent("刚性系数曲线"), true);
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("freezeCurve"), new GUIContent("世界刚性系数曲线"), true);
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("rigidScaleCurve"), new GUIContent("本地刚性系数曲线"), true);
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("massCurve"), new GUIContent("怠速曲线"), true);
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("moveByFixedPointCurve"), new GUIContent("速度补偿曲线"), true);
                // EditorGUILayout.PropertyField(serializedObject.FindProperty("moveByPrePointCurve"), new GUIContent("Move By PrePoint 曲线"), true);
@@ -64,8 +65,10 @@ namespace ADBRuntime
             else
             {
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("gravityScaleGlobal"), new GUIContent("重力系数值"), true);
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("freezeGlobal"), new GUIContent("刚性系数值"), true);
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("freezeGlobal"), new GUIContent("世界刚性系数值"), true);
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("rigidScaleGlobal"), new GUIContent("本地刚性系数值"), true);
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("massGlobal"), new GUIContent("怠速值"), true);
+
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("moveByFixedPointGlobal"), new GUIContent("速度补偿值"), true);
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("distanceCompensationGlobal"), new GUIContent("距离补偿值"), true);
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("frictionGlobal"), new GUIContent("摩擦力值"), true);
@@ -91,12 +94,11 @@ namespace ADBRuntime
                     EditorGUILayout.PropertyField(serializedObject.FindProperty("circumferenceStretchScaleGlobal"), new GUIContent("放射分布-杆件-拉伸力-系数值"), true);
                 }
 
-                if (controller.isCollideShear || controller.isCollideStructuralHorizontal || controller.isCollideStructuralVertical)
-                {
-                    GUILayout.Space(5);
-                    EditorGUILayout.PropertyField(serializedObject.FindProperty("pointRadiuCurve"), new GUIContent("节点碰撞体积半径曲线"), true);
-                }
+
             }
+            GUILayout.Space(5);
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("pointRadiuCurve"), new GUIContent("节点碰撞体积半径曲线"), true);
+
             Titlebar("杆件设置", Color.green);
             showConstrainForce = EditorGUILayout.Foldout(showConstrainForce, "杆件基础力");
             if (showConstrainForce)
@@ -174,6 +176,7 @@ namespace ADBRuntime
             }
             EditorGUILayout.PropertyField(serializedObject.FindProperty("gravity"), new GUIContent("重力"), true);
             EditorGUILayout.PropertyField(serializedObject.FindProperty("isFixGravityAxis"), new GUIContent("重力轴随角色旋转而旋转"), true);
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("isFixedPointFreezeRotation"), new GUIContent("固定节点是否冻结旋转"), true);
             controller.colliderChoice =(ColliderChoice) EditorGUILayout.EnumFlagsField("接收以下种类的碰撞体的信息",(ColliderChoiceZh)controller.colliderChoice);
             serializedObject.ApplyModifiedProperties();
         }

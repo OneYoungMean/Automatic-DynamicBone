@@ -18,13 +18,14 @@ namespace ADBRuntime
         public ADBRuntimePoint pointA { get; private set; }//OYM：父节点
         public ADBRuntimePoint pointB { get; private set; }//OYM：子节点
         public Vector3 direction { get; private set; }
-        
-        public ADBRuntimeConstraint(ConstraintType type, ADBRuntimePoint pointA, ADBRuntimePoint pointB,float shrink,float stretch,bool isCollide)
+
+        public ADBRuntimeConstraint(ConstraintType type, ADBRuntimePoint pointA, ADBRuntimePoint pointB, float shrink, float stretch, bool isCollide)
         {
             constraintRead.type = type;
             this.pointA = pointA;
             this.pointB = pointB;
-           // constraintRead.radius = 0.5f*(pointA.pointRead.radius+ pointB.pointRead.radius);要用这个属性自己改,反正用起来太奇怪了=w=
+            constraintRead.radius = 0.5f * (pointA.pointRead.radius + pointB.pointRead.radius);//要用这个属性自己改,反正用起来太奇怪了=w=
+
             constraintRead.indexA = pointA.index;
             constraintRead.indexB = pointB.index;
             constraintRead.shrink = shrink;
@@ -61,21 +62,7 @@ namespace ADBRuntime
                 default:
                     return;
             }
-            if (constraintRead.radius != 0&& IsDrawOutLine)
-            {
-                Vector3 directionNormalize = direction.normalized;
-                Vector3 right = Vector3.Cross(Vector3.up * constraintRead.radius, directionNormalize);
-                Vector3 up = Vector3.Cross(right, directionNormalize);
-                Gizmos.DrawLine(pointA.trans.position + right, pointB.trans.position + right);
-                Gizmos.DrawLine(pointA.trans.position - right, pointB.trans.position - right);
-                Gizmos.DrawLine(pointA.trans.position + up, pointB.trans.position + up);
-                Gizmos.DrawLine(pointA.trans.position - up, pointB.trans.position - up);
-
-            }
-            else
-            {
-                Gizmos.DrawLine(pointA.trans.position, pointB.trans.position);
-            }
+            Gizmos.DrawLine(pointA.trans.position, pointB.trans.position);
         }
     }
 
