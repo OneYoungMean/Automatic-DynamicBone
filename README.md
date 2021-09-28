@@ -1,28 +1,32 @@
 # 写在开头  
-* 如果您是第一次接触该项目,您可以选择在[此处下载示例](https://wwe.lanzoui.com/iotvcf8d3mb) 并访问[项目的wiki](https://github.com/OneYoungMean/Automatic-DynamicBone/wiki)  
+* 如果您是第一次接触该项目,您可以选择访问[项目的wiki](https://github.com/OneYoungMean/Automatic-DynamicBone/wiki)  
 * [English version manual](https://github.com/OneYoungMean/Automatic-DynamicBone/wiki/English-version-manual)  sorry Im too busy to make the localization XD  
 
   有没有大佬能够给推荐一份工作的,应届生,可怜,弱小,还没工作QAQ,联系QQ:3303609008
   
-- **当前版本:1.1preview 最后更新日期:21/5/13**  
+- **当前版本:1.5.0preview 最后更新日期:21/9/28**  
 - **史诗级更新大放送!业界良心不弃坑!**
-- 
-# 1.1preview更新点速览    
-* 增加了对于树状骨骼的支持,一个骨骼现在可以支持多个子骨骼了
-* 修复 #14,#13的问题,以及一些零散的bug
-* 迁移版本到19.4.21,早期原版本在[此处查看](https://github.com/OneYoungMean/Automatic-DynamicBone/tree/492bd01e25dc1fcb5641ff834de7637ba439125f)
-* **利用数学库优化物理核心,现在运行速度是原来的四倍**
-* **解决了反复震颤的老毛病!更加稳定的节点!现在只需要一次迭代就能够得到相当稳定的动态骨骼**
-* **碰撞体功能修复!现在支持碰撞体,立场等四种不同模式的碰撞体了!**  
-![](https://z3.ax1x.com/2021/05/14/gsE1UO.gif)
-* **碰撞体算法优化,现在碰撞的消耗更加少了!**
-* **自动生成碰撞体增加生成手指的碰撞体选项**
-* **优化轨迹功能现在拥有更好的效果了!**  
-![](https://z3.ax1x.com/2021/05/13/gD7YkD.gif)
+
+
+# 1.5.0preview更新点速览(抱歉我晚点再来补图=w=)    
+* **性能增加2倍**
+* **更加灵活的Collider系统,现在采用Unity的Collider进行碰撞!只需要在unity的Collider下添加[ADBColliderReader]脚本就能够动态添加collder了!**  
+* **更加丰富的操作面板和选项,增加了一部分错误排查的代码!增加了是否多线程/是否并行等选项!**
+* **增加了一个本地刚性值的可调参数,增加了Setting中的若干选项**
+* 增加了一个轨迹优化的实验性功能,这个功能可以帮你在仅迭代次数<4次的情况下优化出更好的运动轨迹(性能党狂喜)
+* 增加了一个演示示例,同时演示示例全部上传至github.  
+![](https://z3.ax1x.com/2021/09/28/4f8YtK.gif) 
+* 修复了碰撞体的尺寸/角色的尺寸发生变化的时候,碰撞不匹配的问题
+* 修复了多个子节点的旋转问题
+* 修复了之前的已知collider问题
+* 修复了关键词不识别的问题
+* 修复重置所有节点数据时报错的问题
+* 修复了物理上潜在的一些越界问题
+* 代码洁癖症迫使我把代码整理了一遍,还加了点注释QwQ
 
 ## 更新注意事项
 **请确保您的mathmatica版本高于等于1.2.1**  
-**如果遇到卡顿问题与未释放的nativeContainer请尝试在jobs菜单下关闭SafelyCheck与enableJobDebuger选项**  
+**如果遇到卡顿问题,请尝试在jobs菜单下关闭SafelyCheck与enableJobDebuger选项**  
 
 # AutomaticDynamicBone
 **unity骨骼布料仿真插件**.  
@@ -90,5 +94,3 @@
 需要一份工作!
 ```
 ***
-### 已知存在问题
-0BB盒碰撞体在碰撞体->约束在内的时候会出现一些奇怪的现象
