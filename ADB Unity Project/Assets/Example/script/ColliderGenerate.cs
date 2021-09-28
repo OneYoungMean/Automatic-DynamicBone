@@ -25,18 +25,21 @@ public class ColliderGenerate : MonoBehaviour
     }
     void CreateCollider(Transform transform)
     {
-        int target = (int)(Random.value * 3);
         GameObject collider;
-        switch (target)
+        
+        switch (seed)
         {
             case 0:
                 collider = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+                seed++;
                 break;
             case 1:
                 collider = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                seed++;
                 break;
             default:
                 collider = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                seed = 0;
                 break;
         }
         collider.transform.position = transform.position;

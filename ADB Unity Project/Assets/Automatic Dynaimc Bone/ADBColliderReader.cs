@@ -37,7 +37,9 @@ namespace ADBRuntime.Mono
 
         public bool Equals(UnityEngine.SphereCollider sphereCollider)
         {
-            
+
+
+
             return colliderType == ColliderType.Sphere&&radius == sphereCollider.radius&& center == sphereCollider.center;
         }
 
