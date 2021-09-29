@@ -33,12 +33,14 @@
 ![](https://z3.ax1x.com/2021/09/29/44E1Gn.png) 
 
 **unity骨骼布料仿真插件**. 
-* 基于https://github.com/SPARK-inc/SPCRJointDynamics 
+* 基于https://github.com/SPARK-inc/SPCRJointDynamics
+*  
 * 基于unity jobs 多线程系统
 * 一个可以根据骨骼布料,自动生成具有物理效果头发和裙子,用于代替dynamicBone插件功能
 * 此外,缅怀作者被dynamic bone坑走了**15美刀**  
 ![](https://z3.ax1x.com/2021/09/29/44EJMV.gif)
 ![](https://z3.ax1x.com/2021/09/29/44Kfn1.gif)  
+[更多演示视频](https://www.bilibili.com/video/BV1wP4y187xE/)  
 
 ## 特性
 
