@@ -38,21 +38,21 @@ namespace ADBRuntime
 
         public bool isContain(string keyword)
         {
-            if (!(settings == null || settings.Count == 0))
-            {
-                for (int i = 0; i < settings.Count; i++)
+            if (string.IsNullOrEmpty(keyword)) return false;
+
+            for (int i = 0; i < settings.Count; i++)
+            { 
+                if (settings[i].HasKey(keyword))
                 {
-                    if (settings[i].HasKey(keyword))
+                    if (settings[i].setting == null)
                     {
-                        if (settings[i].setting == null)
-                        {
-                            Debug.LogError("you global setting file has lost the setting file ,please check the " +
-                              keyword + " keyword");
-                            settings[i].setting = (ADBSetting)ScriptableObject.CreateInstance("ADBSetting");
-                        }
-                        return true;
+                        Debug.LogError("you global setting file has lost the setting file ,please check the " +
+                            keyword + " keyword");
+                        settings[i].setting = (ADBSetting)ScriptableObject.CreateInstance("ADBSetting");
                     }
+                    return true;
                 }
+                
             }
             return false;
         }
@@ -67,12 +67,14 @@ namespace ADBRuntime
         public List<string> keyWord;
         public bool HasKey(string key)
         {
+            if (string.IsNullOrEmpty(key)) return false;
+
             key = key.ToLower();
             if (keyWord != null)
             {
-                for (int i = 0; i < keyWord?.Count; i++)
+                for (int i = 0; i < keyWord.Count; i++)
                 {
-                    if (keyWord[i].Length>0&& keyWord[i].ToLower().Contains( key))
+                    if (!string.IsNullOrEmpty(key) && keyWord[i].ToLower().Contains( key))
                     {
                         return true;
                     }

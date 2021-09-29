@@ -235,6 +235,7 @@ namespace ADBRuntime.Mono
 
             if (!Application.isPlaying)
             {
+                OverlapBox = colliderControll.CaculateAABB(jointAndPointControlls);//OYM:生成AAB
                 overlapsColliderList.AddRange(gameObject.GetComponents<ADBColliderReader>());
                 overlapsColliderList.AddRange(gameObject.GetComponentsInChildren<ADBColliderReader>());
                 return;
@@ -331,13 +332,13 @@ namespace ADBRuntime.Mono
             {
                 for (int i = 0; i < generateKeyWordWhiteList.Count; i++)
                 {
-                    if (generateKeyWordWhiteList[i] == "")
+                    if (!string.IsNullOrEmpty(generateKeyWordWhiteList[i]))
                     {
-                        generateKeyWordWhiteList[i] = null;
+                        generateKeyWordWhiteList[i] = generateKeyWordWhiteList[i].ToLower();
                     }
                     else
                     {
-                        generateKeyWordWhiteList[i] = generateKeyWordWhiteList[i].ToLower();
+                        generateKeyWordWhiteList[i] = null;
                     }
                 }
             }
@@ -397,7 +398,7 @@ namespace ADBRuntime.Mono
                 colliderControll = new ADBAvatarReader(this);//OYM：在这里生成collider和AABB;
             }
 
-            OverlapBox = colliderControll.CaculateAABB();//OYM:生成AABB
+            OverlapBox = colliderControll.CaculateAABB(jointAndPointControlls);//OYM:生成AABB
 
             if (!isGenerateColliderAutomaitc)
             {

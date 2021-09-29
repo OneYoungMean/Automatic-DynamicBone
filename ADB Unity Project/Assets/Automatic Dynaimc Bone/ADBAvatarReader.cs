@@ -23,6 +23,8 @@ namespace ADBRuntime
         public const float endLegWidthAspect = 0.7f;
         private bool isGenerateFinger;
         private ADBRuntimeController controller;
+        public int isGenerateSuccessful { get; private set; } //OYM:-1失败.0未知.1成功
+
         #endregion
 
 
@@ -31,28 +33,88 @@ namespace ADBRuntime
             this.controller = controller;
         }
 
-        public MinMaxAABB CaculateAABB()
+        public MinMaxAABB CaculateAABB(ADBConstraintReadAndPointControll[] jointAndPointControlls)
         {
             Transform root = controller.generateTransform;
-            var AABB =  MinMaxAABB.CreateFromCenterAndExtents(root.position,0);
-            Transform[] allTrans = controller.generateTransform.GetComponentsInChildren<Transform>();//OYM:只搜索当前层
-            for (int i = 0; i < allTrans.Length; i++)
+            MinMaxAABB AABB=new MinMaxAABB();
+            if (jointAndPointControlls == null|| jointAndPointControlls.Length==0)
             {
-                AABB.Encapsulate(allTrans[i].position);
-            }
-            AABB.Expand(AABB.HalfExtents);
+                 AABB = MinMaxAABB.CreateFromCenterAndExtents(root.position, 0);
+                Transform[] allTrans = controller.generateTransform.GetComponentsInChildren<Transform>();//OYM:只搜索当前层
+                for (int i = 0; i < allTrans.Length; i++)
+                {
+                    AABB.Encapsulate(allTrans[i].position);
+                }
 
-            float3 halfExtents = AABB.HalfExtents;
-            float avg = (halfExtents.x + halfExtents.y + halfExtents.z) / 3;
-            halfExtents = math.max(halfExtents, avg);
-            AABB.HalfExtents = halfExtents;
+                AABB.Expand(AABB.HalfExtents);
+                float3 halfExtents = AABB.HalfExtents;
+                float avg = (halfExtents.x + halfExtents.y + halfExtents.z) / 3;
+                halfExtents = math.max(halfExtents, avg);
+                AABB.HalfExtents = halfExtents;
+            }
+
+            else
+            {
+               
+                for (int i = 0; i < jointAndPointControlls.Length; i++)
+                {
+                    var fixedPoint = jointAndPointControlls[i].fixedNodeList;
+                    if (fixedPoint==null|| fixedPoint.Count==0) continue;
+
+                    for (int j = 0; j < fixedPoint.Count; j++)
+                    {
+                        if (fixedPoint[j]!=null)
+                        {
+                            MinMaxAABB smallAABB = MinMaxAABB.CreateFromCenterAndHalfExtents(fixedPoint[j].trans.position, GetMaxDeep(fixedPoint[i]));
+                            if (math.all(AABB.Min == 0)&& math.all(AABB.Max == 0))
+                            {
+                                AABB = smallAABB;
+                            }
+                            else
+                            {
+                                AABB.Encapsulate(smallAABB);
+                            }
+                        }
+                    }
+                }              
+            }
+
             AABB.Center =Quaternion.Inverse( root.rotation)*((Vector3)AABB.Center - controller.generateTransform.position);
             return AABB;
         }
 
+        private float GetMaxDeep(ADBRuntimePoint point)
+        {
+            if (point == null)
+            {
+                return 0;
+            }
+            else if (point.childNode == null|| point.childNode.Count==0)
+            {
+                return math.length(point.pointRead.initialLocalPosition);
+            }
+            else
+            {
+                float max = 0;
+                for (int i = 0; i < point.childNode.Count; i++)
+                {
+                    max =math.max(max, GetMaxDeep(point.childNode[i]));
+                }
+                if (point.isFixed)
+                {
+                    return max;
+                }
+                else
+                {
+                    return math.length(point.pointRead.initialLocalPosition) + max;
+                }
+
+            }
+        }
+
         public List<ADBColliderReader> GenerateBodyCollidersData(List<ADBRuntimePoint> allPointTrans, bool isGenerateFinger,bool isGenerateColliderOpenTrigger)
         {
-
+            isGenerateSuccessful = -1;
             if (controller.generateTransform == null) return null;
 
             Animator animator = controller.generateTransform.GetComponent<Animator>();//OYM:只搜索当前层
@@ -62,6 +124,7 @@ namespace ADBRuntime
             {
                 if (generateColliderList == null)
                 {
+                    isGenerateSuccessful = 0;
                     generateColliderList = new List<ADBColliderReader>();
                 }
                 GenerateCollidersData(ref generateColliderList, allPointTrans, animator, isGenerateFinger, isGenerateColliderOpenTrigger);
@@ -78,6 +141,7 @@ namespace ADBRuntime
                         {
                             if (generateColliderList == null)
                             {
+                                isGenerateSuccessful = 0;
                                 generateColliderList = new List<ADBColliderReader>();
                             }
                             GenerateCollidersData(ref generateColliderList, allPointTrans, animator, isGenerateFinger, isGenerateColliderOpenTrigger);//OYM:尝试生成
@@ -89,6 +153,7 @@ namespace ADBRuntime
                     }
                 }
             }
+            isGenerateSuccessful = 1;
             return generateColliderList;
         }
         private void GenerateCollidersData(ref List<ADBColliderReader> runtimeColliders, List<ADBRuntimePoint> allPointTrans, Animator animator, bool isGenerateFinger, bool isGenerateColliderOpenTrigger)

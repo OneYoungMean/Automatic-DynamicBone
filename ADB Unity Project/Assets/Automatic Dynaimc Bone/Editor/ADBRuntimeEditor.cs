@@ -71,7 +71,7 @@ namespace ADBRuntime
 
                     }
                 }
-                if (controller.colliderControll!=null&& (controller.generateColliderList == null|| controller.generateColliderList.Count==0))
+                if (controller.colliderControll!=null&& (controller.colliderControll.isGenerateSuccessful == -1))
                 {
                     Titlebar("碰撞体似乎没有生成成功,尝试将脚本挂载在Animator脚本下方试试", Color.grey);
                 }
@@ -135,10 +135,7 @@ namespace ADBRuntime
 
             if (GUILayout.Button(key + "碰撞体", GUILayout.Height(22.0f)))
             {
-                if (controller.isGenerateColliderAutomaitc)
-                {
-                    controller.initializeCollider();
-                }
+                controller.initializeCollider();
                 controller.UpdateOverlapsCollider();
             }
             if (controller.generateColliderList == null|| controller.generateColliderList.Count==0)
