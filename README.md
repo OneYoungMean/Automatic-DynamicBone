@@ -2,7 +2,7 @@
 * 如果您是第一次接触该项目,您可以选择访问[项目的wiki](https://github.com/OneYoungMean/Automatic-DynamicBone/wiki)  
 * [English version manual](https://github.com/OneYoungMean/Automatic-DynamicBone/wiki/English-version-manual)  sorry Im too busy to make the localization XD  
 
-  有没有大佬能够给推荐一份工作的,应届生,可怜,弱小,还没工作QAQ,联系QQ:3303609008
+  有没有大佬能够给推荐一份工作的,马上就毕业的应届生,可怜,弱小,还没工作QAQ
   
 - **当前版本:1.5.0preview 最后更新日期:21/9/28**  
 - **史诗级更新大放送!业界良心不弃坑!**
