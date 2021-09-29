@@ -337,7 +337,7 @@ namespace ADBRuntime.Internal
                 PointRead* pParerntPointRead = (pReadPoints + pReadPoint->parentIndex);
 
                 float3 tagetPosition = pParentPointReadWrite->position+ math.mul(pParentPointReadWrite->rotationTemp, pReadPoint->initialLocalPosition) * globalScale;
-                float3 positionTemp = math.lerp(position, tagetPosition, pReadPoint->rigidScale* oneDivideIteration);
+                float3 positionTemp = math.lerp(position, tagetPosition, pReadPoint->rigidScale * math.clamp(oneDivideIteration, 0, 0.5f));//OYM:这个值超过0.5之后会在单次迭代内出现奇怪的问题
                 float3 force =  positionTemp- position;
                 position += force;
 
