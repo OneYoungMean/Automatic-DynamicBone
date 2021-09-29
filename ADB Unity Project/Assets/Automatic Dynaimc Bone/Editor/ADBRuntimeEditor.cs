@@ -28,6 +28,7 @@ namespace ADBRuntime
 
         ADBRuntimeController controller;
         private bool isDeleteCollider;
+        private bool isGenerateColliderOpenTrigger;
         private const int max=64;
         public void OnEnable()
         {
@@ -70,7 +71,7 @@ namespace ADBRuntime
 
                     }
                 }
-                if (controller.colliderControll!=null&& controller.colliderControll.generateColliderList == null)
+                if (controller.colliderControll!=null&& (controller.generateColliderList == null|| controller.generateColliderList.Count==0))
                 {
                     Titlebar("碰撞体似乎没有生成成功,尝试将脚本挂载在Animator脚本下方试试", Color.grey);
                 }
@@ -79,6 +80,10 @@ namespace ADBRuntime
 
                 GUILayout.Space(5);
                 Titlebar("=============== 节点设置", color);
+                if (controller.generateTransform==null)
+                {
+                    controller.generateTransform = controller.transform;
+                }
                 controller.generateTransform = (Transform)EditorGUILayout.ObjectField(new GUIContent("搜索起始点"), controller.generateTransform, typeof(Transform), true);
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("generateKeyWordWhiteList"), new GUIContent("识别关键词"), true);
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("blackListOfGenerateTransform"), new GUIContent("节点黑名单"), true);
@@ -136,9 +141,13 @@ namespace ADBRuntime
                 }
                 controller.UpdateOverlapsCollider();
             }
-            if (controller.colliderControll == null || controller.colliderControll.generateColliderList == null)
+            if (controller.generateColliderList == null|| controller.generateColliderList.Count==0)
             {
                 controller.isGenerateColliderAutomaitc = EditorGUILayout.Toggle("自动生成全身碰撞体 ", controller.isGenerateColliderAutomaitc);
+                if (controller.isGenerateColliderAutomaitc)
+                {
+                    controller. isGenerateColliderOpenTrigger = EditorGUILayout.Toggle("  ┗━生成的碰撞体为trigger ", controller.isGenerateColliderOpenTrigger);
+                }
                 if (controller.isGenerateColliderAutomaitc)
                 {
                     controller.isGenerateByAllPoint = EditorGUILayout.Toggle("  ┗━以所有节点作为参照 ", controller.isGenerateByAllPoint);
@@ -155,14 +164,26 @@ namespace ADBRuntime
                 {
                     if (EditorUtility.DisplayDialog("你确定需要删除吗?", "该操作不可撤销", "ok", "cancel"))
                     {
-                        if (controller.colliderControll != null)
+                        for (int i = 0; i < controller.overlapsColliderList?.Count; i++)
                         {
-                            controller.colliderControll.Destory();
+                            if (controller.overlapsColliderList[i] != null)
+                            {
+                                if (controller.overlapsColliderList[i].gameObject.GetComponents<Component>().Length <= 3)
+                                {
+                                    DestroyImmediate(controller.overlapsColliderList[i].gameObject);
+                                }
+                                else
+                                {
+                                    DestroyImmediate(controller.overlapsColliderList[i]);
+                                }
+
+                            }
                         }
+                        controller.generateColliderList = null;
 
                         if (isDeleteCollider)
                         {
-                            for (int i = 0; i < controller.overlapsColliderList.Count; i++)
+                            for (int i = 0; i < controller.overlapsColliderList?.Count; i++)
                             {
                                 if (controller.overlapsColliderList[i] != null)
                                 {
@@ -177,7 +198,7 @@ namespace ADBRuntime
 
                                 }
                             }
-
+                            controller.overlapsColliderList.Clear();
                         }
                     }
                 }
@@ -185,6 +206,7 @@ namespace ADBRuntime
             }
 
             GUILayout.Space(10);
+
 
 
             Titlebar("=============== 物理设置", color);

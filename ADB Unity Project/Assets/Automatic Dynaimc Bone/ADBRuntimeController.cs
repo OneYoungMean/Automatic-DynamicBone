@@ -62,6 +62,8 @@ namespace ADBRuntime.Mono
         [SerializeField]
         public bool isGenerateFinger = false;
         [SerializeField]
+        public bool isGenerateColliderOpenTrigger=true;
+        [SerializeField]
         public float bufferTime=1f;
         [SerializeField]
         public int iteration=4;
@@ -89,12 +91,15 @@ namespace ADBRuntime.Mono
         public bool isRunAsync = false;
         [SerializeField]
         public bool isParallel=false;
-
         public ADBAvatarReader colliderControll;
 
         [SerializeField]
         public List<ADBColliderReader> overlapsColliderList;
         [SerializeField]
+        public List<ADBColliderReader> generateColliderList;
+        [SerializeField]
+        public MinMaxAABB OverlapBox;
+
         public UpdateMode updateMode=UpdateMode.Update;
         private ADBConstraintReadAndPointControll[] jointAndPointControlls;
         private DataPackage dataPackage;
@@ -106,6 +111,7 @@ namespace ADBRuntime.Mono
         private Vector3 addForce;
         public bool isAsync;
         private Collider[] colliders;
+
 
         //OYM:Advanced
         private const int maxColliderCount = 512;
@@ -229,13 +235,14 @@ namespace ADBRuntime.Mono
 
             if (!Application.isPlaying)
             {
+                overlapsColliderList.AddRange(gameObject.GetComponents<ADBColliderReader>());
                 overlapsColliderList.AddRange(gameObject.GetComponentsInChildren<ADBColliderReader>());
                 return;
             }
 
             int count = Physics.OverlapBoxNonAlloc(
-                                generateTransform.position+ generateTransform.rotation* (Vector3)colliderControll.AABB.Center,
-                                scale / initializeScale * colliderControll.AABB.HalfExtents,
+                                generateTransform.position+ generateTransform.rotation* (Vector3)OverlapBox.Center,
+                                scale / initializeScale * OverlapBox.HalfExtents,
                                 colliders, Quaternion.identity, int.MaxValue, QueryTriggerInteraction.Collide
                                 );
             ColliderRead[] colliderReads =new ColliderRead[count];
@@ -385,17 +392,21 @@ namespace ADBRuntime.Mono
         }
         public void initializeCollider()
         {
-
-
-            if (colliderControll!=null&& colliderControll.generateColliderList!=null)
+            if (colliderControll==null)
             {
-                Debug.LogWarning("Pleace delete old generate collider before you want to generate new!" );
-                return; 
+                colliderControll = new ADBAvatarReader(this);//OYM：在这里生成collider和AABB;
             }
-            colliderControll = new ADBAvatarReader(this);//OYM：在这里生成collider和AABB;
+
+            OverlapBox = colliderControll.CaculateAABB();//OYM:生成AABB
 
             if (!isGenerateColliderAutomaitc)
             {
+                return;
+            }
+
+            if (generateColliderList != null&& generateColliderList.Count>0)
+            {
+                Debug.LogWarning("Pleace delete old generate collider before you want to generate new!");
                 return;
             }
 
@@ -404,6 +415,7 @@ namespace ADBRuntime.Mono
                 ListCheck();
                 InitializePoint();
             }
+
             List<ADBRuntimePoint> pointList = new List<ADBRuntimePoint>();
 
             if (jointAndPointControlls == null || jointAndPointControlls.Length == 0)
@@ -425,7 +437,7 @@ namespace ADBRuntime.Mono
                     }
                 }
             }
-            colliderControll.GenerateBodyCollidersData(pointList,isGenerateFinger);
+            generateColliderList= colliderControll.GenerateBodyCollidersData(pointList,isGenerateFinger,isGenerateColliderOpenTrigger);
 
             isGenerateColliderAutomaitc = false;
         }
@@ -461,12 +473,8 @@ namespace ADBRuntime.Mono
                 }
             }
 
-            if (colliderControll!=null)
-            {
-                Gizmos.color = Color.red;
-                Gizmos.DrawWireCube(generateTransform.position+ generateTransform.rotation*colliderControll.AABB.Center, colliderControll.AABB.Extents);
-                //colliderControll.OnDrawGizmos();
-            }
+            Gizmos.color = Color.white;
+            Gizmos.DrawWireCube(generateTransform.position + generateTransform.rotation * OverlapBox.Center, OverlapBox.Extents);
         }
     }
 }
