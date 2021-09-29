@@ -2,20 +2,19 @@
 * 如果您是第一次接触该项目,您可以选择访问[项目的wiki](https://github.com/OneYoungMean/Automatic-DynamicBone/wiki)  
 * [English version manual](https://github.com/OneYoungMean/Automatic-DynamicBone/wiki/English-version-manual)  sorry Im too busy to make the localization XD  
 
-  有没有大佬能够给推荐一份工作的,应届生,可怜,弱小,还没工作QAQ,联系QQ:3303609008
+  有没有大佬能够给推荐一份工作的,马上就毕业的应届生,可怜,弱小,还没工作QAQ
   
 - **当前版本:1.5.0preview 最后更新日期:21/9/28**  
 - **史诗级更新大放送!业界良心不弃坑!**
 
 
-# 1.5.0preview更新点速览(抱歉我晚点再来补图=w=)    
+# 1.5.0preview更新点速览    
 * **性能增加2倍**
 * **更加灵活的Collider系统,现在采用Unity的Collider进行碰撞!只需要在unity的Collider下添加[ADBColliderReader]脚本就能够动态添加collder了!**  
 * **更加丰富的操作面板和选项,增加了一部分错误排查的代码!增加了是否多线程/是否并行等选项!**
 * **增加了一个本地刚性值的可调参数,增加了Setting中的若干选项**
 * 增加了一个轨迹优化的实验性功能,这个功能可以帮你在仅迭代次数<4次的情况下优化出更好的运动轨迹(性能党狂喜)
 * 增加了一个演示示例,同时演示示例全部上传至github.  
-![](https://z3.ax1x.com/2021/09/28/4f8YtK.gif) 
 * 修复了碰撞体的尺寸/角色的尺寸发生变化的时候,碰撞不匹配的问题
 * 修复了多个子节点的旋转问题
 * 修复了之前的已知collider问题
@@ -23,28 +22,26 @@
 * 修复重置所有节点数据时报错的问题
 * 修复了物理上潜在的一些越界问题
 * 代码洁癖症迫使我把代码整理了一遍,还加了点注释QwQ
+* ~~补上了元气满满的首页图~~
 
 ## 更新注意事项
 **请确保您的mathmatica版本高于等于1.2.1**  
 **如果遇到卡顿问题,请尝试在jobs菜单下关闭SafelyCheck与enableJobDebuger选项**  
 
-# AutomaticDynamicBone
-**unity骨骼布料仿真插件**.  
-* 基于https://github.com/SPARK-inc/SPCRJointDynamics 
+# AutomaticDynamicBone 
+![](https://z3.ax1x.com/2021/09/29/44E1Gn.png) 
+
+**unity骨骼布料仿真插件**. 
+* 基于https://github.com/SPARK-inc/SPCRJointDynamics
+*  
 * 基于unity jobs 多线程系统
 * 一个可以根据骨骼布料,自动生成具有物理效果头发和裙子,用于代替dynamicBone插件功能
 * 此外,缅怀作者被dynamic bone坑走了**15美刀**  
+* ![](https://z3.ax1x.com/2021/09/29/45i1LF.gif)
+![](https://z3.ax1x.com/2021/09/29/44EJMV.gif)
+![](https://z3.ax1x.com/2021/09/29/44Kfn1.gif)  
 
-
-## 快速开始
-
-1. 在脚本中找到**ADBRuntimeController**,添加到你想要添加的目标/目标父物体上.  
-2. 检查目标需要添加物理效果的骨骼,通常这类骨骼名字都会包含一个**固定的关键词**,比如hair,skirt,你需要把关键词写入到 _识别关键词_ 中.  
-3. 按下`生成节点数据`,并在底下找到绘制并辅助线勾选,如果一切顺利的话,你可以看到几条彩色的线和点,这些就是识别到的数据.  
-4. 运行游戏,一切已经就绪,晃动你的目标以查看效果,就是这么快XD!  
-
-![如果您看到本条信息,说明您的github被墙了一部分,图片无法加载出来,请尝试换个时间段再来](https://s1.ax1x.com/2020/08/02/atCRNd.gif) 
-
+[更多演示视频](https://www.bilibili.com/video/BV1wP4y187xE/)  
 
 ## 特性
 
@@ -74,13 +71,19 @@
 
 - **作者长期在线!** 有issue必回!包君满意!
 
-![Github只支持5mb的动图,导致好好的一张图硬生生压成一坨shit](https://s1.ax1x.com/2020/08/01/aGEHyV.gif)  
-![](https://s1.ax1x.com/2020/09/17/wfmGUe.gif)
-
 ## 要求
 
 - Unity2018.4及以上,除webGL外所有支持unity jobs的平台.  
 
+
+## 快速开始
+
+1. 在脚本中找到**ADBRuntimeController**,添加到你想要添加的目标/目标父物体上.  
+2. 检查目标需要添加物理效果的骨骼,通常这类骨骼名字都会包含一个**固定的关键词**,比如hair,skirt,你需要把关键词写入到 _识别关键词_ 中.  
+3. 按下`生成节点数据`,并在底下找到绘制并辅助线勾选,如果一切顺利的话,你可以看到几条彩色的线和点,这些就是识别到的数据.  
+4. 运行游戏,一切已经就绪,晃动你的目标以查看效果,就是这么快XD!  
+
+![如果您看到本条信息,说明您的github被墙了一部分,图片无法加载出来,请尝试换个时间段再来](https://s1.ax1x.com/2020/08/02/atCRNd.gif) 
 
 ### 说明书
 
