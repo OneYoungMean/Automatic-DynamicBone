@@ -35,7 +35,10 @@ namespace ADBRuntime
             constraintRead.length = (this.direction).magnitude;
 
         }
-
+        public override string ToString()//OYM:Debug用
+        {
+            return pointA.trans.name + " " +pointB.trans.name;
+        }
         public void OnDrawGizmos(bool IsDrawOutLine)
         {
             switch (constraintRead.type)

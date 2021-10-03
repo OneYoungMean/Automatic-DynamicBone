@@ -446,7 +446,7 @@ namespace ADBRuntime.Mono
         {
             addForce += force;
         }
-        public bool GetConstraintByKey(string key, ConstraintType constraintType, ref ADBRuntimeConstraint[] returnConstraint)
+        public bool GetConstraintByKey(string key, ConstraintType constraintType, out ADBRuntimeConstraint[] returnConstraint)
         {
             List<ADBRuntimeConstraint> constraints = new List<ADBRuntimeConstraint>();
             bool isFind = false;
