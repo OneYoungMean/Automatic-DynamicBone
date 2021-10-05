@@ -820,6 +820,11 @@ namespace ADBRuntime
             {
                 var childNodeTarns = transform.GetChild(i);//OYM：遍历每一个子节点
 
+                if (!childNodeTarns.gameObject.activeInHierarchy)//OYM:关闭了就不再进行添加
+                {
+                    continue;
+                }
+
                 var childName = childNodeTarns.name.ToLower();//OYM：获取他们的名字
                 ADBRuntimePoint point = null;
 

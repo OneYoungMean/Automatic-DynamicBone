@@ -29,23 +29,6 @@ namespace ADBRuntime.Internal
 
             public void Execute(int index, TransformAccess transform)
             {
-#if ADB_DEBUG
-            }
-            public void TryExecute(TransformAccessArray transforms, JobHandle job)
-            {
-                if (!job.IsCompleted)
-                {
-                    job.Complete();
-                }
-                for (int i = 0; i < transforms.length; i++)
-                {
-                    Execute(i, transforms[i]);
-                }
-            }
-            void Execute(int index, Transform transform)
-            {
-#endif
-
                 var pReadWritePoint = pReadWritePoints + index;
                 var pReadPoint = pReadPoints + index;
 
@@ -75,23 +58,6 @@ namespace ADBRuntime.Internal
 
             public void Execute(int index, TransformAccess transform)
             {
-#if ADB_DEBUG
-            }
-            public void TryExecute(TransformAccessArray transforms, JobHandle job)
-            {
-                if (!job.IsCompleted)
-                {
-                    job.Complete();
-                }
-                for (int i = 0; i < transforms.length; i++)
-                {
-                    Execute(i, transforms[i]);
-                }
-            }
-            void Execute(int index, Transform transform)
-            {
-#endif
-
                 var pReadWritePoint = pReadWritePoints + index;
                 var pReadPoint = pReadPoints + index;
 
@@ -179,15 +145,20 @@ namespace ADBRuntime.Internal
                 PointReadWrite* pReadWritePoint = pReadWritePoints + index;
                 quaternion transformRotation = transform.rotation;
                 float3 transformPosition = transform.position;
-                quaternion rotationTemp = math.mul(math.mul(transformRotation, math.inverse(transform.localRotation)), pReadPoint->initialLocalRotation);
+                quaternion localRotation = transform.localRotation;
+                //OYM：做笔记 unity当中 child.rotation =parent.rotation*child.localrotation;
+                //OYM:假设子节点的localrotation不变，只有父节点的rotation变了，那么当前子节点的rotation应该是
+                //OYM:Rotation*inverse（localRotation）*initialLocalRotation
+                quaternion rotationTemp = math.mul(math.mul(transformRotation, math.inverse(localRotation)), pReadPoint->initialLocalRotation);
                 if (pReadPoint->parentIndex == -1)//OYM：fixedpoint
                 {
+                    /*                   pReadWritePoint->deltaPosition = oneDivideIteration * (transformPosition - pReadWritePoint->position);
+                                        pReadWritePoint->deltaRotation = math.nlerp(quaternion.identity, math.mul(rotationTemp, math.inverse(pReadWritePoint->rotationTemp)), oneDivideIteration);*/
                     pReadWritePoint->deltaPosition = oneDivideIteration * (transformPosition - pReadWritePoint->position);
+                    pReadWritePoint->position = transformPosition;
 
-
-                    //OYM：做笔记 unity当中 child.rotation =parent.rotation*child.localrotation;
-                    
-                    pReadWritePoint->deltaRotation = math.nlerp(quaternion.identity, math.mul(rotationTemp, math.inverse(pReadWritePoint->rotationTemp)), oneDivideIteration);
+                    pReadWritePoint->deltaRotation = pReadWritePoint->rotationTemp;
+                    pReadWritePoint->rotationTemp = rotationTemp;
 
                     for (int i = pReadPoint->childFirstIndex; i < pReadPoint->childLastIndex; i++)
                     {
@@ -294,10 +265,10 @@ namespace ADBRuntime.Internal
                 }
                 else
                 {
-                    //OYM：计算渐进的fixed点坐标
+/*                    //OYM：计算渐进的fixed点坐标
                     pReadWritePoint->position += pReadWritePoint->deltaPosition;
                     //pReadWritePoint->rotationY = math.mul(pReadWritePoint->deltaRotationY, pReadWritePoint->rotationY);
-                    pReadWritePoint->rotationTemp = math.mul(pReadWritePoint->deltaRotation, pReadWritePoint->rotationTemp);
+                    pReadWritePoint->rotationTemp = math.mul(pReadWritePoint->deltaRotation, pReadWritePoint->rotationTemp);*/
                 }
 
             }
@@ -311,7 +282,7 @@ namespace ADBRuntime.Internal
                 float3 deltaPosition = pReadWritePoint->deltaPosition;
                 //OYM：获取固定点的信息
 
-                UpdateFixedPointChain(pReadPoint, pFixedPointRead, pReadWritePoint, pFixedPointReadWrite, ref position, ref deltaPosition);//OYM:更新来自fixed节点的力
+                UpdateFixedPointChain(pReadPoint,pReadWritePoint, pFixedPointReadWrite, ref position, ref deltaPosition);//OYM:更新来自fixed节点的力
 
                 UpdateGravity(pReadPoint, pReadWritePoint, ref deltaPosition);//OYM:更新重力
 
@@ -324,10 +295,11 @@ namespace ADBRuntime.Internal
                     OptimeizeForce(pReadPoint, pReadWritePoint, pFixedPointReadWrite, ref position, ref deltaPosition); //OYM:一些实验性的优化,或许有用?
                 }
 
-                pReadWritePoint->deltaPosition = deltaPosition; //OYM:  赋值
-
-                //OYM:以下部分会对deltaPosition更改,但不会影响其存储的值
                 UpdateRigid(pReadPoint, pReadWritePoint, ref position, ref deltaPosition);
+
+                pReadWritePoint->deltaPosition = deltaPosition; //OYM:  赋值
+                //OYM:以下部分会对deltaPosition更改,但不会影响其存储的值
+
 
                 pReadWritePoint->position = position+oneDivideIteration * deltaPosition;//OYM：这里我想了很久,应该是这样,如果是迭代n次的话,那么deltaposition将会被加上n次,正规应该是只加一次
             }
@@ -336,18 +308,32 @@ namespace ADBRuntime.Internal
                 PointReadWrite* pParentPointReadWrite = (pReadWritePoints + pReadPoint->parentIndex);
                 PointRead* pParerntPointRead = (pReadPoints + pReadPoint->parentIndex);
 
-                float3 tagetPosition = pParentPointReadWrite->position+ math.mul(pParentPointReadWrite->rotationTemp, pReadPoint->initialLocalPosition) * globalScale;
+                float3 parentPosition;
+                quaternion parentRotation;
+
+                if (pParerntPointRead->parentIndex==-1)
+                {
+                    parentPosition = pParentPointReadWrite->position - pParentPointReadWrite->deltaPosition * (pReadWritePoint->physicProcess / oneDivideIteration);
+                    parentRotation = math.slerp(pParentPointReadWrite->deltaRotation, pParentPointReadWrite->rotationTemp, pReadWritePoint->physicProcess);
+                }
+                else
+                {
+                    parentPosition = pParentPointReadWrite->position;
+                    parentRotation= pParentPointReadWrite->rotationTemp; 
+                }
+                float3 tagetPosition = parentPosition + math.mul(parentRotation, pReadPoint->initialLocalPosition) * globalScale;
                 float3 positionTemp = math.lerp(position, tagetPosition, pReadPoint->rigidScale * math.clamp(oneDivideIteration, 0, 0.5f));//OYM:这个值超过0.5之后会在单次迭代内出现奇怪的问题
-                float3 force =  positionTemp- position;
+                float3 force = positionTemp - position;
                 position += force;
 
                 //OYM:这里的想法是,在原有的速度上增加到目标速度就可以了,直接加速度的话会出现一些奇怪问题
                 float persentage = math.dot(deltaPosition, force) / (math.lengthsq(force) + 1e-6f);
-                persentage =1- math.clamp(persentage, 0, 1);
-                deltaPosition += force * persentage;
+                persentage = 1 - math.clamp(persentage, 0, 1);
+                deltaPosition += force * persentage*deltaTime;
             }
-            void UpdateFixedPointChain(PointRead* pReadPoint, PointRead* pFixedPointRead, PointReadWrite* pReadWritePoint, PointReadWrite* pFixedPointReadWrite, ref float3 position, ref float3 deltaPosition)
+            void UpdateFixedPointChain(PointRead* pReadPoint,PointReadWrite* pReadWritePoint, PointReadWrite* pFixedPointReadWrite, ref float3 position, ref float3 deltaPosition)
             {
+                float3 fixedPointdeltaPosition = pFixedPointReadWrite->deltaPosition;
                 position += pFixedPointReadWrite->deltaPosition * pReadPoint->distanceCompensation;//OYM:计算速度补偿
                 //OYM：计算以fixed位移进行为参考进行速度补偿
                 deltaPosition -= pFixedPointReadWrite->deltaPosition * pReadPoint->moveByFixedPoint * 0.2f;//OYM：测试了一下,0.2是个恰到好处的值,不会显得太大也不会太小
@@ -366,8 +352,12 @@ namespace ADBRuntime.Internal
             }
             void UpdateFreeze(PointRead* pReadPoint, PointRead* pFixedPointRead, PointReadWrite* pReadWritePoint, PointReadWrite* pFixedPointReadWrite, ref float3 deltaPosition)
             {
-                float3 direction = pReadWritePoint->position - pFixedPointReadWrite->position;
-                float3 originDirection = math.mul(pFixedPointReadWrite->rotationTemp, pReadPoint->initialPosition) * globalScale;
+                float3 fixedPointPosition = pFixedPointReadWrite->position - pFixedPointReadWrite->deltaPosition * (pReadWritePoint->physicProcess / oneDivideIteration);
+                float3 direction = pReadWritePoint->position - fixedPointPosition;
+
+                quaternion fixedPointRotation = math.slerp(pFixedPointReadWrite->rotationTemp, pFixedPointReadWrite->deltaRotation, pReadWritePoint->physicProcess);
+                 float3 originDirection = math.mul(fixedPointRotation, pReadPoint->initialPosition) * globalScale;
+
                 float3 freezeForce = originDirection - direction;//OYM:因为direction+freezeForce=originDirection，所以freezeforce是这样算的
                 freezeForce = math.clamp(freezeForce, -pReadPoint->freezeLimit, pReadPoint->freezeLimit);
                 freezeForce = oneDivideIteration * deltaTime * pReadPoint->freezeScale * freezeForce;

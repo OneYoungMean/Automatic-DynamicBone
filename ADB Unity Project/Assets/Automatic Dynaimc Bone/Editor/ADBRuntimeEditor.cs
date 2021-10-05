@@ -154,12 +154,28 @@ namespace ADBRuntime
                     controller.isGenerateFinger = EditorGUILayout.Toggle("  ┗━生成手指 ", controller.isGenerateFinger);
                 }
             }
-
-            if (controller.overlapsColliderList != null && controller.overlapsColliderList.Count > 0)
+            if (GUILayout.Button("删除所有生成的碰撞体", GUILayout.Height(22.0f)))
             {
-                if (GUILayout.Button("删除所有生成的碰撞体", GUILayout.Height(22.0f)))
+                if (EditorUtility.DisplayDialog("你确定需要删除吗?", "该操作不可撤销", "ok", "cancel"))
                 {
-                    if (EditorUtility.DisplayDialog("你确定需要删除吗?", "该操作不可撤销", "ok", "cancel"))
+                    for (int i = 0; i < controller.overlapsColliderList?.Count; i++)
+                    {
+                        if (controller.overlapsColliderList[i] != null)
+                        {
+                            if (controller.overlapsColliderList[i].gameObject.GetComponents<Component>().Length <= 3)
+                            {
+                                DestroyImmediate(controller.overlapsColliderList[i].gameObject);
+                            }
+                            else
+                            {
+                                DestroyImmediate(controller.overlapsColliderList[i]);
+                            }
+
+                        }
+                    }
+                    controller.generateColliderList = null;
+
+                    if (isDeleteCollider)
                     {
                         for (int i = 0; i < controller.overlapsColliderList?.Count; i++)
                         {
@@ -176,35 +192,14 @@ namespace ADBRuntime
 
                             }
                         }
-                        controller.generateColliderList = null;
-
-                        if (isDeleteCollider)
-                        {
-                            for (int i = 0; i < controller.overlapsColliderList?.Count; i++)
-                            {
-                                if (controller.overlapsColliderList[i] != null)
-                                {
-                                    if (controller.overlapsColliderList[i].gameObject.GetComponents<Component>().Length <= 3)
-                                    {
-                                        DestroyImmediate(controller.overlapsColliderList[i].gameObject);
-                                    }
-                                    else
-                                    {
-                                        DestroyImmediate(controller.overlapsColliderList[i]);
-                                    }
-
-                                }
-                            }
-                            controller.overlapsColliderList.Clear();
-                        }
+                        controller.overlapsColliderList.Clear();
                     }
                 }
-                isDeleteCollider = EditorGUILayout.Toggle("  ┗━包括不是自动生成的碰撞体 ", isDeleteCollider);
             }
+            isDeleteCollider = EditorGUILayout.Toggle("  ┗━包括不是自动生成的碰撞体 ", isDeleteCollider);
+
 
             GUILayout.Space(10);
-
-
 
             Titlebar("=============== 物理设置", color);
             controller.iteration = EditorGUILayout.IntSlider("迭代次数", controller.iteration, 1, max * (controller.isParallel ? 8 : 8) * (controller.isDebug ? 2 : 1));

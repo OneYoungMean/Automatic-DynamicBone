@@ -72,6 +72,7 @@ namespace ADBRuntime
             }
             //OYM:优先更新坐标 
             CompleteHandleArray.Clear();
+            CompleteHandleArray.Add(Hjob);
             //OYM：当我用ADBRunTimeJobsTable.returnHJob时候,任务会在我调用的时候被强制完成,当我用本地的Hjob的时候,任务会在异步进行
             //OYM:  注意,JH底层很可能也是单例
             //OYM:  赋参
@@ -89,10 +90,10 @@ namespace ADBRuntime
 
             #region LifeCycle
             //OYM:Collider
-            CompleteHandleArray.Add(colliderCalcAABB.Schedule(collidersReadNativeArray.Length, batchLength));
+            colliderCalcAABB.Schedule(collidersReadNativeArray.Length, batchLength).Complete();
             //OYM:pointGet
-            CompleteHandleArray.Add(pointGet.Schedule(pointTransformsAccessArray));
-
+            pointGet.Schedule(pointTransformsAccessArray).Complete();
+            var HJobs = CompleteHandleArray;
 
             for (int i = 0; i < iteration; i++)
             {
@@ -112,34 +113,33 @@ namespace ADBRuntime
 
                 else if (!isParallel) //OYM:多线程异步(中等)
                 {
-                    Hjob = pointUpdate.Schedule(pointReadNativeArray.Length, batchLength, Hjob);
+                    HJobs.Add( pointUpdate.Schedule(pointReadNativeArray.Length, batchLength, HJobs[HJobs.Length-1]));
                     if (colliderCollisionType == ColliderCollisionType.Constraint || colliderCollisionType == ColliderCollisionType.Both)
                     {
-                        Hjob = constraintUpdates.Schedule(constraintReadList.Length, batchLength, Hjob);
+                        HJobs.Add(constraintUpdates.Schedule(constraintReadList.Length, batchLength, HJobs[HJobs.Length - 2]));
                     }
                     else
                     {
-                        Hjob = constraintForceUpdateByPoint.Schedule(pointReadNativeArray.Length, batchLength, Hjob);
+                        HJobs.Add(constraintForceUpdateByPoint.Schedule(pointReadNativeArray.Length, batchLength, HJobs[HJobs.Length - 2]));
                     }
                 }
                 else //OYM:多线程并行(最快)
                 {
-                    CompleteHandleArray.Add(pointUpdate.Schedule(pointReadNativeArray.Length, batchLength));
+                    HJobs.Add(pointUpdate.Schedule(pointReadNativeArray.Length, batchLength));
 
                     if (colliderCollisionType == ColliderCollisionType.Constraint || colliderCollisionType == ColliderCollisionType.Both)
                     {
-                        CompleteHandleArray.Add(constraintUpdates.Schedule(constraintReadList.Length, batchLength));
+                        HJobs.Add(constraintUpdates.Schedule(constraintReadList.Length, batchLength));
                     }
                     else
                     {
-                        CompleteHandleArray.Add(constraintForceUpdateByPoint.Schedule(pointReadNativeArray.Length, batchLength));
+                        HJobs.Add(constraintForceUpdateByPoint.Schedule(pointReadNativeArray.Length, batchLength));
                     }
 
                 }
             }
-            
+            Hjob = JobHandle.CombineDependencies(HJobs.AsDeferredJobArray());
             Hjob = pointToTransform.Schedule(pointTransformsAccessArray, Hjob);
-            CompleteHandleArray.Add(Hjob);
             #endregion
             return true;
         }
@@ -250,7 +250,7 @@ namespace ADBRuntime
         /// </summary>
         public void restorePoint()
         {
-            JobHandle.CompleteAll(CompleteHandleArray.AsDeferredJobArray());
+            Hjob.Complete();
 
             if (pointTransformsAccessArray.isCreated) //OYM:优先
             {
@@ -259,16 +259,15 @@ namespace ADBRuntime
                     pReadPoints = (PointRead*)pointReadNativeArray.GetUnsafePtr(),
                     pReadWritePoints = (PointReadWrite*)pointReadWriteListNativeArray.GetUnsafePtr(),
                 };
-                Hjob = initialpoint.Schedule(pointTransformsAccessArray, Hjob);
+                initialpoint.Schedule(pointTransformsAccessArray, Hjob).Complete();
 
                 ADBRunTimeJobsTable.InitiralizePoint2 initialpoint2 = new ADBRunTimeJobsTable.InitiralizePoint2
                 {
                     pReadPoints = (PointRead*)pointReadNativeArray.GetUnsafePtr(),
                     pReadWritePoints = (PointReadWrite*)pointReadWriteListNativeArray.GetUnsafePtr(),
                 };
-                Hjob = initialpoint2.Schedule(pointTransformsAccessArray, Hjob);
+                 initialpoint2.Schedule(pointTransformsAccessArray, Hjob).Complete();
             }
-            Hjob.Complete();
         }
         /// <summary>
         /// 释放,如果为true,则重新加载数据
@@ -278,8 +277,7 @@ namespace ADBRuntime
         public void Dispose(bool isReset)
         {
             isInitialize = false;
-            JobHandle.CompleteAll(CompleteHandleArray.AsDeferredJobArray());
-
+            Hjob.Complete();
 
             pointReadNativeArray.Dispose();
             pointReadWriteListNativeArray.Dispose();
@@ -292,17 +290,12 @@ namespace ADBRuntime
 
             if (isReset)
             {
-                ConstraintReadMultiHashMap.Clear();
                 pointTransformsAccessArray = new TransformAccessArray(0);
                 m_constraintList.Clear();
                 m_pointReadList.Clear();
                 m_pointReadWriteList.Clear();
             }
-            else
-            {
-                ConstraintReadMultiHashMap.Dispose();
-            }
-
+            ConstraintReadMultiHashMap.Dispose();
         }
     }
 }
