@@ -296,6 +296,7 @@ namespace ADBRuntime
                 m_pointReadWriteList.Clear();
             }
             ConstraintReadMultiHashMap.Dispose();
+            CompleteHandleArray.Dispose();
         }
     }
 }
