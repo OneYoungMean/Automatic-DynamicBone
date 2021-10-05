@@ -342,7 +342,7 @@ namespace ADBRuntime.Internal
                 position += force;
 
                 //OYM:这里的想法是,在原有的速度上增加到目标速度就可以了,直接加速度的话会出现一些奇怪问题
-                float persentage = math.dot(deltaPosition, force) / (math.lengthsq(force) + math.EPSILON);
+                float persentage = math.dot(deltaPosition, force) / (math.lengthsq(force) + 1e-6f);
                 persentage =1- math.clamp(persentage, 0, 1);
                 deltaPosition += force * persentage;
             }
@@ -383,7 +383,7 @@ namespace ADBRuntime.Internal
                 float persentage;
 
                 //OYM:限制速度
-                persentage = math.sqrt( math.lengthsq(deltaPosition)/ (math.lengthsq(pReadPoint->initialLocalPosition) * 0.2f + math.EPSILON));//OYM:避免除以0
+                persentage = math.sqrt( math.lengthsq(deltaPosition)/ (math.lengthsq(pReadPoint->initialLocalPosition) * 0.2f + 1e-6f));//OYM:避免除以0
                 if (persentage > 1)
                 {
                     deltaPosition /= persentage;
@@ -391,7 +391,7 @@ namespace ADBRuntime.Internal
 
                 //OYM：限制长度
                 float3 direction = pReadWritePoint->position - pFixedPointReadWrite->position;
-                persentage = math.sqrt(math.lengthsq(direction) / (math.lengthsq(pReadPoint->initialPosition) + math.EPSILON));//OYM:计算速度与杆件长度的比值
+                persentage = math.sqrt(math.lengthsq(direction) / (math.lengthsq(pReadPoint->initialPosition) + 1e-6f));//OYM:计算速度与杆件长度的比值
                 persentage = math.clamp(persentage - math.clamp(persentage, 0, 1f), 0, 1);//OYM:计算比值超出0-1的部分,限制到0-1内
                 if (persentage != 0)
                 {
@@ -798,7 +798,7 @@ namespace ADBRuntime.Internal
 
                                 pushA = math.mul(colliderRotation, pushA);
                                 pushB = math.mul(colliderRotation, pushB);
-                                bool isFixedA = WeightProportion < math.EPSILON;
+                                bool isFixedA = WeightProportion < 1e-6f;
                                 if (!isFixedA) //OYM:A点可能固定
                                 {
                                     if (pReadCollider->collideFunc == CollideFunc.InsideNoLimit)
@@ -879,7 +879,7 @@ namespace ADBRuntime.Internal
                 CollideFunc collideFunc)
             {
                 float sqrPushout = math.lengthsq(pushout);
-                if (WeightProportion > math.EPSILON)
+                if (WeightProportion > 1e-6f)
                 {
                     if (collideFunc == CollideFunc.InsideNoLimit || collideFunc == CollideFunc.OutsideNoLimit)
                     {

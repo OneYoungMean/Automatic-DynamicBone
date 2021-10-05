@@ -9,7 +9,6 @@ public class ColliderGenerate : MonoBehaviour
     public  float interTime=3;
     private float innertime=0;
     int seed = 0;
-    Random random;
     void Start()
     {
         Random.InitState(seed);

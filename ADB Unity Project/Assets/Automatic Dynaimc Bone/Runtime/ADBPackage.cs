@@ -20,7 +20,7 @@ namespace ADBRuntime
         private JobHandle Hjob;
         private ADBRunTimeJobsTable ADBRunTimeJobsTable;
 
-        private ADBRunTimeJobsTable.ColliderGetAABB colliderGet;
+        private ADBRunTimeJobsTable.ColliderGetAABB colliderCalcAABB;
         private ADBRunTimeJobsTable.PointGetTransform pointGet;
         private ADBRunTimeJobsTable.PointUpdate pointUpdate;
         private ADBRunTimeJobsTable.ConstraintUpdate constraintUpdates;
@@ -40,13 +40,16 @@ namespace ADBRuntime
         private TransformAccessArray pointTransformsAccessArray;
         private List<Transform> pointTransformsListTest = new List<Transform>();
         private bool isInitialize = false;
+
+
+        private NativeList<JobHandle> CompleteHandleArray;
         public DataPackage()
         {
             Hjob = new JobHandle();
             m_constraintList = new List<ConstraintRead[]>();
             m_pointReadList = new List<PointRead>();
             m_pointReadWriteList = new List<PointReadWrite>();
-
+            CompleteHandleArray = new NativeList<JobHandle>(8,Allocator.Persistent);
             pointTransformsAccessArray = new TransformAccessArray(0);
         }
         /// <summary>
@@ -68,14 +71,14 @@ namespace ADBRuntime
                 return false;
             }
             //OYM:优先更新坐标 
-
+            CompleteHandleArray.Clear();
             //OYM：当我用ADBRunTimeJobsTable.returnHJob时候,任务会在我调用的时候被强制完成,当我用本地的Hjob的时候,任务会在异步进行
             //OYM:  注意,JH底层很可能也是单例
             //OYM:  赋参
             float oneDivideIteration = 1.0f / iteration;
-            constraintForceUpdateByPoint.oneDivideIteration = constraintUpdates.oneDivideIteration = pointUpdate.oneDivideIteration = colliderGet.oneDivideIteration = pointGet.oneDivideIteration = oneDivideIteration;
+            constraintForceUpdateByPoint.oneDivideIteration = constraintUpdates.oneDivideIteration = pointUpdate.oneDivideIteration = colliderCalcAABB.oneDivideIteration = pointGet.oneDivideIteration = oneDivideIteration;
             pointUpdate.deltaTime = deltaTime;
-            colliderGet.globalScale= pointUpdate.globalScale = scale;
+            colliderCalcAABB.globalScale= pointUpdate.globalScale = scale;
             pointUpdate.isOptimize = isOptimize;
             pointUpdate.addForcePower = addForce;
             pointUpdate.isCollision = (colliderCollisionType == ColliderCollisionType.Both || colliderCollisionType == ColliderCollisionType.Point);
@@ -85,8 +88,10 @@ namespace ADBRuntime
             constraintUpdates.isCollision = (colliderCollisionType == ColliderCollisionType.Both || colliderCollisionType == ColliderCollisionType.Constraint); ;
 
             #region LifeCycle
-            colliderGet.Schedule(collidersReadNativeArray.Length, batchLength).Complete();
-            pointGet.Schedule(pointTransformsAccessArray).Complete();
+            //OYM:Collider
+            CompleteHandleArray.Add(colliderCalcAABB.Schedule(collidersReadNativeArray.Length, batchLength));
+            //OYM:pointGet
+            CompleteHandleArray.Add(pointGet.Schedule(pointTransformsAccessArray));
 
 
             for (int i = 0; i < iteration; i++)
@@ -119,22 +124,22 @@ namespace ADBRuntime
                 }
                 else //OYM:多线程并行(最快)
                 {
-                    pointUpdate.Schedule(pointReadNativeArray.Length, batchLength);
+                    CompleteHandleArray.Add(pointUpdate.Schedule(pointReadNativeArray.Length, batchLength));
 
                     if (colliderCollisionType == ColliderCollisionType.Constraint || colliderCollisionType == ColliderCollisionType.Both)
                     {
-                        constraintUpdates.Schedule(constraintReadList.Length, batchLength);
+                        CompleteHandleArray.Add(constraintUpdates.Schedule(constraintReadList.Length, batchLength));
                     }
                     else
                     {
-                        constraintForceUpdateByPoint.Schedule(pointReadNativeArray.Length, batchLength);
+                        CompleteHandleArray.Add(constraintForceUpdateByPoint.Schedule(pointReadNativeArray.Length, batchLength));
                     }
 
                 }
             }
             
             Hjob = pointToTransform.Schedule(pointTransformsAccessArray, Hjob);
-            
+            CompleteHandleArray.Add(Hjob);
             #endregion
             return true;
         }
@@ -147,7 +152,7 @@ namespace ADBRuntime
             }
             
             collidersReadNativeArray = new NativeArray<ColliderRead>(collidersReadList, Allocator.Persistent);
-            colliderGet.pReadColliders = (ColliderRead*)collidersReadNativeArray.GetUnsafePtr();
+            colliderCalcAABB.pReadColliders = (ColliderRead*)collidersReadNativeArray.GetUnsafePtr();
 
             pointUpdate.pReadColliders = (ColliderRead*)collidersReadNativeArray.GetUnsafePtr();
             pointUpdate.colliderCount = collidersReadNativeArray.Length;
@@ -215,7 +220,7 @@ namespace ADBRuntime
             }
             constraintReadList = new NativeArray<ConstraintRead>(constraintReadListTarget.ToArray(), Allocator.Persistent);
 
-            colliderGet = new ADBRunTimeJobsTable.ColliderGetAABB();
+            colliderCalcAABB = new ADBRunTimeJobsTable.ColliderGetAABB();
             pointGet = new ADBRunTimeJobsTable.PointGetTransform();
             pointUpdate = new ADBRunTimeJobsTable.PointUpdate();
             constraintUpdates = new ADBRunTimeJobsTable.ConstraintUpdate();
@@ -245,7 +250,8 @@ namespace ADBRuntime
         /// </summary>
         public void restorePoint()
         {
-            JobHandle.ScheduleBatchedJobs();
+            JobHandle.CompleteAll(CompleteHandleArray.AsDeferredJobArray());
+
             if (pointTransformsAccessArray.isCreated) //OYM:优先
             {
                 ADBRunTimeJobsTable.InitiralizePoint1 initialpoint = new ADBRunTimeJobsTable.InitiralizePoint1
@@ -271,8 +277,10 @@ namespace ADBRuntime
         /// <param name="isReset"></param>
         public void Dispose(bool isReset)
         {
-            JobHandle.ScheduleBatchedJobs();
             isInitialize = false;
+            JobHandle.CompleteAll(CompleteHandleArray.AsDeferredJobArray());
+
+
             pointReadNativeArray.Dispose();
             pointReadWriteListNativeArray.Dispose();
             pointTransformsAccessArray.Dispose();
@@ -284,6 +292,7 @@ namespace ADBRuntime
 
             if (isReset)
             {
+                ConstraintReadMultiHashMap.Clear();
                 pointTransformsAccessArray = new TransformAccessArray(0);
                 m_constraintList.Clear();
                 m_pointReadList.Clear();
@@ -291,10 +300,9 @@ namespace ADBRuntime
             }
             else
             {
-                
+                ConstraintReadMultiHashMap.Dispose();
             }
 
-            ConstraintReadMultiHashMap.Dispose();
         }
     }
 }

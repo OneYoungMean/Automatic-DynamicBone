@@ -1,0 +1,17 @@
+{
+    "name": "AutomaticDnamicBone.Editor",
+    "references": [
+        "GUID:0f65aa97340947a43af1c76333c36e29"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
