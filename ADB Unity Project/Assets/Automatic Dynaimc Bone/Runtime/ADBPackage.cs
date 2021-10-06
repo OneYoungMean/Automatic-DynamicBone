@@ -16,7 +16,8 @@ namespace ADBRuntime
 
     public unsafe class DataPackage
     {
-        static int batchLength = 16;
+        static int BatchLength =128;
+        static int ScheduleBatchedLength = 32;
         private JobHandle Hjob;
         private ADBRunTimeJobsTable ADBRunTimeJobsTable;
 
@@ -93,13 +94,19 @@ namespace ADBRuntime
 
             #region LifeCycle
             //OYM:Collider
-            colliderCalcAABB.Schedule(collidersReadNativeArray.Length, batchLength).Complete();
+            colliderCalcAABB.Schedule(collidersReadNativeArray.Length, BatchLength);
             //OYM:pointGet
-            pointGet.Schedule(pointTransformsAccessArray).Complete();
+            pointGet.Schedule(pointTransformsAccessArray);
+
             var HJobs = CompleteHandleArray;
 
             for (int i = 0; i < iteration; i++)
             {
+                if (isRunAsync && i  % ScheduleBatchedLength == 0)
+                {
+                    JobHandle.ScheduleBatchedJobs();
+                }
+
                 if (!isRunAsync)//OYM:单线程
                 {
                     pointUpdate.Run(pointReadNativeArray.Length);
@@ -116,35 +123,32 @@ namespace ADBRuntime
 
                 else if (!isParallel) //OYM:多线程异步(中等)
                 {
-                    HJobs.Add( pointUpdate.Schedule(pointReadNativeArray.Length, batchLength, HJobs[HJobs.Length - 2]));
+                    HJobs.Add( pointUpdate.Schedule(pointReadNativeArray.Length, BatchLength, HJobs[HJobs.Length - 2]));
                     if (colliderCollisionType == ColliderCollisionType.Constraint || colliderCollisionType == ColliderCollisionType.Both)
                     {
-                        HJobs.Add(constraintUpdates.Schedule(constraintReadList.Length, batchLength, HJobs[HJobs.Length - 1]));
+                        HJobs.Add(constraintUpdates.Schedule(constraintReadList.Length, BatchLength, HJobs[HJobs.Length - 1]));
                     }
                     else
                     {
-                        HJobs.Add(constraintForceUpdateByPoint.Schedule(pointReadNativeArray.Length, batchLength, HJobs[HJobs.Length - 1]));
+                        HJobs.Add(constraintForceUpdateByPoint.Schedule(pointReadNativeArray.Length, BatchLength, HJobs[HJobs.Length - 1]));
                     }
                 }
                 else //OYM:多线程并行(最快)
                 {
-                    pointUpdate.Schedule(pointReadNativeArray.Length, batchLength);
+                    pointUpdate.Schedule(pointReadNativeArray.Length, BatchLength);
 
                     if (colliderCollisionType == ColliderCollisionType.Constraint || colliderCollisionType == ColliderCollisionType.Both)
                     {
-                        constraintUpdates.Schedule(constraintReadList.Length, batchLength);
+                        constraintUpdates.Schedule(constraintReadList.Length, BatchLength);
                     }
                     else
                     {
-                        constraintForceUpdateByPoint.Schedule(pointReadNativeArray.Length, batchLength);
+                        constraintForceUpdateByPoint.Schedule(pointReadNativeArray.Length, BatchLength);
                     }
 
                 }
 
-                if ((i+1)% batchLength==0)
-                {
-                    JobHandle.ScheduleBatchedJobs();
-                }
+
             }
             Hjob = JobHandle.CombineDependencies(HJobs.AsDeferredJobArray());
             Hjob = pointToTransform.Schedule(pointTransformsAccessArray, Hjob);
