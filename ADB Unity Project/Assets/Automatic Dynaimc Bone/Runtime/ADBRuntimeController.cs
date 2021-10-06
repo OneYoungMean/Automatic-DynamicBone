@@ -240,7 +240,8 @@ namespace ADBRuntime.Mono
                 overlapsColliderList.AddRange(gameObject.GetComponentsInChildren<ADBColliderReader>());
                 return;
             }
-
+            if (colliderCollisionType==ColliderCollisionType.Null)
+            { return; }
             int count = Physics.OverlapBoxNonAlloc(
                                 generateTransform.position+ generateTransform.rotation* (Vector3)OverlapBox.Center,
                                 scale / initializeScale * OverlapBox.HalfExtents,
