@@ -148,6 +148,7 @@ namespace ADBRuntime
         /// </summary>
         internal quaternion initialLocalRotation;
         internal quaternion initialRotation;
+        internal float massPerIteration;
     }
 
     //OYM：写入系统
@@ -166,7 +167,7 @@ namespace ADBRuntime
         /// 角速度,目前还没完全用上
         /// </summary>
         public quaternion deltaRotation;
-        public float physicProcess;
+        public float physicProcess;//OYM:物理进程值，0-1范围，fixed节点为0
         //public quaternion deltaRotationY;
     }
 }

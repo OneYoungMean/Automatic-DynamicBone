@@ -16,7 +16,7 @@ namespace ADBRuntime
 
     public unsafe class DataPackage
     {
-        static int batchLength = 64;
+        static int batchLength = 16;
         private JobHandle Hjob;
         private ADBRunTimeJobsTable ADBRunTimeJobsTable;
 
@@ -72,7 +72,10 @@ namespace ADBRuntime
             }
             //OYM:优先更新坐标 
             CompleteHandleArray.Clear();
+            //OYM:需要两个空jobhandle作为起点
             CompleteHandleArray.Add(Hjob);
+            CompleteHandleArray.Add(Hjob);
+
             //OYM：当我用ADBRunTimeJobsTable.returnHJob时候,任务会在我调用的时候被强制完成,当我用本地的Hjob的时候,任务会在异步进行
             //OYM:  注意,JH底层很可能也是单例
             //OYM:  赋参
@@ -113,29 +116,34 @@ namespace ADBRuntime
 
                 else if (!isParallel) //OYM:多线程异步(中等)
                 {
-                    HJobs.Add( pointUpdate.Schedule(pointReadNativeArray.Length, batchLength, HJobs[HJobs.Length-1]));
+                    HJobs.Add( pointUpdate.Schedule(pointReadNativeArray.Length, batchLength, HJobs[HJobs.Length - 2]));
                     if (colliderCollisionType == ColliderCollisionType.Constraint || colliderCollisionType == ColliderCollisionType.Both)
                     {
-                        HJobs.Add(constraintUpdates.Schedule(constraintReadList.Length, batchLength, HJobs[HJobs.Length - 2]));
+                        HJobs.Add(constraintUpdates.Schedule(constraintReadList.Length, batchLength, HJobs[HJobs.Length - 1]));
                     }
                     else
                     {
-                        HJobs.Add(constraintForceUpdateByPoint.Schedule(pointReadNativeArray.Length, batchLength, HJobs[HJobs.Length - 2]));
+                        HJobs.Add(constraintForceUpdateByPoint.Schedule(pointReadNativeArray.Length, batchLength, HJobs[HJobs.Length - 1]));
                     }
                 }
                 else //OYM:多线程并行(最快)
                 {
-                    HJobs.Add(pointUpdate.Schedule(pointReadNativeArray.Length, batchLength));
+                    pointUpdate.Schedule(pointReadNativeArray.Length, batchLength);
 
                     if (colliderCollisionType == ColliderCollisionType.Constraint || colliderCollisionType == ColliderCollisionType.Both)
                     {
-                        HJobs.Add(constraintUpdates.Schedule(constraintReadList.Length, batchLength));
+                        constraintUpdates.Schedule(constraintReadList.Length, batchLength);
                     }
                     else
                     {
-                        HJobs.Add(constraintForceUpdateByPoint.Schedule(pointReadNativeArray.Length, batchLength));
+                        constraintForceUpdateByPoint.Schedule(pointReadNativeArray.Length, batchLength);
                     }
 
+                }
+
+                if ((i+1)% batchLength==0)
+                {
+                    JobHandle.ScheduleBatchedJobs();
                 }
             }
             Hjob = JobHandle.CombineDependencies(HJobs.AsDeferredJobArray());
@@ -287,16 +295,21 @@ namespace ADBRuntime
                 collidersReadNativeArray.Dispose();
             }
             constraintReadList.Dispose();
-
+            ConstraintReadMultiHashMap.Dispose();
             if (isReset)
             {
                 pointTransformsAccessArray = new TransformAccessArray(0);
+
                 m_constraintList.Clear();
                 m_pointReadList.Clear();
                 m_pointReadWriteList.Clear();
             }
-            ConstraintReadMultiHashMap.Dispose();
-            CompleteHandleArray.Dispose();
+            else
+            {
+                CompleteHandleArray.Dispose();
+            }
+
+
         }
     }
 }

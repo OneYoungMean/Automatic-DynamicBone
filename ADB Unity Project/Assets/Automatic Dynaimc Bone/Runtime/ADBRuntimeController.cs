@@ -358,10 +358,6 @@ namespace ADBRuntime.Mono
             {
                 overlapsColliderList = new List<ADBColliderReader>();
             }
-            if (colliders==null)
-            {
-                colliders = new Collider[maxColliderCount];
-            }
             
         }
         public void InitializePoint()

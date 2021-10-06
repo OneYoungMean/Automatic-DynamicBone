@@ -363,9 +363,8 @@ namespace ADBRuntime
             int k = 0;
             for (int i = 0; i < constraintList.Count; i++)
             {
-                
-                var constraint = i%2==0? constraintList[i/2]: constraintList[constraintList.Count-1-i / 2];
-                //OYM:临时插入一段,解决一下bug 
+
+                var constraint = i % 2 == 0 ? constraintList[i / 2] : constraintList[constraintList.Count - 1 - i / 2];//OYM:打乱顺序，避免集中化
 
                 var isAdd = false;
 
