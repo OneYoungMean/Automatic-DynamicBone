@@ -2,8 +2,6 @@
 * 如果您是第一次接触该项目,您可以选择访问[项目的wiki](https://github.com/OneYoungMean/Automatic-DynamicBone/wiki)  
 * [English version manual](https://github.com/OneYoungMean/Automatic-DynamicBone/wiki/English-version-manual)  sorry Im too busy to make the localization XD  
 
-  有没有大佬能够给推荐一份工作的,马上就毕业的应届生,可怜,弱小,还没工作QAQ
-  
 - **当前版本:1.5.3preview 最后更新日期:21/9/28**  
 - **史诗级更新大放送!业界良心不弃坑!**
 
@@ -94,6 +92,6 @@
 [省略掉的吐槽很辛苦的话]
 [省略掉的吐槽自己真的很穷的话]
 [省略掉的小声BB的话]
-需要一份工作!
+加油嗷~
 ```
 ***
