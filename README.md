@@ -2,8 +2,6 @@
 * 如果您是第一次接触该项目,您可以选择访问[项目的wiki](https://github.com/OneYoungMean/Automatic-DynamicBone/wiki)  
 * [English version manual](https://github.com/OneYoungMean/Automatic-DynamicBone/wiki/English-version-manual)  sorry Im too busy to make the localization XD  
 
-  有没有大佬能够给推荐一份工作的,马上就毕业的应届生,可怜,弱小,还没工作QAQ
-  
 - **当前版本:1.5.3preview 最后更新日期:21/9/28**  
 - **史诗级更新大放送!业界良心不弃坑!**
 
@@ -13,7 +11,7 @@
 * **更加灵活的Collider系统,现在采用Unity的Collider进行碰撞!只需要在unity的Collider下添加[ADBColliderReader]脚本就能够动态添加collder了!**  
 * **更加丰富的操作面板和选项,增加了一部分错误排查的代码!增加了是否多线程/是否并行等选项!**
 * **接上，多线程不一定比单线程快！一切以实际测试为主**
-* **增加了一个本地刚性值的可调参数,增加了Setting中的若干选项**
+* **增加了一个本地刚性值的可调参数,其效果与DynamicBone效果一致;增加了Setting中的若干选项**
 * 增加了一个轨迹优化的实验性功能,这个功能可以帮你在仅迭代次数<4次的情况下优化出更好的运动轨迹(性能党狂喜)
 * 增加了一个演示示例,同时演示示例全部上传至github.  
 * 修复了碰撞体的尺寸/角色的尺寸发生变化的时候,碰撞不匹配的问题
@@ -94,6 +92,6 @@
 [省略掉的吐槽很辛苦的话]
 [省略掉的吐槽自己真的很穷的话]
 [省略掉的小声BB的话]
-需要一份工作!
+加油嗷~
 ```
 ***
