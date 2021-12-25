@@ -61,11 +61,11 @@ namespace ADBRuntime
                     var fixedPoint = jointAndPointControlls[i].fixedNodeList;
                     if (fixedPoint==null|| fixedPoint.Count==0) continue;
 
-                    for (int j = 0; j < fixedPoint.Count; j++)
+                    for (int j0 = 0; j0 < fixedPoint.Count; j0++)
                     {
-                        if (fixedPoint[j]!=null)
+                        if (fixedPoint[j0]!=null)
                         {
-                            MinMaxAABB smallAABB = MinMaxAABB.CreateFromCenterAndHalfExtents(fixedPoint[j].trans.position, GetMaxDeep(fixedPoint[i]));
+                            MinMaxAABB smallAABB = MinMaxAABB.CreateFromCenterAndHalfExtents(fixedPoint[j0].trans.position, GetMaxDeep(fixedPoint[j0]));
                             if (math.all(AABB.Min == 0)&& math.all(AABB.Max == 0))
                             {
                                 AABB = smallAABB;
