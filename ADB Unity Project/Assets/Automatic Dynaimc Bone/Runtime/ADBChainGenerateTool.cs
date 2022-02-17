@@ -15,9 +15,9 @@ namespace ADBRuntime.Mono.Tool
     public class ADBChainGenerateTool :MonoBehaviour
     {
         [SerializeField]
-        public List<string> generateKeyWordWhiteList = new List<string> { "skirt" };// "hair", "tail", 
+        public List<string> generateKeyWordWhiteList = new List<string> {};// "hair", "tail", 
         [SerializeField]
-        public List<string> generateKeyWordBlackList = new List<string> { "ik" };
+        public List<string> generateKeyWordBlackList = new List<string> { "ik","mesh" };
         [SerializeField]
         public List<Transform> blackListOfGenerateTransform = new List<Transform>();
         [SerializeField]
@@ -27,7 +27,7 @@ namespace ADBRuntime.Mono.Tool
         [SerializeField]
         public ADBPhysicsSetting setting;
         [SerializeField]
-        public ADBChainProcessor[] allChain;
+        public List<ADBChainProcessor> allChain;
         [SerializeField]
         public bool isGenerateOnStart;
         [SerializeField]
@@ -73,7 +73,7 @@ namespace ADBRuntime.Mono.Tool
         }*/
         public  void ClearBoneChain()
         {
-            for (int i = 0; i < allChain.Length; i++)
+            for (int i = 0; i < allChain.Count; i++)
             {
                 var targetChain = allChain[i];
                 for (int j0 = 0; j0 < targetChain.allPointList.Count; j0++)
@@ -92,7 +92,7 @@ namespace ADBRuntime.Mono.Tool
             public string GetPointCount()
         {
             int count = 0;
-            for (int i = 0; i < allChain?.Length; i++)
+            for (int i = 0; i < allChain?.Count; i++)
             {
                 if (allChain[i].allPointList!=null)
                 {
@@ -129,7 +129,7 @@ namespace ADBRuntime.Mono.Tool
                         {
                             continue;
                         }
-                        GenerateBoneChainImporter(generateTransformList[i], everyKey, new List<string>(), new List<Transform>(), tempLinker, ref generateChain);
+                        GenerateBoneChainImporter(generateTransformList[i], everyKey, new List<string>(), new List<Transform>(), tempLinker, ref allChain);
                     }
                     break;
                 case ChainGeneratorMode.ADBChain:
@@ -141,9 +141,8 @@ namespace ADBRuntime.Mono.Tool
                 default:
                     break;
             }
-            allChain = generateChain.ToArray();
             //RefreshBoneChain();
-            for (int i = 0; i < allChain.Length; i++)
+            for (int i = 0; i < allChain.Count; i++)
             {
                 allChain[i].Initialize();
             }

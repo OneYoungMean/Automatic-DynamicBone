@@ -127,14 +127,14 @@ namespace ADBRuntime.UntiyEditor
             if (controller.allChain != null)
             {
 
-                if (isFoldouts == null || isFoldouts.Length != controller.allChain.Length)
+                if (isFoldouts == null || isFoldouts.Length != controller.allChain.Count)
                 {
-                    isFoldouts = new bool[controller.allChain == null ? 0 : controller.allChain.Length];
+                    isFoldouts = new bool[controller.allChain == null ? 0 : controller.allChain.Count];
                 }
                 isFoldout = EditorGUILayout.Foldout(isFoldout, "  所有节点坐标 :" + controller.GetPointCount());
                 if (isFoldout)
                 {
-                    for (int i = 0; i < controller.allChain?.Length; i++)
+                    for (int i = 0; i < controller.allChain?.Count; i++)
                     {
                         EditorGUILayout.BeginHorizontal();
                         GUILayout.Space(10);

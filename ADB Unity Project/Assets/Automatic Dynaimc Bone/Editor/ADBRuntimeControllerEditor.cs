@@ -124,7 +124,7 @@ namespace ADBRuntime.UntiyEditor
 
 
             GUILayout.Space(10);
-            controller.bufferTime = EditorGUILayout.FloatField("平滑时间长度", controller.bufferTime);
+            controller.bufferTime = EditorGUILayout.Slider("平滑时间", controller.bufferTime, 0.001f, 10f);
             controller.isOptimize = EditorGUILayout.Toggle("优化移动轨迹(实验)", controller.isOptimize);
             controller.timeScale = EditorGUILayout.Slider("时间比率(实验)", controller.timeScale,0,2);
             GUILayout.Space(10);
