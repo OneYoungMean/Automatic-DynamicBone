@@ -51,7 +51,7 @@ namespace ADBRuntime.Mono
             center == capsuleCollider.center &&
             size == Vector3.one * capsuleCollider.height;
         }
-
+        
         public bool Equals(BoxCollider boxCollider)
         {
             return colliderType == ColliderType.OBB&&
@@ -62,25 +62,31 @@ namespace ADBRuntime.Mono
     }
     public class ADBColliderReader :MonoBehaviour, IADBPhysicMonoComponent
     {
+        public MonoBehaviour Target => this;
+        public static Dictionary<int, ADBColliderReader> ColliderTokenDic
+        {
+            get
+            {
+                if (colliderTokenDic == null)
+                {
+                    colliderTokenDic = new Dictionary<int, ADBColliderReader>();
+                    Application.quitting += () => colliderTokenDic = null;//OYM:只有退出的时候删除
+                }
+                return colliderTokenDic;
+            }
+        }
+        private static Dictionary<int, ADBColliderReader> colliderTokenDic;
+
         public bool isReadOnly;
         public bool isStatic;
         private Vector3 initialSize;
-        public MonoBehaviour Target => this;
-
         public CollideFunc collideFunc = CollideFunc.OutsideLimit;
         public ColliderChoice colliderMask=ColliderChoice.Other;
-
-        internal void Resize(float colliderSize)
-        {
-            transform.localScale = colliderSize*initialSize;
-        }
-
         private ColliderChecker colliderChecker;//OYM:用来检查collider有没有被改变,这该死的untiy连个委托都没有留给我....
-
         public ADBRuntimeCollider runtimeCollider;
+
         public Collider unityCollider;
         public string colliderType;
-
         private UnityEngine.CapsuleCollider unityCapsuleCollider;
         private UnityEngine.SphereCollider unitySphereCollider;
         private BoxCollider unityBoxCollider;
@@ -94,7 +100,8 @@ namespace ADBRuntime.Mono
             isStatic |= gameObject.isStatic;
             initialSize = transform.localScale;
         }
-        public void UpdateCollider()
+
+        public void FixedUpdate()
         {
             if (!isReadOnly)
             {
@@ -102,13 +109,12 @@ namespace ADBRuntime.Mono
             }
             if (!isStatic)
             {
+                UpdatePriorities();
                 runtimeCollider.UpdateColliderData();
             }
-
-
         }
 
-    private void OnEnable()
+        private void OnEnable()
         {
             CheckAndBuildADBRuntimeCollider();
         }
@@ -241,6 +247,11 @@ namespace ADBRuntime.Mono
             runtimeCollider.InitialColliderData();
 
             return true;
+        }
+
+        internal void Resize(float colliderSize)
+        {
+            transform.localScale = colliderSize * initialSize;
         }
     }
 

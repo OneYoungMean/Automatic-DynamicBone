@@ -209,7 +209,7 @@ namespace ADBRuntime.Mono
             tempColliderReads.Clear();
             for (int i = 0; i < count; i++)
             {
-                if (ColliderTokenDic.TryGetValue(colliders[i].GetInstanceID(),out ADBColliderReader colliderToken))
+                if (ADBColliderReader.ColliderTokenDic.TryGetValue(colliders[i].GetInstanceID(),out ADBColliderReader colliderToken))
                 {
                     tempColliderReads.Add( colliderToken.runtimeCollider.colliderRead);
                     //OYM:这里应该对在内求一个

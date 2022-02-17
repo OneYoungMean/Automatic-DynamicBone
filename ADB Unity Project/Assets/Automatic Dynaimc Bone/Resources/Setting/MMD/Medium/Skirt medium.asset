@@ -874,7 +874,7 @@ MonoBehaviour:
   virtualPointAxisLength: 0.1
   ForceLookDown: 0
   isFixedPointFreezeRotation: 0
-  isAutoComputeWeight: 1
+  isAutoComputeWeight: 0
   weightCurve:
     serializedVersion: 2
     m_Curve:
