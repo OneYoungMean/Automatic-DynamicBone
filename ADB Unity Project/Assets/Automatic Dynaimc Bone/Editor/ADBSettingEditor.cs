@@ -157,7 +157,7 @@ namespace ADBRuntime.UntiyEditor
                 EditorGUILayout.PropertyField(serializedObject.FindProperty( "weightCurve"), new GUIContent("┗━质量曲线"), true);
             }
             EditorGUILayout.PropertyField(serializedObject.FindProperty( "gravity"), new GUIContent("重力"), true);
-            EditorGUILayout.PropertyField(serializedObject.FindProperty( "isFixGravityAxis"), new GUIContent("重力轴随角色旋转而旋转"), true);
+            //EditorGUILayout.PropertyField(serializedObject.FindProperty( "isFixGravityAxis"), new GUIContent("重力轴随角色旋转而旋转"), true);
             EditorGUILayout.PropertyField(serializedObject.FindProperty( "isFixedPointFreezeRotation"), new GUIContent("固定节点是否冻结旋转"), true);
             controller.colliderChoice =(ColliderChoice) EditorGUILayout.EnumFlagsField("接收以下种类的碰撞体的信息",(ColliderChoiceZh)controller.colliderChoice);
             EditorUtility.SetDirty(controller);

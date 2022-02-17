@@ -14,7 +14,7 @@ namespace ADBRuntime.Mono
     {
         public MonoBehaviour Target => this;
 
-        public const int MAXCOLLIDERCOUNT = 8192;
+        public const int MAXCOLLIDERCOUNT = 1024;
 
         public float bufferTime=1f;
         public int iteration=4;
@@ -85,7 +85,7 @@ namespace ADBRuntime.Mono
         private void Initialize()
         {
             var tempScale = transform.localScale;
-            transform.localScale = 1 / (float3)transform.lossyScale;
+            transform.localScale = transform.localScale / (float3)transform.lossyScale;
             ListCheck();
             InitializeChain();
 
@@ -333,6 +333,7 @@ namespace ADBRuntime.Mono
             {
                 allChain[i].DrawGizmos(colliderCollisionType);
             }
+
             Gizmos.color = Color.white;
             Vector3 center = OverlapBox.center ;
             Vector3 halfExtent = OverlapBox.extents * scale;

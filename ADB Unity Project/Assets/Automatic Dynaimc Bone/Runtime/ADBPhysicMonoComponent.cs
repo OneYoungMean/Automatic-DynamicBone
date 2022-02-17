@@ -6,6 +6,6 @@ namespace ADBRuntime.Mono
 {
     public interface IADBPhysicMonoComponent
     { 
-      
+       MonoBehaviour Target { get; }
     }
 }

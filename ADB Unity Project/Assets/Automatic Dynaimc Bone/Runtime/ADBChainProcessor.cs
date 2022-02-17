@@ -457,7 +457,7 @@ namespace ADBRuntime.Mono
 
             else//OYM：如果需要断开的话则会将杆件的受力调整为0,这样既不会导致失去杆件而穿模,也不会存在约束.
             {
-                CreationConstraintHorizontal(fixedPointList[HorizontalRootCount - 1], fixedPointList[0], ref constraintsStructuralHorizontal, 0, 0);
+                CreationConstraintHorizontal(fixedPointList[HorizontalRootCount - 1], fixedPointList[0], ref constraintsStructuralHorizontal, 0, float.MaxValue);
             }
             #endregion
             //OYM：所有对角线上(就是正方形的四个角交叉相连)的杆件
@@ -641,8 +641,8 @@ namespace ADBRuntime.Mono
                 for (; j0 < horizontalConstraintList.Count; j0++)
                 {
                     ADBRuntimeConstraint ConstraintB = horizontalConstraintList[j0];
-                    if (!(ConstraintA.constraintRead.shrink == 0 && ConstraintA.constraintRead.stretch == 0 || //OYM：排除A杆件或B杆件是isloopPoint生成的不承受力的杆件
-                        ConstraintB.constraintRead.shrink == 0 && ConstraintB.constraintRead.stretch == 0) &&
+                    if (!(ConstraintA.constraintRead.shrink == 0 && ConstraintA.constraintRead.stretch == 2 || //OYM：排除A杆件或B杆件是isloopPoint生成的不承受力的杆件
+                        ConstraintB.constraintRead.shrink == 0 && ConstraintB.constraintRead.stretch == 2) &&
                         ConstraintA.pointB == ConstraintB.pointA)
                     {
                         ConstraintList.Add(new ADBRuntimeConstraint(ConstraintType.Bending_Horizontal, ConstraintA.pointA, ConstraintB.pointB, shrink, stretch, false));

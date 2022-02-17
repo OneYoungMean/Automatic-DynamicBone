@@ -35,9 +35,13 @@ namespace ADBRuntime.Mono.Tool
 
         private void ListCheck()
         {
+            if (generatorMode != ChainGeneratorMode.ADBChain)//OYM:只有chain才会被检查
+            {
+                return;
+            }
             if (generateKeyWordWhiteList == null || generateKeyWordWhiteList.Count == 0)
             {
-                generateKeyWordWhiteList = linker.AllKeyWord;
+                generateKeyWordWhiteList = linker?.AllKeyWord;
                 if (generateKeyWordWhiteList == null)
                 {
                     Debug.Log("The white key is null!Check the ADBChainGenerateTool or Value Setting!");
