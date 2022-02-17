@@ -9,6 +9,7 @@ namespace ADBRuntime.Mono
         public float radius;
         public Vector3 center;
         public Vector3 size;
+
         public ColliderType colliderType;
         public ColliderChecker(UnityEngine.SphereCollider sphereCollider)
         {
@@ -59,163 +60,145 @@ namespace ADBRuntime.Mono
             size == boxCollider.size;
         }
     }
-    public class ADBColliderReader : MonoBehaviour
+    public class ADBColliderReader :MonoBehaviour, IADBPhysicMonoComponent
     {
-        public static Dictionary<int, ADBColliderReader> ColliderTokenDic
-        {
-            get
-            {
-                if (colliderTokenDic == null)
-                {
-                    colliderTokenDic = new Dictionary<int, ADBColliderReader>();
-                    Application.quitting += () => colliderTokenDic = null;//OYM:只有退出的时候删除
-                }
-                return colliderTokenDic;
-            }
-        }
-        private static Dictionary<int, ADBColliderReader> colliderTokenDic;
+        public bool isReadOnly;
+        public bool isStatic;
+        private Vector3 initialSize;
+        public MonoBehaviour Target => this;
+
         public CollideFunc collideFunc = CollideFunc.OutsideLimit;
-        public ColliderChoice colliderChoice=ColliderChoice.Other;
+        public ColliderChoice colliderMask=ColliderChoice.Other;
+
+        internal void Resize(float colliderSize)
+        {
+            transform.localScale = colliderSize*initialSize;
+        }
 
         private ColliderChecker colliderChecker;//OYM:用来检查collider有没有被改变,这该死的untiy连个委托都没有留给我....
 
         public ADBRuntimeCollider runtimeCollider;
-        public List<ADBRuntimeController> owners = new List<ADBRuntimeController>();
         public Collider unityCollider;
-        public bool isinitial { get; private set; }
+        public string colliderType;
+
         private UnityEngine.CapsuleCollider unityCapsuleCollider;
         private UnityEngine.SphereCollider unitySphereCollider;
         private BoxCollider unityBoxCollider;
-        private string colliderType;
+
 
         private int id;
 
-        public void Start()
+        public void Awake()
         {
-            colliderChecker=new ColliderChecker();
-            unityCollider = GetComponent<Collider>();
-            if (unityCollider == null) return;
-
-            id = unityCollider.GetInstanceID();
-            colliderType = unityCollider.GetType().Name;
-            CheckAndBuildADBRuntimeCollider();
-
-            if (runtimeCollider!=null)
+            isReadOnly |= gameObject.isStatic;
+            isStatic |= gameObject.isStatic;
+            initialSize = transform.localScale;
+        }
+        public void UpdateCollider()
+        {
+            if (!isReadOnly)
             {
-                ColliderTokenDic.Add(id, this);
+                CheckAndBuildADBRuntimeCollider();
+            }
+            if (!isStatic)
+            {
+                runtimeCollider.UpdateColliderData();
             }
 
-            isinitial = true;
-        }
-        private void FixedUpdate()
-        {
-            if (!isinitial) return;
-            CheckAndBuildADBRuntimeCollider();
-            runtimeCollider.UpdateColliderData();
 
         }
 
     private void OnEnable()
         {
-            if (ColliderTokenDic!=null&&runtimeCollider != null&&! ColliderTokenDic.TryGetValue(id, out _))
-            {
-                ColliderTokenDic.Add(unityCollider.GetInstanceID(), this);
-            }
+            CheckAndBuildADBRuntimeCollider();
         }
 
         private void OnDisable()
         {
-            if (ColliderTokenDic != null && ColliderTokenDic.TryGetValue(id, out _))
+
+            if (ColliderTokenDic.TryGetValue(id, out _))
             {
-                ColliderTokenDic.Remove(unityCollider.GetInstanceID());
+                ColliderTokenDic.Remove(id);
+                id = 0;
             }
-            
-        }
-        public bool AddOwner(ADBRuntimeController target)
-        {
-            if (owners!=null&&target != null)
-            {
-                owners.Add(target);
-                return true;
-            }
-            return false;
-        }
-        public bool RemoveOwner(ADBRuntimeController target)
-        {
-            if (owners != null && target != null)
-            {
-                return owners.Remove(target);
-            }
-            return false;
-        }
-        public bool IsOwner(ADBRuntimeController target)
-        {
-            if (owners != null&& owners.Count!=0)
-            {
-                return owners.Contains(target);
-            }
-            return true;
-        }
-        void CheckParentOwner()
-        {
-            var parentOwner = gameObject.GetComponentInParent<ADBRuntimeController>();
-            if (parentOwner != null)
-            {
-                owners.Add(parentOwner);
-            }
+           
         }
 
         public void UpdatePriorities()
         {
-            if (isinitial)
+            if (unityCollider!=null)
             {
-                runtimeCollider.colliderRead.colliderChoice = colliderChoice;
+                runtimeCollider.colliderRead.colliderChoice = (int)colliderMask;
                 runtimeCollider.colliderRead.collideFunc = collideFunc;
             }
         }
-        public void CheckAndBuildADBRuntimeCollider()
+        public bool CheckAndBuildADBRuntimeCollider()
         {
-            switch (colliderType)
+            if (unityCollider == null && (!TryGetComponent<Collider>(out unityCollider) || !unityCollider.enabled))//OYM:获取不到或者没打开
             {
-                case "SphereCollider":
-                    BuildSphereCollider();
-                    break;
-                case "CapsuleCollider":
-                    BuildCapsuleCollider();
-                    break;
-                case "BoxCollider":
-                    BuildOBBCollider();
-                    break;
-                default:
-                    Debug.Log(transform.name+" Cannot build Collider from " + colliderType);
-                    break;
+                if (ColliderTokenDic.TryGetValue(id,out _))
+                {
+                    ColliderTokenDic.Remove(id);
+                    id = 0;
+                }
+                return false;
             }
+            else
+            {
+                if (id==0)
+                {
+                    id = unityCollider.GetInstanceID();
+                }
+                if (!ColliderTokenDic.TryGetValue(id, out _))
+                {
+                    colliderType = unityCollider.GetType().Name;
+                    ColliderTokenDic.Add(id,this);
+                }
+
+
+                switch (colliderType)
+                {
+                    case "SphereCollider":
+                        return CheckOrBuildSphereCollider();
+
+                    case "CapsuleCollider":
+                        return CheckOrBuildCapsuleCollider();
+
+                    case "BoxCollider":
+                        return CheckOrBuildOBBCollider();
+
+                    default:
+                        Debug.Log(transform.name + " Cannot build Collider from " + colliderType);
+                        return false;
+                }
+            }
+
         }
 
-
-        void BuildSphereCollider()
+        bool CheckOrBuildSphereCollider()
         {
             if (unitySphereCollider == null)
             {
                 unitySphereCollider = unityCollider as UnityEngine.SphereCollider;
             }
             if (colliderChecker.Equals(unitySphereCollider))//OYM:检查是否跟之前构建的一样
-            { return; }
+            { return false; }
 
             colliderChecker = new ColliderChecker(unitySphereCollider);
-            runtimeCollider = new ADBSphereCollider(unitySphereCollider.radius, unitySphereCollider.center, colliderChoice, unitySphereCollider.transform, collideFunc);//OYM:懒得写更改函数了,这部分麻烦的要死,直接new 吧,又不是每帧运行
+            runtimeCollider = new ADBSphereCollider(unitySphereCollider.radius, unitySphereCollider.center, colliderMask, unitySphereCollider.transform, collideFunc);//OYM:懒得写更改函数了,这部分麻烦的要死,直接new 吧,又不是每帧运行
             runtimeCollider.InitialColliderData();
+            return true;
         }
 
 
-        void BuildCapsuleCollider()
+        bool CheckOrBuildCapsuleCollider()
         {
             if (unityCapsuleCollider == null)
             {
                 unityCapsuleCollider = unityCollider as UnityEngine.CapsuleCollider;
             }
             if (colliderChecker.Equals(unityCapsuleCollider))//OYM:检查是否跟之前构建的一样
-            { return; }
+            { return false; }
 
             colliderChecker = new ColliderChecker(unityCapsuleCollider);
 
@@ -235,25 +218,29 @@ namespace ADBRuntime.Mono
             float trueHeight = unityCapsuleCollider.height - unityCapsuleCollider.radius * 2;
             trueHeight = trueHeight > 0 ? trueHeight : 0;
             Vector3 offset =   unityCapsuleCollider.transform.rotation *(unityCapsuleCollider.center- direnction * Vector3.up * trueHeight * 0.5f);
-            runtimeCollider = new ADBCapsuleCollider(unityCapsuleCollider.radius, trueHeight, offset, direnction, colliderChoice, unityCapsuleCollider.transform, collideFunc);
+            runtimeCollider = new ADBCapsuleCollider(unityCapsuleCollider.radius, trueHeight, offset, direnction, colliderMask, unityCapsuleCollider.transform, collideFunc);
             runtimeCollider.InitialColliderData();
+
+            return true;
         }
         
 
-        void BuildOBBCollider()
+        bool CheckOrBuildOBBCollider()
         {
             if (unityBoxCollider == null)
             {
                 unityBoxCollider = unityCollider as UnityEngine.BoxCollider;
             }
             if (colliderChecker.Equals(unityBoxCollider))//OYM:检查是否跟之前构建的一样
-            { return; }
+            { return false; }
             colliderChecker = new ColliderChecker(unityBoxCollider);
 
             unityBoxCollider = unityCollider as UnityEngine.BoxCollider;
             Vector3 offset = unityBoxCollider.transform.rotation * unityBoxCollider.center;
-            runtimeCollider = new OBBBoxCollider(offset, unityBoxCollider.size*0.5f, Quaternion.identity, colliderChoice, unityBoxCollider.transform, collideFunc);
+            runtimeCollider = new OBBBoxCollider(offset, unityBoxCollider.size*0.5f, Quaternion.identity, colliderMask, unityBoxCollider.transform, collideFunc);
             runtimeCollider.InitialColliderData();
+
+            return true;
         }
     }
 

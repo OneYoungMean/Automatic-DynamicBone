@@ -181,7 +181,7 @@ namespace ADBRuntime
         {
             return math.all(Max >= aabb.Min & Min <= aabb.Max);
         }
-        public bool Overlaps(float3 max,float3 min)
+        public bool Overlaps(float3 min, float3 max)
         {
             return math.all(Max >=min & Min <= max);
         }

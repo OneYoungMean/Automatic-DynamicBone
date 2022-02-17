@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
-namespace ADBRuntime
+/*namespace ADBRuntime
 {
     using Mono;
-    [CustomEditor(typeof(ADBSpringBone))]
+    [CustomEditor(typeof(ADBBoneChainImporter))]
     public class ADBSpringBoneEditor : Editor
     {
 
@@ -23,13 +23,12 @@ namespace ADBRuntime
             Titlebar("=====================节点", Color.yellow);
             serializedObject.Update();
             EditorGUILayout.PropertyField(serializedObject.FindProperty("aDBSetting"), new GUIContent("效果设置(必填)"), true);
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("fixedPointTransform"), new GUIContent("固定节点坐标(必填)"), true);
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("generateKeyWordWhiteList"), new GUIContent("关键词白名单"), true);
             EditorGUILayout.PropertyField(serializedObject.FindProperty("generateKeyWordBlackList"), new GUIContent("关键词黑名单"), true);
             EditorGUILayout.PropertyField(serializedObject.FindProperty("blackListOfGenerateTransform"), new GUIContent("节点黑名单"), true);
 
             serializedObject.ApplyModifiedProperties();
 
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("allTransfromList"), new GUIContent("所有节点"), true);
         }
 
         void Titlebar(string text, Color color)
@@ -48,4 +47,4 @@ namespace ADBRuntime
             GUILayout.Space(3);
         }
     }
-}
+}*/

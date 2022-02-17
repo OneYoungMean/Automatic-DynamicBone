@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
-namespace ADBRuntime
+namespace ADBRuntime.UntiyEditor
 {
     using Mono;
     public class ADBEditorColliderEditor : Editor
@@ -56,16 +56,21 @@ namespace ADBRuntime
                 {
                     controller.collideFunc = CollideFunc.OutsideLimit;
                 }
-                if (Application.isPlaying)
+                if (Application.isPlaying&& controller.gameObject.activeSelf&& controller.enabled)
                 {
                     controller.UpdatePriorities();
                 }
                 
                 Titlebar("ADB碰撞体标记", Color.Lerp(Color.white, Color.blue, 0.5f));
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("unityCollider"), new GUIContent("标记的碰撞体"), true);
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("isReadOnly"), new GUIContent("┗━I 标记只读(提高性能)"), true);
+                if (controller.isReadOnly)
+                {
+                    EditorGUILayout.PropertyField(serializedObject.FindProperty("isStatic"), new GUIContent("┗━I 标记静态(极致性能)"), true);
+                }
                 controller.collideFunc = (CollideFunc)EditorGUILayout.EnumPopup("┗━I 碰撞体功能", (CollideFuncZh)controller.collideFunc);
-                controller.colliderChoice = (ColliderChoice)EditorGUILayout.EnumFlagsField("┗━I 碰撞体属性", (ColliderChoiceZh)controller.colliderChoice);
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("owners"), new GUIContent("┗━I 所有者"), true);
+                controller.colliderMask = (ColliderChoice)EditorGUILayout.EnumFlagsField("┗━I 碰撞体属性", (ColliderChoiceZh)controller.colliderMask);
+/*                EditorGUILayout.PropertyField(serializedObject.FindProperty("owners"), new GUIContent("┗━I 所有者"), true);*/
 
                 serializedObject.ApplyModifiedProperties();
             }
