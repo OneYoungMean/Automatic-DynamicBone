@@ -37,6 +37,7 @@ namespace ADBRuntime.UntiyEditor
             //OYM:如果需要批量修改的话,建议使用serializedObject而不是target
 
             controller = target as ADBRuntimeController;
+            controller.ResetData();
             isFoldouts = new bool[controller.allChain == null ? 0 : controller.allChain.Length];
         }
         public override void OnInspectorGUI()

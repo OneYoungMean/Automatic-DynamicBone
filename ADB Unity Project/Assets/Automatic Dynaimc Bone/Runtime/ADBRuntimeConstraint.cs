@@ -13,6 +13,7 @@ namespace ADBRuntime
         Bending_Horizontal,
         Circumference,
     }
+    [Serializable]
     public class ADBRuntimeConstraint
     {
         public ConstraintRead constraintRead;

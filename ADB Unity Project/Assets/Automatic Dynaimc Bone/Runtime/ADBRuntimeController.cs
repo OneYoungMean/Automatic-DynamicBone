@@ -225,8 +225,16 @@ namespace ADBRuntime.Mono
         }
         public void ResetData()
         {
-            RestoreRuntimePoint();
-            Start();
+            if (!Application.isPlaying)
+            {
+                Initialize();
+            }
+            else
+            {
+                RestoreRuntimePoint();
+                Start();
+            }
+
         }
         public int GetPointCount()
         {

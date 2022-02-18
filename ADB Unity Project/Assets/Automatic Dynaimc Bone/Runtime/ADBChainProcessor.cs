@@ -26,11 +26,17 @@ namespace ADBRuntime.Mono
         public bool isUseLocalRadiusAndColliderMask;
         public bool isInitialize;
         //OYM：constraintList
+        [SerializeField]
         private List<ADBRuntimeConstraint> constraintsStructuralVertical;//OYM：所有的垂直拉约束
+        [SerializeField]
         private List<ADBRuntimeConstraint> constraintsStructuralHorizontal;//OYM：所有的水平拉约束
+        [SerializeField]
         private List<ADBRuntimeConstraint> constraintsShear;//OYM：剪切力约束
+        [SerializeField]
         private List<ADBRuntimeConstraint> constraintsBendingVertical;//OYM：垂直弯曲约束
+        [SerializeField]
         private List<ADBRuntimeConstraint> constraintsBendingHorizontal;//OYM：水平弯曲约束
+        [SerializeField]
         private List<ADBRuntimeConstraint> constraintsCircumference;//OYM：圆心约束
 
         //OYM：struct list
