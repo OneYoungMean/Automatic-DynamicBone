@@ -141,7 +141,7 @@ namespace ADBRuntime.Internal
 
                         pReadWriteCollider->rotation = pReadCollider->fromRotation;
                         pReadCollider->deltaRotation = math.slerp(pReadCollider->fromRotation, pReadCollider->toRotation, oneDivideIteration);
-                        pReadWriteCollider->size = pReadCollider->originBoxSize * colliderScale;
+                        pReadWriteCollider->size = pReadCollider->originBoxSize * pReadCollider->scale * localScale;
 
                         temp1 = MinMaxAABB.CreateFromCenterAndHalfExtents(fromLocalPosition, pReadCollider->originBoxSize * colliderScale); //OYM:创建一个与OBB大小一致的AABB
                         temp1 = MinMaxAABB.Rotate(pReadCollider->fromRotation, temp1);//OYM:进行旋转
@@ -547,6 +547,7 @@ namespace ADBRuntime.Internal
                 }
                 else
                 {
+
                     pReadWritePoint->deltaPosition += pushout;
                     pReadWritePoint->deltaPosition *= (1 - pReadPoint->friction);
                     pReadWritePoint->position += pushout;

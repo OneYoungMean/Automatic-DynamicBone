@@ -106,10 +106,10 @@ namespace ADBRuntime.Mono
             if (!isReadOnly)
             {
                 CheckAndBuildADBRuntimeCollider();
+                UpdatePriorities();
             }
             if (!isStatic)
             {
-                UpdatePriorities();
                 runtimeCollider.UpdateColliderData();
             }
         }
@@ -117,6 +117,7 @@ namespace ADBRuntime.Mono
         private void OnEnable()
         {
             CheckAndBuildADBRuntimeCollider();
+            UpdatePriorities();
         }
 
         private void OnDisable()
