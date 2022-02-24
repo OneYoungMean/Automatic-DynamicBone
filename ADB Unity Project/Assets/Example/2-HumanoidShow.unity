@@ -1522,69 +1522,6 @@ MonoBehaviour:
   colliderMask: 32
   unityCollider: {fileID: 0}
   colliderType: 
---- !u!1 &315147214
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 315147216}
-  - component: {fileID: 315147217}
-  - component: {fileID: 315147215}
-  m_Layer: 0
-  m_Name: can you make friends with me?  >A<
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &315147215
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 315147214}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b5fa18d047edd3548856c1a8342b32a0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  isReadOnly: 0
-  isStatic: 0
-  collideFunc: 1
-  colliderMask: 512
-  unityCollider: {fileID: 315147217}
-  colliderType: 
---- !u!4 &315147216
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 315147214}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.295, y: 1.145, z: 1.485}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!135 &315147217
-SphereCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 315147214}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 0.5
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &354780560 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100030, guid: 73ca2ef097afa80429dfc34044761ce1,
@@ -4294,7 +4231,7 @@ Transform:
   - {fileID: 875645541}
   - {fileID: 1746295133}
   m_Father: {fileID: 0}
-  m_RootOrder: 4
+  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1345104527 stripped
 GameObject:
@@ -7214,7 +7151,7 @@ Transform:
   - {fileID: 1751683613}
   - {fileID: 1751683761}
   m_Father: {fileID: 0}
-  m_RootOrder: 1
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &1751683785
 Transform:
@@ -28387,7 +28324,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 400320, guid: 73ca2ef097afa80429dfc34044761ce1, type: 3}
       propertyPath: m_RootOrder
-      value: 3
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 400320, guid: 73ca2ef097afa80429dfc34044761ce1, type: 3}
       propertyPath: m_LocalPosition.x
@@ -33995,7 +33932,7 @@ Transform:
   - {fileID: 2254623305979335527}
   - {fileID: 2254623305979335377}
   m_Father: {fileID: 0}
-  m_RootOrder: 2
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &2254623305979335433
 Transform:

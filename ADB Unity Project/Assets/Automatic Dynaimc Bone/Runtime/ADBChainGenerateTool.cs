@@ -35,6 +35,10 @@ namespace ADBRuntime.Mono.Tool
 
         private void ListCheck()
         {
+            if (allChain == null)
+            {
+                allChain = new List<ADBChainProcessor>();
+            }
             if (generatorMode != ChainGeneratorMode.ADBChain)//OYM:只有chain才会被检查
             {
                 return;
@@ -110,7 +114,6 @@ namespace ADBRuntime.Mono.Tool
         public void InitializeChain()
         {
             ListCheck();
-            List<ADBChainProcessor> generateChain = new List<ADBChainProcessor>();
             switch (generatorMode)
             {
                 case ChainGeneratorMode.DynamicBone:
@@ -139,7 +142,7 @@ namespace ADBRuntime.Mono.Tool
                 case ChainGeneratorMode.ADBChain:
                     for (int i = 0; i < transform.childCount; i++)
                     {
-                        GenerateBoneChainImporter(transform.GetChild(i), generateKeyWordWhiteList, generateKeyWordBlackList, blackListOfGenerateTransform, linker, ref generateChain);
+                        GenerateBoneChainImporter(transform.GetChild(i), generateKeyWordWhiteList, generateKeyWordBlackList, blackListOfGenerateTransform, linker, ref allChain);
                     }
                     break;
                 default:

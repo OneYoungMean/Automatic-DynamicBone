@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5dacefedb29654d4dbf485e7db79a880, type: 3}
-  m_Name: Oppai low
+  m_Name: Oppai medium
   m_EditorClassIdentifier: 
   frictionCurve:
     serializedVersion: 2
@@ -141,7 +141,7 @@ MonoBehaviour:
     m_RotationOrder: 4
   dampingMin: 0
   dampingMax: 1
-  dampingValue: 0.98
+  dampingValue: 0.96
   isdampingCurve: 0
   elasticityCurve:
     serializedVersion: 2
@@ -169,7 +169,7 @@ MonoBehaviour:
     m_RotationOrder: 4
   elasticityMin: 0
   elasticityMax: 1
-  elasticityValue: 0.2
+  elasticityValue: 0.3
   iselasticityCurve: 0
   velocityIncreaseCurve:
     serializedVersion: 2
@@ -225,7 +225,7 @@ MonoBehaviour:
     m_RotationOrder: 4
   stiffnessWorldMin: 0
   stiffnessWorldMax: 10
-  stiffnessWorldValue: 0.5
+  stiffnessWorldValue: 1
   isstiffnessWorldCurve: 0
   stiffnessLocalCurve:
     serializedVersion: 2
@@ -253,7 +253,7 @@ MonoBehaviour:
     m_RotationOrder: 4
   stiffnessLocalMin: 0
   stiffnessLocalMax: 1
-  stiffnessLocalValue: 0
+  stiffnessLocalValue: 0.5
   isstiffnessLocalCurve: 0
   lengthLimitForceScaleCurve:
     serializedVersion: 2
@@ -291,7 +291,7 @@ MonoBehaviour:
     m_RotationOrder: 4
   elasticityVelocityMin: 0
   elasticityVelocityMax: 1
-  elasticityVelocityValue: 0
+  elasticityVelocityValue: 1
   iselasticityVelocityCurve: 0
   structuralShrinkVerticalScaleCurve:
     serializedVersion: 2
@@ -643,7 +643,7 @@ MonoBehaviour:
       outWeight: 0
     - serializedVersion: 3
       time: 1
-      value: 0.05
+      value: 0
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -656,7 +656,7 @@ MonoBehaviour:
   pointRadiuMin: 0
   pointRadiuMax: 1
   pointRadiuValue: 0
-  ispointRadiuCurve: 1
+  ispointRadiuCurve: 0
   value2Curve:
     serializedVersion: 2
     m_Curve:
@@ -900,7 +900,7 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   isComputeStructuralVertical: 1
-  isComputeStructuralHorizontal: 0
+  isComputeStructuralHorizontal: 1
   isComputeShear: 0
   isComputeBendingVertical: 0
   isComputeBendingHorizontal: 0
@@ -912,4 +912,4 @@ MonoBehaviour:
   isDebugDraw: 1
   isFixGravityAxis: 1
   gravity: {x: 0, y: -9.81, z: 0}
-  colliderChoice: -1
+  colliderChoice: 512

@@ -253,7 +253,7 @@ MonoBehaviour:
     m_RotationOrder: 4
   stiffnessLocalMin: 0
   stiffnessLocalMax: 1
-  stiffnessLocalValue: 0
+  stiffnessLocalValue: 0.8
   isstiffnessLocalCurve: 0
   lengthLimitForceScaleCurve:
     serializedVersion: 2
@@ -643,7 +643,7 @@ MonoBehaviour:
       outWeight: 0
     - serializedVersion: 3
       time: 1
-      value: 0
+      value: 0.05
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -656,7 +656,7 @@ MonoBehaviour:
   pointRadiuMin: 0
   pointRadiuMax: 1
   pointRadiuValue: 0
-  ispointRadiuCurve: 0
+  ispointRadiuCurve: 1
   value2Curve:
     serializedVersion: 2
     m_Curve:
@@ -900,7 +900,7 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   isComputeStructuralVertical: 1
-  isComputeStructuralHorizontal: 1
+  isComputeStructuralHorizontal: 0
   isComputeShear: 0
   isComputeBendingVertical: 0
   isComputeBendingHorizontal: 0

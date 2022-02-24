@@ -151,7 +151,7 @@ namespace ADBRuntime.Mono
                 startVelocityDamp = 0;
                 return;
             }
-            deltaTime = Mathf.Lerp(deltaTime, inputDeltaTime, 1 / (bufferTime * 60));
+            deltaTime =Mathf.Min(0.02f, Mathf.Lerp(deltaTime, inputDeltaTime, 1 / (bufferTime * 60)));
             startVelocityDamp =math.saturate (startVelocityDamp+ inputDeltaTime / bufferTime);
 
             //  deltaTime =Mathf.Lerp(deltaTime, Mathf.Min(Time.deltaTime,0.0166f),0.1f);//OYM：用time.deltaTime并不理想,或许是我笔记本太烂的缘故?
@@ -225,15 +225,8 @@ namespace ADBRuntime.Mono
         }
         public void ResetData()
         {
-            if (!Application.isPlaying)
-            {
-                Initialize();
-            }
-            else
-            {
-                RestoreRuntimePoint();
-                Start();
-            }
+            RestoreRuntimePoint();
+            Start();
 
         }
         public int GetPointCount()

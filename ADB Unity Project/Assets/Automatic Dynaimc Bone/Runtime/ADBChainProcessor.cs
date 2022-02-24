@@ -107,7 +107,12 @@ namespace ADBRuntime.Mono
 
         private void GetMaxDeep()
         {
-            maxChainLength = GetMaxDeep(this)* GetADBSetting().structuralStretchVertical * 1.1f; ;
+            maxChainLength = GetMaxDeep(this);
+            if (aDBSetting!=null)
+            {
+                maxChainLength *= aDBSetting.structuralStretchVertical * 1.1f; ;
+            }
+
         }
 
         private void UpdatePointStruct()
@@ -126,14 +131,14 @@ namespace ADBRuntime.Mono
         //OYM：cratePointStruct
         private void SerializeAndSearchAllPoints(ADBRuntimePoint point, ref List<ADBRuntimePoint> allPointList, out int maxPointDepth)//OYM：在这里递归搜索
         {
-            if (point == null)
+            if (point == null|| point.transform==null)
             {
                 maxPointDepth = 0;
                 return;
             }
             if (point.ChildPoints == null || point.ChildPoints.Count == 0)
             {//OYM：没有子节点
-                if (Application.isPlaying && aDBSetting.isComputeVirtual && (!point.transform.name.Contains(virtualKey)))//OYM：创建一个延长的节点
+                if (Application.isPlaying && aDBSetting != null && aDBSetting.isComputeVirtual && (!point.transform.name.Contains(virtualKey)))//OYM：创建一个延长的节点
                 {
                     Transform childPointTrans = new GameObject(point.transform.name + virtualKey).transform;
                     childPointTrans.position = point.transform.position + ((point.Parent != null && point.Parent.depth != -1 && !aDBSetting.ForceLookDown) ?
@@ -142,7 +147,7 @@ namespace ADBRuntime.Mono
 
                     childPointTrans.parent = point.transform;
 
-                    ADBRuntimePoint virtualPoint =  ADBRuntimePoint.CreateRuntimePoint(childPointTrans, point.depth + 1, point.keyWord, aDBSetting.isAllowComputeOtherConstraint);
+                    ADBRuntimePoint virtualPoint = ADBRuntimePoint.CreateRuntimePoint(childPointTrans, point.depth + 1, point.keyWord, aDBSetting.isAllowComputeOtherConstraint);
                     point.AddChild(virtualPoint);
                 }
                 else
@@ -155,6 +160,7 @@ namespace ADBRuntime.Mono
                     return;
                 }
             }
+
             point.pointRead.childFirstIndex = allPointList.Count;//OYM：记录第一个子节点的位置
             point.pointRead.childLastIndex = point.pointRead.childFirstIndex + point.ChildPoints.Count;//OYM：记录边界的位置
 

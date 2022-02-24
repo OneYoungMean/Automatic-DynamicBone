@@ -94,7 +94,7 @@ namespace ADBRuntime.Mono
 
         private int id;
 
-        public void Awake()
+        public void Start()
         {
             isReadOnly |= gameObject.isStatic;
             isStatic |= gameObject.isStatic;
@@ -117,7 +117,6 @@ namespace ADBRuntime.Mono
         private void OnEnable()
         {
             CheckAndBuildADBRuntimeCollider();
-            UpdatePriorities();
         }
 
         private void OnDisable()

@@ -52,7 +52,10 @@ namespace ADBRuntime.Mono.Tool
                     Debug.Log("You can generate point first to get more accuracy collider");
                 }
                 generateColliderList = ADBStaticColliderFunc.GenerateBodyCollidersData(transform, allNodeList, isGenerateFinger, isGenerateColliderOpenTrigger, out int isGenerateSuccessful);
-
+                for (int i = 0; i < generateColliderList.Count; i++)
+                {
+                    generateColliderList[i].transform.localScale *= colliderSize;
+                }
                 if (isGenerateSuccessful == -1)
                 {
                     Debug.LogError("Some bug must be happen");

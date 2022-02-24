@@ -54,18 +54,21 @@ namespace ADBRuntime.UntiyEditor
             if (controller.generateColliderList == null || controller.generateColliderList.Count == 0)
             {
                 controller.isGenerateColliderAutomaitc = EditorGUILayout.Toggle("自动生成全身碰撞体 ", controller.isGenerateColliderAutomaitc);
-                
+
                 if (controller.isGenerateColliderAutomaitc)
                 {
+                    controller.colliderSize = EditorGUILayout.Slider("  ┗━缩放比例 ", controller.colliderSize, 0.001f, 2f);
                     controller.isGenerateColliderOpenTrigger = EditorGUILayout.Toggle("  ┗━生成的碰撞体为trigger ", controller.isGenerateColliderOpenTrigger);
-                }
-                if (controller.isGenerateColliderAutomaitc)
-                {
                     controller.isGenerateByAllPoint = EditorGUILayout.Toggle("  ┗━以所有节点作为参照 ", controller.isGenerateByAllPoint);
+                    controller.isGenerateFinger = EditorGUILayout.Toggle("  ┗━生成手指 ", controller.isGenerateFinger);
                 }
                 if (controller.isGenerateColliderAutomaitc)
                 {
-                    controller.isGenerateFinger = EditorGUILayout.Toggle("  ┗━生成手指 ", controller.isGenerateFinger);
+
+                }
+                if (controller.isGenerateColliderAutomaitc)
+                {
+
                 }
             }
             else

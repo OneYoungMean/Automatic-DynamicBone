@@ -348,7 +348,7 @@ namespace ADBRuntime.Internal
 
                 lerpDirection *= math.lerp(lerpDirectionLength, pReadPointTarget->initialLocalPositionLength, pReadPointTarget->lengthLimitForceScale) / lerpDirectionLength; //OYM:对长度进行约束,使其位于实际长度和真实长度之间
 
-                float3 move = (pPointReadWriteParent->position + lerpDirection - pReadWritePointTarget->position) * math.min(1, oneDivideIteration * timeScale);
+                float3 move = (pPointReadWriteParent->position + lerpDirection - pReadWritePointTarget->position) * math.min(0.5f, oneDivideIteration * timeScale);
 
                 pReadWritePointTarget->position += move;
                 pReadWritePointTarget->deltaPosition += move * pReadPointTarget->elasticityVelocity * oneDivideIteration;

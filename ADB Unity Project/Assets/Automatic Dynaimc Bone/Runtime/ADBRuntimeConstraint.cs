@@ -13,7 +13,6 @@ namespace ADBRuntime
         Bending_Horizontal,
         Circumference,
     }
-    [Serializable]
     public class ADBRuntimeConstraint
     {
         public ConstraintRead constraintRead;
@@ -43,6 +42,10 @@ namespace ADBRuntime
         }
         public void OnDrawGizmos(bool IsDrawOutLine)
         {
+            if (pointA==null||pointB==null)
+            {
+                return;
+            }
             switch (constraintRead.type)
             {
                 case ConstraintType.Structural_Vertical:
