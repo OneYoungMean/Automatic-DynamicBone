@@ -9,7 +9,7 @@ namespace ADBRuntime.UntiyEditor
     [CustomEditor(typeof(ADBRuntimePoint))]
     public class ADBRunrimePointEditor : Editor
     {
-        public override void OnInspectorGUI() { }
+        public override void OnInspectorGUI() { } //Hide
     }
 
 }

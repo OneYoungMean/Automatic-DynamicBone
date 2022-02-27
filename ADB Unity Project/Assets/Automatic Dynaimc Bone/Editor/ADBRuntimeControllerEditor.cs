@@ -9,17 +9,17 @@ namespace ADBRuntime.UntiyEditor
     using Mono;
     public enum ColliderCollisionTypeZh
     {
-        全体碰撞I杆件迭代 = 1,
-        仅杆件碰撞I杆件迭代 = 2,
-        仅节点碰撞I节点迭代 = 3,
-        不计算碰撞I节点迭代 = 4
+        CollideAll = 1,
+        CollideStick = 2,
+        CollidePoint = 3,
+        NoCollide = 4
     }
 
     public enum UpdateModeZh
     {
-        Update更新= 1,
-        FixedUpdate更新 = 2,
-        LateUpdate更新 = 3,
+        Update= 1,
+        FixedUpdate = 2,
+        LateUpdate = 3,
     }
     [CanEditMultipleObjects]
     [CustomEditor(typeof(ADBRuntimeController))]
@@ -51,7 +51,7 @@ namespace ADBRuntime.UntiyEditor
             {
                 color = new Color(0.7f, 1.0f, 0.7f);
             }
-            Titlebar("ADB物理控制器", color,0);
+            Titlebar("ADB Runtime Controller", color,0);
             serializedObject.Update();
             if (!Application.isPlaying)
             {
@@ -60,7 +60,7 @@ namespace ADBRuntime.UntiyEditor
 
             if (controller.allChain != null)
             {
-                isFoldout = EditorGUILayout.Foldout(isFoldout, "  所有节点坐标 :" + controller.GetPointCount());
+                isFoldout = EditorGUILayout.Foldout(isFoldout, " All Transform List:" + controller.GetPointCount());
                 if (isFoldout&& controller.allChain!=null)
                 {
                     if (isFoldouts == null || isFoldouts.Length != controller.allChain.Length)
@@ -83,7 +83,7 @@ namespace ADBRuntime.UntiyEditor
                 }
                 if (controller.overlapsColliderList != null)
                 {
-                    EditorGUILayout.PropertyField(serializedObject.FindProperty("overlapsColliderList"), new GUIContent(" 所有碰撞体坐标 :" + controller.overlapsColliderList.Count), true);
+                    EditorGUILayout.PropertyField(serializedObject.FindProperty("overlapsColliderList"), new GUIContent(" All Collider List :" + controller.overlapsColliderList.Count), true);
                 }
             }
             //OYM：更新表现形式;
@@ -93,44 +93,44 @@ namespace ADBRuntime.UntiyEditor
             }
             else
             {
-                Titlebar("=============== 节点设置", color);
+                Titlebar("=============== Transform Setting", color);
 
-                if (GUILayout.Button("重置所有节点位置", GUILayout.Height(22.0f)))
+                if (GUILayout.Button("Reset Transform Data", GUILayout.Height(22.0f)))
                 {
                     controller.RestoreRuntimePoint();
                 }
-                if (GUILayout.Button("重置所有节点数据并重新运行", GUILayout.Height(22.0f)))
+                if (GUILayout.Button("Reset All Data", GUILayout.Height(22.0f)))
                 {
                     controller.ResetData();
                 }
-                Titlebar("=============== 碰撞体设置", color);
+                Titlebar("=============== Collider Setting", color);
                 if (controller.overlapsColliderList != null)
                 {
-                    controller.colliderSize = EditorGUILayout.Slider("碰撞体大小", controller.colliderSize, 0, 2);
+                    controller.colliderSize = EditorGUILayout.Slider("ColliderScale", controller.colliderSize, 0, 2);
                     controller.RefreshSize();
                 }
             }
 
             GUILayout.Space(10);
 
-            Titlebar("=============== 物理设置", color,0);
-            controller.iteration = EditorGUILayout.IntSlider("迭代次数", controller.iteration, 1, max * (controller.isRunAsync ? 8 : 1) * (controller.isParallel ? 4 : 1));
-            controller.isRunAsync = EditorGUILayout.Toggle("是否在多线程运行", controller.isRunAsync);
+            Titlebar("=============== Physics Setting", color,0);
+            controller.iteration = EditorGUILayout.IntSlider("Iteration Mode", controller.iteration, 1, max * (controller.isRunAsync ? 8 : 1) * (controller.isParallel ? 4 : 1));
+            controller.isRunAsync = EditorGUILayout.Toggle("Run Async", controller.isRunAsync);
             if (controller.isRunAsync)
             {
-                controller.isParallel = EditorGUILayout.Toggle("  ┗━并行模式", controller.isParallel);
+                controller.isParallel = EditorGUILayout.Toggle("  ┗━Run Parallel", controller.isParallel);
             }
-            controller.updateMode = (UpdateMode)EditorGUILayout.EnumPopup("更新模式", (UpdateModeZh)controller.updateMode);
-            controller.colliderCollisionType = (ColliderCollisionType)EditorGUILayout.EnumPopup("碰撞模式", (ColliderCollisionTypeZh)controller.colliderCollisionType);
+            controller.updateMode = (UpdateMode)EditorGUILayout.EnumPopup("Update Mode", (UpdateModeZh)controller.updateMode);
+            controller.colliderCollisionType = (ColliderCollisionType)EditorGUILayout.EnumPopup("ColliderMode", (ColliderCollisionTypeZh)controller.colliderCollisionType);
 
 
             GUILayout.Space(10);
-            controller.bufferTime = EditorGUILayout.Slider("平滑时间", controller.bufferTime, 0.001f, 10f);
-            controller.isOptimize = EditorGUILayout.Toggle("优化移动轨迹(实验)", controller.isOptimize);
-            controller.timeScale = EditorGUILayout.Slider("时间比率(实验)", controller.timeScale,0,2);
+            controller.bufferTime = EditorGUILayout.Slider("Smooth Time", controller.bufferTime, 0.001f, 10f);
+            controller.isOptimize = EditorGUILayout.Toggle("OptimizeTrack(experiment)", controller.isOptimize);
+            controller.timeScale = EditorGUILayout.Slider("TimeScale(experiment)", controller.timeScale,0,2);
             GUILayout.Space(10);
-            controller.windForceScale = EditorGUILayout.Slider("风力", controller.windForceScale, 0, 1);
-            controller.isDrawGizmo = EditorGUILayout.Toggle("是否绘制所有辅助线", controller.isDrawGizmo);
+            controller.windForceScale = EditorGUILayout.Slider("Wind Force", controller.windForceScale, 0, 1);
+            controller.isDrawGizmo = EditorGUILayout.Toggle("IsDrawAllGizmo", controller.isDrawGizmo);
             GUILayout.Space(20);
             serializedObject.ApplyModifiedProperties();
         }

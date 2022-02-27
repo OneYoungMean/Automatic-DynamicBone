@@ -17,11 +17,11 @@ namespace ADBRuntime.UntiyEditor
         public override void OnInspectorGUI()
         {
             serializedObject.Update();
-            Titlebar("关联器", Color.white);
+            Titlebar("Physics Setting Linker", Color.white);
 
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("settings"), new GUIContent("关联设置"), true);
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("settings"), new GUIContent("Physics Setting"), true);
             GUILayout.Space(12);
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("defaultSetting"), new GUIContent("默认物理设定"), true);
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("defaultSetting"), new GUIContent("Default Physics Setting"), true);
             serializedObject.ApplyModifiedProperties();
         }
 

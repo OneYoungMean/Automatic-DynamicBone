@@ -11,26 +11,14 @@ namespace ADBRuntime.UntiyEditor
         ADBPhysicsSetting controller;
         bool showConstraintValue=false;
         bool showConstrainForce=false;
-        private enum ColliderChoiceZh
-        {
-            头 = 1 << 0,
-            上半身 = 1 << 1,
-            下半身 = 1 << 2,
-            大腿 = 1 << 3,
-            小腿 = 1 << 4,
-            大臂 = 1 << 5,
-            小臂 = 1 << 6,
-            手 = 1 << 7,
-            脚 = 1 << 8,
-            其他 = 1 << 9,
-        }
+
         public void OnEnable()
         {
             controller = target as ADBPhysicsSetting;
         }
         public override void OnInspectorGUI()
         {
-            if (GUILayout.Button("创建副本"))
+            if (GUILayout.Button("Copy"))
             {
                 var copy = Object.Instantiate(controller);
                 
@@ -52,114 +40,114 @@ namespace ADBRuntime.UntiyEditor
             }*/
 
             serializedObject.Update();
-            Titlebar("物理控制器", Color.white);
+            Titlebar("PhysicsSetting", Color.white);
 
-            Titlebar("曲线|节点设置", Color.green);
-                DrawValueOrCurve(serializedObject,"gravityScale","重力系数");
-                DrawValueOrCurve(serializedObject,"stiffnessWorld","位移刚性系数");
-                DrawValueOrCurve(serializedObject,"stiffnessLocal","夹角刚性系数");
-                DrawValueOrCurve(serializedObject,"elasticity","弹性");
-                DrawValueOrCurve(serializedObject,"elasticityVelocity","弹性速度");
-                DrawValueOrCurve(serializedObject,"lengthLimitForceScale","长度限制力系数");
-                DrawValueOrCurve(serializedObject,"damping","怠速");
-                DrawValueOrCurve(serializedObject,"moveInert","位移减少");
-                DrawValueOrCurve(serializedObject,"velocityIncrease","速度增强");
-                DrawValueOrCurve(serializedObject,"friction","摩擦力");
-                DrawValueOrCurve(serializedObject,"addForceScale","附加力系数");
+            Titlebar("PointSetting", Color.green);
+                DrawValueOrCurve(serializedObject,"gravityScale", "Gravity Scale");
+                DrawValueOrCurve(serializedObject,"stiffnessWorld", "Displacement Stiffness Scale");
+                DrawValueOrCurve(serializedObject,"stiffnessLocal", "Angle Limit Scale");
+                DrawValueOrCurve(serializedObject,"elasticity", "Angle Stiffness Scale");
+                DrawValueOrCurve(serializedObject,"elasticityVelocity", "Angle Stiffness Velocity Scale");
+                DrawValueOrCurve(serializedObject,"lengthLimitForceScale", "Length Limit Force Scale");
+                DrawValueOrCurve(serializedObject,"damping","Damping");
+                DrawValueOrCurve(serializedObject,"moveInert", "Move Inert");
+                DrawValueOrCurve(serializedObject,"velocityIncrease", "Velocity Increase");
+                DrawValueOrCurve(serializedObject,"friction","Friction");
+                DrawValueOrCurve(serializedObject,"addForceScale","Add Force Scale");
 
             GUILayout.Space(5);
-            DrawValueOrCurve(serializedObject,"pointRadiu","节点碰撞体积半径");
-            Titlebar("杆件设置", Color.green);
+            DrawValueOrCurve(serializedObject,"pointRadiu","Point Radius");
+            Titlebar("StickSetting", Color.green);
 
-            EditorGUILayout.PropertyField(serializedObject.FindProperty( "isComputeStructuralVertical"), new GUIContent("开启垂直相邻杆件"), true);
+            EditorGUILayout.PropertyField(serializedObject.FindProperty( "isComputeStructuralVertical"), new GUIContent("Is Open StructuralVertical Stick"), true);
             if (controller.isComputeStructuralVertical)
             {       
-                EditorGUILayout.PropertyField(serializedObject.FindProperty( "isCollideStructuralVertical"), new GUIContent("┗━允许垂直相邻杆件碰撞"), true);
+                EditorGUILayout.PropertyField(serializedObject.FindProperty( "isCollideStructuralVertical"), new GUIContent("┗━Enable Stick Collider"), true);
             }
             GUILayout.Space(5);
 
-            EditorGUILayout.PropertyField(serializedObject.FindProperty( "isComputeStructuralHorizontal"), new GUIContent("开启水平相邻杆件"), true);
+            EditorGUILayout.PropertyField(serializedObject.FindProperty( "isComputeStructuralHorizontal"), new GUIContent("Is Open StructuralHorizontal Stick"), true);
             if (controller.isComputeStructuralHorizontal)
             {
-                EditorGUILayout.PropertyField(serializedObject.FindProperty( "isCollideStructuralHorizontal"), new GUIContent("┗━允许水平相邻杆件碰撞"), true);
-                EditorGUILayout.PropertyField(serializedObject.FindProperty( "isLoopRootPoints"), new GUIContent("┗━允许首尾衔接"), true);
+                EditorGUILayout.PropertyField(serializedObject.FindProperty( "isCollideStructuralHorizontal"), new GUIContent("┗━Enable Stick Collider"), true);
+                EditorGUILayout.PropertyField(serializedObject.FindProperty( "isLoopRootPoints"), new GUIContent("┗━Enable Loop"), true);
             }
             GUILayout.Space(5);
 
-            EditorGUILayout.PropertyField(serializedObject.FindProperty( "isComputeShear"), new GUIContent("开启网状分布杆件"), true);
+            EditorGUILayout.PropertyField(serializedObject.FindProperty( "isComputeShear"), new GUIContent("Is Open Shear Stick"), true);
             if (controller.isComputeShear)
             {
-                EditorGUILayout.PropertyField(serializedObject.FindProperty( "isCollideShear"), new GUIContent("┗━允许网状分布杆件碰撞"), true);
-                EditorGUILayout.PropertyField(serializedObject.FindProperty( "isLoopRootPoints"), new GUIContent("┗━允许首尾衔接"), true);
+                EditorGUILayout.PropertyField(serializedObject.FindProperty( "isCollideShear"), new GUIContent("┗━Enable Stick Collider"), true);
+                EditorGUILayout.PropertyField(serializedObject.FindProperty( "isLoopRootPoints"), new GUIContent("┗━Enable Loop"), true);
             }
             GUILayout.Space(5);
 
-            EditorGUILayout.PropertyField(serializedObject.FindProperty( "isComputeBendingVertical"), new GUIContent("开启垂直相间杆件"), true);
+            EditorGUILayout.PropertyField(serializedObject.FindProperty( "isComputeBendingVertical"), new GUIContent("Is Open BendingVertical Stick"), true);
             GUILayout.Space(5);
 
-            EditorGUILayout.PropertyField(serializedObject.FindProperty( "isComputeBendingHorizontal"), new GUIContent("开启水平相间杆件"), true);
+            EditorGUILayout.PropertyField(serializedObject.FindProperty( "isComputeBendingHorizontal"), new GUIContent("Is Open BendingHorizontal Stick"), true);
             if (controller.isComputeBendingHorizontal)
             {
-                EditorGUILayout.PropertyField(serializedObject.FindProperty( "isLoopRootPoints"), new GUIContent("┗━允许首尾衔接"), true);
+                EditorGUILayout.PropertyField(serializedObject.FindProperty( "isLoopRootPoints"), new GUIContent("┗━Enable Loop"), true);
             }
             GUILayout.Space(5);
 
-            EditorGUILayout.PropertyField(serializedObject.FindProperty( "isComputeCircumference"), new GUIContent("开启放射分布杆件"), true);
+            EditorGUILayout.PropertyField(serializedObject.FindProperty( "isComputeCircumference"), new GUIContent("Is Open Circumference Stick"), true);
 
             GUILayout.Space(10);
-            showConstraintValue = EditorGUILayout.Foldout(showConstraintValue, "杆件系数曲线");
+            showConstraintValue = EditorGUILayout.Foldout(showConstraintValue, "Stick Force Sitting");
             if (showConstraintValue)
             {
                 GUILayout.Space(5);
-                DrawMinMaxSlider(serializedObject, "structuralShrinkVertical", "structuralStretchVertical", "垂直相邻范围");
-                DrawValueOrCurve(serializedObject, "structuralShrinkVerticalScale", "垂直相邻收缩系数");
-                DrawValueOrCurve(serializedObject, "structuralStretchVerticalScale", "垂直相邻拉伸系数");
+                DrawMinMaxSlider(serializedObject, "structuralShrinkVertical", "structuralStretchVertical", "Range of StretchVertical Stick");
+                DrawValueOrCurve(serializedObject, "structuralShrinkVerticalScale", "StretchVertical Shrink Scale");
+                DrawValueOrCurve(serializedObject, "structuralStretchVerticalScale", "StretchVertical Stretch Scale");
                 GUILayout.Space(5);
-                DrawMinMaxSlider(serializedObject, "structuralShrinkHorizontal", "structuralStretchHorizontal", "水平相邻范围");
-                DrawValueOrCurve(serializedObject, "structuralShrinkHorizontalScale", "水平相邻收缩系数");
-                DrawValueOrCurve(serializedObject, "structuralStretchHorizontalScale", "水平相邻拉伸系数");
+                DrawMinMaxSlider(serializedObject, "structuralShrinkHorizontal", "structuralStretchHorizontal", "Range of StretchHorizontal Stick");
+                DrawValueOrCurve(serializedObject, "structuralShrinkHorizontalScale", "StretchHorizontall Shrink Scale");
+                DrawValueOrCurve(serializedObject, "structuralStretchHorizontalScale", "StretchHorizontal Stretch Scale");
                 GUILayout.Space(5);
-                DrawMinMaxSlider(serializedObject, "shearShrink", "shearStretch", "网状分布范围");
-                DrawValueOrCurve(serializedObject, "shearShrinkScale", "网状分布收缩力系数");
-                DrawValueOrCurve(serializedObject, "shearStretchScale", "网状分布拉伸力系数");
+                DrawMinMaxSlider(serializedObject, "shearShrink", "shearStretch", "Range of Shear Stick");
+                DrawValueOrCurve(serializedObject, "shearShrinkScale", "Shear Shrink Scale");
+                DrawValueOrCurve(serializedObject, "shearStretchScale", "Shear Stretch Scale");
                 GUILayout.Space(5);
 
-                DrawMinMaxSlider(serializedObject, "bendingShrinkVertical", "bendingStretchVertical", "垂直相间范围");
-                DrawValueOrCurve(serializedObject, "bendingShrinkVerticalScale", "垂直相间收缩系数");
-                DrawValueOrCurve(serializedObject, "bendingStretchVerticalScale", "垂直相间拉伸系数");
+                DrawMinMaxSlider(serializedObject, "bendingShrinkVertical", "bendingStretchVertical", "Range of BendingVertical Stick");
+                DrawValueOrCurve(serializedObject, "bendingShrinkVerticalScale", "BendingVertical Shrink Scale");
+                DrawValueOrCurve(serializedObject, "bendingStretchVerticalScale", "BendingVertical Stretch Scale");
                 GUILayout.Space(5);
-                DrawMinMaxSlider(serializedObject, "bendingShrinkHorizontal", "bendingStretchHorizontal", "水平相间范围");
-                DrawValueOrCurve(serializedObject, "bendingShrinkHorizontalScale", "水平相间收缩系数");
-                DrawValueOrCurve(serializedObject, "bendingStretchHorizontalScale", "水平相间拉伸系数");
+                DrawMinMaxSlider(serializedObject, "bendingShrinkHorizontal", "bendingStretchHorizontal", "Range of BendingHorizontal Stick");
+                DrawValueOrCurve(serializedObject, "bendingShrinkHorizontalScale", "BendingHorizontall Shrink Scale");
+                DrawValueOrCurve(serializedObject, "bendingStretchHorizontalScale", "BendingHorizontal Stretch Scale");
                 GUILayout.Space(5);
-                DrawMinMaxSlider(serializedObject, "circumferenceShrink", "circumferenceStretch", "分布放射范围");
-                DrawValueOrCurve(serializedObject, "circumferenceShrinkScale", "放射分布收缩系数");
-                DrawValueOrCurve(serializedObject, "circumferenceStretchScale", "放射分布拉伸系数");
-                GUILayout.Label("杆件最终力=杆件力系数值*超出范围的长度部分");
+                DrawMinMaxSlider(serializedObject, "circumferenceShrink", "circumferenceStretch", "Range of Circumference Stick");
+                DrawValueOrCurve(serializedObject, "circumferenceShrinkScale", "Circumference Shrink Scale");
+                DrawValueOrCurve(serializedObject, "circumferenceStretchScale", "Circumference Stretch Scale");
+                GUILayout.Label("Stick Final Force=(Scale)*(Length of outside the Range)");
             }
             GUILayout.Space(10);
 
-            Titlebar("其他设置", Color.green);
+            Titlebar("Other Setting", Color.green);
 
 /*            EditorGUILayout.PropertyField(serializedObject.FindProperty( "isDebugDraw"), new GUIContent("绘制杆件"), true);*/
-            EditorGUILayout.PropertyField(serializedObject.FindProperty( "isComputeVirtual"), new GUIContent("生成虚拟节点"), true);
+            EditorGUILayout.PropertyField(serializedObject.FindProperty( "isComputeVirtual"), new GUIContent("Generate Virtual Transform"), true);
             
             if (controller.isComputeVirtual)
             {
-                EditorGUILayout.PropertyField(serializedObject.FindProperty( "isAllowComputeOtherConstraint"), new GUIContent("┗━允许虚拟节点生成其他杆件"), true);
-                EditorGUILayout.PropertyField(serializedObject.FindProperty( "virtualPointAxisLength"), new GUIContent("┗━虚拟杆件长度"), true);
-                EditorGUILayout.PropertyField(serializedObject.FindProperty( "ForceLookDown"), new GUIContent("┗━强制末端朝下"), true);
+                EditorGUILayout.PropertyField(serializedObject.FindProperty( "isAllowComputeOtherConstraint"), new GUIContent("┗━Allow Virtual Transform Use Other Stick "), true);
+                EditorGUILayout.PropertyField(serializedObject.FindProperty( "virtualPointAxisLength"), new GUIContent("┗━Virtual Transform's Stick Length"), true);
+                EditorGUILayout.PropertyField(serializedObject.FindProperty( "ForceLookDown"), new GUIContent("┗━Virtual Transform Stick's Direction is Down"), true);
             }
 
-            EditorGUILayout.PropertyField(serializedObject.FindProperty( "isAutoComputeWeight"), new GUIContent("自动计算节点质量"), true);
+            EditorGUILayout.PropertyField(serializedObject.FindProperty( "isAutoComputeWeight"), new GUIContent("Is Auto Compute Weight"), true);
             if (!controller.isAutoComputeWeight)
             {
-                EditorGUILayout.PropertyField(serializedObject.FindProperty( "weightCurve"), new GUIContent("┗━质量曲线"), true);
+                EditorGUILayout.PropertyField(serializedObject.FindProperty( "weightCurve"), new GUIContent("┗━WeightCurve"), true);
             }
-            EditorGUILayout.PropertyField(serializedObject.FindProperty( "gravity"), new GUIContent("重力"), true);
+            EditorGUILayout.PropertyField(serializedObject.FindProperty( "gravity"), new GUIContent("Gravity Direction"), true);
             //EditorGUILayout.PropertyField(serializedObject.FindProperty( "isFixGravityAxis"), new GUIContent("重力轴随角色旋转而旋转"), true);
-            EditorGUILayout.PropertyField(serializedObject.FindProperty( "isFixedPointFreezeRotation"), new GUIContent("固定节点是否冻结旋转"), true);
-            controller.colliderChoice =(ColliderChoice) EditorGUILayout.EnumFlagsField("接收以下种类的碰撞体的信息",(ColliderChoiceZh)controller.colliderChoice);
+            EditorGUILayout.PropertyField(serializedObject.FindProperty( "isFixedPointFreezeRotation"), new GUIContent("Is Freeze Fixed Transform's Rotation"), true);
+            controller.colliderChoice =(ColliderChoice) EditorGUILayout.EnumFlagsField("ColliderMask",(ColliderChoiceZh)controller.colliderChoice);
             EditorUtility.SetDirty(controller);
             serializedObject.ApplyModifiedProperties();
         }
@@ -191,14 +179,14 @@ namespace ADBRuntime.UntiyEditor
                 if (boolField.boolValue)
                 {
                     var cruveField = serializedObject.FindProperty(baseName + "Curve");
-                    EditorGUILayout.PropertyField(cruveField, new GUIContent(baseNameCN + "曲线"), true, GUILayout.MinWidth(250));
+                    EditorGUILayout.PropertyField(cruveField, new GUIContent(baseNameCN + "Curve"), true, GUILayout.MinWidth(250));
                 }
                 else
                 {
                     var valueField = serializedObject.FindProperty(baseName + "Value");
                     var valueMin = serializedObject.FindProperty(baseName + "Min");
                     var valueMax = serializedObject.FindProperty(baseName + "Max");
-                    valueField.floatValue = EditorGUILayout.Slider(baseNameCN + "值", valueField.floatValue, valueMin.floatValue, valueMax.floatValue);
+                    valueField.floatValue = EditorGUILayout.Slider(baseNameCN + "Value", valueField.floatValue, valueMin.floatValue, valueMax.floatValue);
                     //EditorGUILayout.PropertyField(valueField, new GUIContent(baseNameCN + "值"), false);
                 }
 

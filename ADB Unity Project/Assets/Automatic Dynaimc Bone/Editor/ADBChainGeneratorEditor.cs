@@ -11,9 +11,9 @@ namespace ADBRuntime.UntiyEditor
     public enum ChainGeneratorModeCN
     {
         //自动模式,
-        DynamicBone模式 = 0,
-        关键词模式 = 1,
-        清除模式=2,
+        DynamicBoneMode= 0,
+        KeyWordMode = 1,
+        ClearMode=2,
     }
     [CustomEditor(typeof(ADBChainGenerateTool))]
 
@@ -32,15 +32,15 @@ namespace ADBRuntime.UntiyEditor
         {
             serializedObject.Update();
 
-            Titlebar("ADB骨骼生成器", new Color(0.8F, 1, 1),0);
-            controller.generatorMode = (ChainGeneratorMode)EditorGUILayout.EnumPopup("生成器模式", (ChainGeneratorModeCN)controller.generatorMode);
+            Titlebar("ADBBoneGenerator", new Color(0.8F, 1, 1),0);
+            controller.generatorMode = (ChainGeneratorMode)EditorGUILayout.EnumPopup("GenerateMode", (ChainGeneratorModeCN)controller.generatorMode);
             switch ((ChainGeneratorModeCN)controller.generatorMode)
             {
-                case ChainGeneratorModeCN.DynamicBone模式:
+                case ChainGeneratorModeCN.DynamicBoneMode:
                     {
                         if (controller.setting == null)
                         {
-                            Titlebar("错误:物理设置不能为空!", new Color(0.7f, 0.3f, 0.3f));
+                            Titlebar("Error:Physics setting cannot be null!", new Color(0.7f, 0.3f, 0.3f));
                         }
                         for (int i = 0; i < controller.generateTransformList?.Count; i++)
                         {
@@ -50,20 +50,20 @@ namespace ADBRuntime.UntiyEditor
                             }
                             if (!controller.generateTransformList[i].gameObject.GetComponentsInParent<Transform>(true).Contains(controller.transform))//OYM:搜索节点必须为挂载节点的子节点或本身
                             {
-                                Titlebar("错误:节点 "+ controller.generateTransformList[i] .name+ "不是挂载节点的子节点或本身!", new Color(0.7f, 0.3f, 0.3f));
+                                Titlebar("Error:Transform "+ controller.generateTransformList[i] .name+ "is not self or child!", new Color(0.7f, 0.3f, 0.3f));
                             }
                         }
                     }
                     break;
-                case ChainGeneratorModeCN.关键词模式:
+                case ChainGeneratorModeCN.KeyWordMode:
                     {
                         if (controller.linker == null)
                         {
-                            Titlebar("错误:全局关联设置不能为空!", new Color(0.7f, 0.3f, 0.3f));
+                            Titlebar("Error:setting linker cannot be null!", new Color(0.7f, 0.3f, 0.3f));
                         }
                         if (controller.generateKeyWordWhiteList == null || controller.generateKeyWordWhiteList.Count == 0 && controller.linker.AllKeyWord.Count == 0)
                         {
-                            Titlebar("警告:识别关键词缺失", Color.yellow);
+                            Titlebar("Tips:Lost keyword,will be use linker's keyword", Color.gray);
                         }
                         else if (controller.linker != null)
                         {
@@ -71,53 +71,55 @@ namespace ADBRuntime.UntiyEditor
                             {
                                 if (!controller.linker.isContain(controller.generateKeyWordWhiteList[i]))
                                 {
-                                    Titlebar("警告:关键词: " + controller.generateKeyWordWhiteList[i] + "不在全局关联设置内!", Color.yellow);
+                                    Titlebar("Warning:Keyword: " + controller.generateKeyWordWhiteList[i] + "doesn't exist on Linker's keyword", Color.yellow);
                                 }
                             }
                         }
                     }
                     break;
-                case ChainGeneratorModeCN.清除模式:
-                    if (GUILayout.Button("清除所有节点数据", GUILayout.Height(22.0f)))
+                case ChainGeneratorModeCN.ClearMode:
+                    if (GUILayout.Button("Clear all physics data", GUILayout.Height(22.0f)))
                     {
-                        ADBChainGenerateTool.ClearBoneChain(controller.transform);
-                        containerEditors?.Clear();
-
+                        if (EditorUtility.DisplayDialog("Warning", "Are you sure you want to delete?", "ok", "cancel"))
+                        {
+                            ADBChainGenerateTool.ClearBoneChain(controller.transform);
+                            containerEditors?.Clear();
+                        }
                     }
                     return;
                 default:
                     break;
             }
 
-            Titlebar("=============== 节点设置", new Color(0.8f
+            Titlebar("=============== GenerateSetting", new Color(0.8f
                 , 1, 1));
             switch ((ChainGeneratorModeCN)controller.generatorMode)
             {
-                case ChainGeneratorModeCN.DynamicBone模式:
+                case ChainGeneratorModeCN.DynamicBoneMode:
                     {
-                        EditorGUILayout.PropertyField(serializedObject.FindProperty("setting"), new GUIContent("物理效果设置"), true);
-                        EditorGUILayout.PropertyField(serializedObject.FindProperty("generateTransformList"), new GUIContent("搜索起始点"), true);
+                        EditorGUILayout.PropertyField(serializedObject.FindProperty("setting"), new GUIContent("Phyhsics Setting"), true);
+                        EditorGUILayout.PropertyField(serializedObject.FindProperty("generateTransformList"), new GUIContent("Search Start Transform"), true);
                     }
                     break;
-                case ChainGeneratorModeCN.关键词模式:
+                case ChainGeneratorModeCN.KeyWordMode:
                     {
-                        EditorGUILayout.PropertyField(serializedObject.FindProperty("linker"), new GUIContent("全局关联设置"), true);
+                        EditorGUILayout.PropertyField(serializedObject.FindProperty("linker"), new GUIContent("Physics Setting Linker"), true);
                         GUILayout.Space(5);
-                        EditorGUILayout.PropertyField(serializedObject.FindProperty("generateKeyWordWhiteList"), new GUIContent("识别关键词"), true);
-                        EditorGUILayout.PropertyField(serializedObject.FindProperty("blackListOfGenerateTransform"), new GUIContent("节点黑名单"), true);
-                        EditorGUILayout.PropertyField(serializedObject.FindProperty("generateKeyWordBlackList"), new GUIContent("关键词黑名单"), true);
+                        EditorGUILayout.PropertyField(serializedObject.FindProperty("generateKeyWordWhiteList"), new GUIContent("White Keyword List"), true);
+                        EditorGUILayout.PropertyField(serializedObject.FindProperty("blackListOfGenerateTransform"), new GUIContent("Black Transform List"), true);
+                        EditorGUILayout.PropertyField(serializedObject.FindProperty("generateKeyWordBlackList"), new GUIContent("Black Keyword List"), true);
                     }
                     break;
                 default:
                     break;
             }
             EditorGUILayout.BeginHorizontal();
-            if (GUILayout.Button("生成节点数据", GUILayout.Height(22.0f)))
+            if (GUILayout.Button("Generate Physics Data", GUILayout.Height(22.0f)))
             {
                 controller.InitializeChain();
                 containerEditors?.Clear();
             }
-            if (GUILayout.Button("清除生成的节点数据", GUILayout.Height(22.0f)))
+            if (GUILayout.Button("Clear Generate Data", GUILayout.Height(22.0f)))
             {
                 controller.ClearBoneChain();
                 containerEditors?.Clear();
@@ -131,7 +133,7 @@ namespace ADBRuntime.UntiyEditor
                 {
                     isFoldouts = new bool[controller.allChain == null ? 0 : controller.allChain.Count];
                 }
-                isFoldout = EditorGUILayout.Foldout(isFoldout, "  所有节点坐标 :" + controller.GetPointCount());
+                isFoldout = EditorGUILayout.Foldout(isFoldout, " All Transform :" + controller.GetPointCount());
                 if (isFoldout)
                 {
                     for (int i = 0; i < controller.allChain?.Count; i++)

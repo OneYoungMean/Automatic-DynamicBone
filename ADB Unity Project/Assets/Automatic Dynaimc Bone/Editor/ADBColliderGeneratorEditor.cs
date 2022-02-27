@@ -25,42 +25,42 @@ namespace ADBRuntime.UntiyEditor
         {
             serializedObject.Update();
 
-            Titlebar("人形角色碰撞体生成器", new Color(0.5F, 1, 1));
-            if (controller.gameObject.GetComponent<Animator>()==null)
+            Titlebar("Human Avatar Collider Generate Tool", new Color(0.5F, 1, 1));
+            if (!controller.gameObject.TryGetComponent<Animator>( out Animator animator)|| !animator.isHuman)
             {
-                Titlebar("错误: 当前节点上没有检测到Animator!", new Color(0.7f, 0.3f, 0.3f));
+                Titlebar("Error: No Animator Component or animator is not human!", new Color(0.7f, 0.3f, 0.3f));
             }
             if (controller.gameObject.GetComponentsInChildren<ADBChainProcessor>() == null)
             {
-                Titlebar("提示:在生成节点数据之后生成碰撞体会更加精确.", Color.grey);
+                Titlebar("Tips:This tool will read physicsbone data to get fit size .", Color.grey);
             }
             if (controller.gameObject.GetComponentsInChildren<ADBColliderReader>() .Length!=0 && (controller.generateColliderList == null || controller.generateColliderList.Count == 0))
             {
-                Titlebar("提示:检测到一些潜在的collider,按刷新以显示", Color.grey);
+                Titlebar("Tips:There some collider has been generated ,use refresh button to show it", Color.grey);
             }
             if (controller.generateColliderList!=null)
             {
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("generateColliderList"), new GUIContent("碰撞体列表 :" + controller.generateColliderList.Count), true);
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("generateColliderList"), new GUIContent("Collider list :" + controller.generateColliderList.Count), true);
             }
 
 
 
-            string key = controller.isGenerateColliderAutomaitc ? "生成" : "刷新";
+            string key = controller.isGenerateColliderAutomaitc ? "Generate" : "Refresh";
 
-            if (GUILayout.Button(key + "碰撞体", GUILayout.Height(22.0f)))
+            if (GUILayout.Button(key + "Colllider", GUILayout.Height(22.0f)))
             {
                 controller.initializeCollider();
             }
             if (controller.generateColliderList == null || controller.generateColliderList.Count == 0)
             {
-                controller.isGenerateColliderAutomaitc = EditorGUILayout.Toggle("自动生成全身碰撞体 ", controller.isGenerateColliderAutomaitc);
+                controller.isGenerateColliderAutomaitc = EditorGUILayout.Toggle("Generate Human Collider", controller.isGenerateColliderAutomaitc);
 
                 if (controller.isGenerateColliderAutomaitc)
                 {
-                    controller.colliderSize = EditorGUILayout.Slider("  ┗━缩放比例 ", controller.colliderSize, 0.001f, 2f);
-                    controller.isGenerateColliderOpenTrigger = EditorGUILayout.Toggle("  ┗━生成的碰撞体为trigger ", controller.isGenerateColliderOpenTrigger);
-                    controller.isGenerateByAllPoint = EditorGUILayout.Toggle("  ┗━以所有节点作为参照 ", controller.isGenerateByAllPoint);
-                    controller.isGenerateFinger = EditorGUILayout.Toggle("  ┗━生成手指 ", controller.isGenerateFinger);
+                    controller.colliderSize = EditorGUILayout.Slider("  ┗━Global Scale ", controller.colliderSize, 0.001f, 2f);
+                    controller.isGenerateColliderOpenTrigger = EditorGUILayout.Toggle("  ┗━Collider isTrigger ", controller.isGenerateColliderOpenTrigger);
+                    controller.isGenerateByAllPoint = EditorGUILayout.Toggle("  ┗━Use Fixed Transform to fitting collider size", controller.isGenerateByAllPoint);
+                    controller.isGenerateFinger = EditorGUILayout.Toggle("  ┗━Generate Finger ", controller.isGenerateFinger);
                 }
                 if (controller.isGenerateColliderAutomaitc)
                 {
@@ -75,9 +75,9 @@ namespace ADBRuntime.UntiyEditor
             {
 /*                controller.colliderSize = EditorGUILayout.Slider("碰撞体大小", controller. colliderSize, 0, 2);*/
             }
-            if (GUILayout.Button("删除所有生成的碰撞体", GUILayout.Height(22.0f)))
+            if (GUILayout.Button("Delete all collider", GUILayout.Height(22.0f)))
             {
-                if (EditorUtility.DisplayDialog("你确定需要删除吗?", "该操作不可撤销", "ok", "cancel"))
+                if (EditorUtility.DisplayDialog("Warning","Are you sure you want to delete?", "ok", "cancel"))
                 {
                     for (int i = 0; i < controller.generateColliderList?.Count; i++)
                     {
@@ -117,7 +117,7 @@ namespace ADBRuntime.UntiyEditor
                     }
                 }
             }
-            isDeleteCollider = EditorGUILayout.Toggle("  ┗━包括不是自动生成的碰撞体 ", isDeleteCollider);
+            isDeleteCollider = EditorGUILayout.Toggle("  ┗━Include the collider which is not generate by tool ", isDeleteCollider);
             serializedObject.ApplyModifiedProperties();
         }
 

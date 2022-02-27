@@ -19,11 +19,11 @@ namespace ADBRuntime.UntiyEditor
         public override void OnInspectorGUI()
         {
             serializedObject.Update();
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("runtimeController"), new GUIContent("切换目标"), true);
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("currentLinker"), new GUIContent("当前物理设定"), true);
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("runtimeController"), new GUIContent("Target"), true);
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("currentLinker"), new GUIContent("Current Setting Linker"), true);
             EditorGUILayout.Space(10);
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("targetLinkers"), new GUIContent("物理设定列表"), true);
-            if (GUILayout.Button("切换效果"))
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("targetLinkers"), new GUIContent("Setting Linker List"), true);
+            if (GUILayout.Button("Switch Setting"))
             {
                 controller.Switch();
             }

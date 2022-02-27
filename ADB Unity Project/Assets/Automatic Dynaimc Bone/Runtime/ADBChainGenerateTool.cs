@@ -39,6 +39,14 @@ namespace ADBRuntime.Mono.Tool
             {
                 allChain = new List<ADBChainProcessor>();
             }
+            for (int i = 0; i < allChain.Count; i++)
+            {
+                if (allChain[i]==null)
+                {
+                    allChain.RemoveAt(i);
+                    i--;
+                }
+            }
             if (generatorMode != ChainGeneratorMode.ADBChain)//OYM:只有chain才会被检查
             {
                 return;
@@ -81,7 +89,7 @@ namespace ADBRuntime.Mono.Tool
         }*/
         public  void ClearBoneChain()
         {
-            for (int i = 0; i < allChain.Count; i++)
+            for (int i = 0; i < allChain?.Count; i++)
             {
                 var targetChain = allChain[i];
                 for (int j0 = 0; j0 < targetChain.allPointList.Count; j0++)
@@ -102,7 +110,7 @@ namespace ADBRuntime.Mono.Tool
             int count = 0;
             for (int i = 0; i < allChain?.Count; i++)
             {
-                if (allChain[i].allPointList!=null)
+                if (allChain[i]!=null&&allChain[i].allPointList!=null)
                 {
                     count += allChain[i].allPointList.Count;
                 }
