@@ -1,9 +1,10 @@
 # 写在开头  
-* 如果您是第一次接触该项目,您可以选择访问[项目的wiki](https://github.com/OneYoungMean/Automatic-DynamicBone/wiki)  
+新版本可能存在不稳定的情况，如果你遇到了某些奇怪问题，请提交issule。
+作者去肝论文了，预计四月份才会出关，期间出现问题请谅解（躺）
+* 如果您是第一次接触该项目,您可以选择访问[项目的说明](https://github.com/OneYoungMean/Automatic-DynamicBone/wiki/Automatic-Dynamic-Bone-%E8%AF%B4%E6%98%8E%E4%B9%A6)  
 
 - **当前版本:2.0.0preview 最后更新日期:22/2/27**  
 - **预计将会全部英文化(包括说明书),请各位备好谷歌翻译(笑)**
-已经在更新了.jpg
 
 # 2.0.0更新点速览    
 * **~~性能优化~~安卓上性能测试通过!**
