@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e03e8605feeaff949a0e42362a9275f9, type: 3}
+  m_Name: Low
+  m_EditorClassIdentifier: 
+  defaultSetting: {fileID: 11400000, guid: 41bd6524b2541fa40b135861a004d165, type: 2}
+  settings:
+  - setting: {fileID: 11400000, guid: 2bcd812d2c85ec9449e9bf6edef53e50, type: 2}
+    keyWord:
+    - head
+  - setting: {fileID: 11400000, guid: 6c952f831b7e4d24fa326ac9448dd16e, type: 2}
+    keyWord:
+    - hips
+  - setting: {fileID: 11400000, guid: a870bb6c8c34ccd44af49c0dca2e78d0, type: 2}
+    keyWord:
+    - spine
+    - upperchest

@@ -9,6 +9,8 @@ public class ColliderGenerate : MonoBehaviour
     public  float interTime=3;
     private float innertime=0;
     int seed = 0;
+    public PhysicMaterial material;
+
     void Start()
     {
         Random.InitState(seed);
@@ -44,7 +46,7 @@ public class ColliderGenerate : MonoBehaviour
         collider.transform.position = transform.position;
         collider.transform.rotation = transform.rotation;
         collider.transform.localScale = transform.localScale;
-
+        collider.GetComponent<Collider>().material = material;
         collider.AddComponent<Rigidbody>();
         collider.AddComponent<ADBColliderReader>();
     }

@@ -3,9 +3,22 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
-namespace ADBRuntime
+namespace ADBRuntime.UntiyEditor
 {
     using Mono;
+    public enum ColliderChoiceZh
+    {
+        Head = 1 << 0,
+        UpperBody = 1 << 1,
+        LowerBody = 1 << 2,
+        UpperLeg = 1 << 3,
+        LowerLeg = 1 << 4,
+        UpperArm = 1 << 5,
+        LowerArm = 1 << 6,
+        Hand = 1 << 7,
+        Foot = 1 << 8,
+        Other = 1 << 9,
+    }
     public class ADBEditorColliderEditor : Editor
     {
         [CustomEditor(typeof(ADBColliderReader))]
@@ -15,31 +28,19 @@ namespace ADBRuntime
 
             private enum CollideTypecZh
             {
-                球体=0,
-                胶囊体=1,
-                立方体=2
+                Sphere=0,
+                Capsule=1,
+                Box=2
             }
             private enum CollideFuncZh
             {
-                碰撞体_向外排斥=1,
-                碰撞体_约束在内=2,
-                力场_向外排斥=3,
-                力场_约束在内=4,
+                OutsideStrict=1,
+                InsideStrict=2,
+                OutsideSoft=3,
+                InsideSoft=4,
               //  冻结在表面 = 5,
             }
-            private enum ColliderChoiceZh
-            {
-                头 = 1 << 0,
-                上半身 = 1 << 1,
-                下半身 = 1 << 2,
-                大腿 = 1 << 3,
-                小腿 = 1 << 4,
-                大臂 = 1 << 5,
-                小臂 = 1 << 6,
-                手 = 1 << 7,
-                脚 = 1 << 8,
-                其他 = 1 << 9,
-            }
+
             public void OnEnable()
             {
                 controller = (target as ADBColliderReader);
@@ -56,16 +57,21 @@ namespace ADBRuntime
                 {
                     controller.collideFunc = CollideFunc.OutsideLimit;
                 }
-                if (Application.isPlaying)
+                if (Application.isPlaying&& controller.gameObject.activeSelf&& controller.enabled)
                 {
                     controller.UpdatePriorities();
                 }
                 
                 Titlebar("ADB碰撞体标记", Color.Lerp(Color.white, Color.blue, 0.5f));
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("unityCollider"), new GUIContent("标记的碰撞体"), true);
-                controller.collideFunc = (CollideFunc)EditorGUILayout.EnumPopup("┗━I 碰撞体功能", (CollideFuncZh)controller.collideFunc);
-                controller.colliderChoice = (ColliderChoice)EditorGUILayout.EnumFlagsField("┗━I 碰撞体属性", (ColliderChoiceZh)controller.colliderChoice);
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("owners"), new GUIContent("┗━I 所有者"), true);
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("unityCollider"), new GUIContent("ColliderTarget"), true);
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("isReadOnly"), new GUIContent("┗━I is Collider ReadOnly (highly performance)"), true);
+                if (controller.isReadOnly)
+                {
+                    EditorGUILayout.PropertyField(serializedObject.FindProperty("isStatic"), new GUIContent("┗━I Is Collider Fixed(highly performance)"), true);
+                }
+                controller.collideFunc = (CollideFunc)EditorGUILayout.EnumPopup("┗━I ColliderMode", (CollideFuncZh)controller.collideFunc);
+                controller.colliderMask = (ColliderChoice)EditorGUILayout.EnumFlagsField("┗━I CollideMask", (ColliderChoiceZh)controller.colliderMask);
+/*                EditorGUILayout.PropertyField(serializedObject.FindProperty("owners"), new GUIContent("┗━I 所有者"), true);*/
 
                 serializedObject.ApplyModifiedProperties();
             }

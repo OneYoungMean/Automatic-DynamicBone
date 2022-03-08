@@ -94,11 +94,11 @@ namespace ADBRuntime
         public ADBSphereCollider(float radius, Vector3 positionOffset,ColliderChoice colliderChoice, Transform appendTransform = null, CollideFunc collideFunc = CollideFunc.OutsideLimit)
         {
             colliderRead.isOpen = true;
-            colliderRead.radius = radius;
+            colliderRead.originRadius = radius;
 
             colliderRead.colliderType = ColliderType.Sphere;
             colliderRead.collideFunc = collideFunc;
-            colliderRead.colliderChoice = colliderChoice;
+            colliderRead.colliderChoice = (int)colliderChoice;
             if (appendTransform != null)
             {
                 this.appendTransform = appendTransform;
@@ -118,11 +118,11 @@ namespace ADBRuntime
         {
             if (appendTransform)
             {
-                Gizmos.DrawWireSphere(appendTransform.rotation * colliderRead.positionOffset *(appendTransform.lossyScale.x/ initialScale) +(float3) appendTransform.position, colliderRead.radius *(appendTransform.lossyScale.x / initialScale.x));
+                Gizmos.DrawWireSphere(appendTransform.rotation * colliderRead.positionOffset *(appendTransform.lossyScale.x/ initialScale) +(float3) appendTransform.position, colliderRead.originRadius *(appendTransform.lossyScale.x / initialScale.x));
             }
             else
             {
-                Gizmos.DrawWireSphere(colliderRead.positionOffset , colliderRead.radius );
+                Gizmos.DrawWireSphere(colliderRead.positionOffset , colliderRead.originRadius );
             }
         }
     }
@@ -139,12 +139,12 @@ namespace ADBRuntime
             colliderRead.isOpen = true;
             colliderRead.colliderType = ColliderType.Capsule;
             colliderRead.collideFunc = collideFunc;
-            colliderRead.colliderChoice = colliderChoice;
-            colliderRead.radius = radius;
-            colliderRead.height = (pointHead - pointTail).magnitude;
+            colliderRead.colliderChoice = (int)colliderChoice;
+            colliderRead.originRadius = radius;
+            colliderRead.originHeight = (pointHead - pointTail).magnitude;
 
             this.appendTransform = appendTransform;
-            colliderRead.staticDirection = Quaternion.Inverse(appendTransform.rotation) * (pointTail - pointHead)/ colliderRead.height;
+            colliderRead.staticDirection = Quaternion.Inverse(appendTransform.rotation) * (pointTail - pointHead)/ colliderRead.originHeight;
             colliderRead.positionOffset = Quaternion.Inverse(appendTransform.rotation) * (pointHead - appendTransform.position);
             initialScale = appendTransform.lossyScale;
 
@@ -156,9 +156,9 @@ namespace ADBRuntime
             colliderRead.isOpen = true;
             colliderRead.colliderType = ColliderType.Capsule;
             colliderRead.collideFunc = collideFunc;
-            colliderRead.colliderChoice = colliderChoice;
-            colliderRead.radius = radius;
-            colliderRead.height = length;
+            colliderRead.colliderChoice =(int) colliderChoice;
+            colliderRead.originRadius = radius;
+            colliderRead.originHeight = length;
             this.appendTransform = appendTransform;
             colliderRead.staticDirection = localRotation * Vector3.up ;
             colliderRead.positionOffset = Quaternion.Inverse(appendTransform.rotation) * positionOffset;
@@ -187,9 +187,9 @@ namespace ADBRuntime
 
             var mOld = Gizmos.matrix;//OYM：把旧的拿出来
             Gizmos.matrix = Matrix4x4.TRS(pos, rot,Vector3.one);//OYM：创造一个坐标矩阵
-            float3 up = Vector3.up * colliderRead.height*scale;
-            float3 forward = Vector3.forward * colliderRead.radius* scale;
-            float3 right = Vector3.right * colliderRead.radius* scale;
+            float3 up = Vector3.up * colliderRead.originHeight*scale;
+            float3 forward = Vector3.forward * colliderRead.originRadius* scale;
+            float3 right = Vector3.right * colliderRead.originRadius* scale;
 
             Gizmos.DrawLine(forward, forward + up);
             Gizmos.DrawLine(-forward, -forward + up);
@@ -198,18 +198,18 @@ namespace ADBRuntime
             float3 upPos = pos + math.mul(rot , up);
 
             Gizmos.matrix = Matrix4x4.TRS(pos, rot, scale);//OYM：创造一个坐标矩阵
-            DrawWireArc(colliderRead.radius, 360);
+            DrawWireArc(colliderRead.originRadius, 360);
             Gizmos.matrix = Matrix4x4.TRS(upPos, rot, scale);
-            DrawWireArc(colliderRead.radius, 360);
+            DrawWireArc(colliderRead.originRadius, 360);
 
             Gizmos.matrix = Matrix4x4.TRS(upPos, rot * Quaternion.AngleAxis(90, Vector3.forward), scale);//OYM： 翻转,然后画圆,就是头尾周围那几条插插
-            DrawWireArc(colliderRead.radius, 180);//OYM：这里不用看了
+            DrawWireArc(colliderRead.originRadius, 180);//OYM：这里不用看了
             Gizmos.matrix = Matrix4x4.TRS(upPos, rot * Quaternion.AngleAxis(90, Vector3.up) * Quaternion.AngleAxis(90, Vector3.forward), scale);
-            DrawWireArc(colliderRead.radius, 180);
+            DrawWireArc(colliderRead.originRadius, 180);
             Gizmos.matrix = Matrix4x4.TRS(pos, rot * Quaternion.AngleAxis(90, Vector3.up) * Quaternion.AngleAxis(-90, Vector3.forward), scale);
-            DrawWireArc(colliderRead.radius, 180);
+            DrawWireArc(colliderRead.originRadius, 180);
             Gizmos.matrix = Matrix4x4.TRS(pos, rot * Quaternion.AngleAxis(-90, Vector3.forward), scale);
-            DrawWireArc(colliderRead.radius, 180);
+            DrawWireArc(colliderRead.originRadius, 180);
 
             Gizmos.matrix = mOld;//OYM：记得给它还回去
 
@@ -231,10 +231,10 @@ namespace ADBRuntime
             this.appendTransform = appendTransform;
             colliderRead.staticRotation =appendTransform.rotation * Quaternion.FromToRotation(Vector3.up, direction);
             colliderRead.positionOffset =Quaternion.Inverse(appendTransform.rotation) * (center- appendTransform.position) ;
-            colliderRead.boxSize = new Vector3(Mathf.Abs(size.x ), Mathf.Abs(size.y), Mathf.Abs(size.z ));
+            colliderRead.originBoxSize = new Vector3(Mathf.Abs(size.x ), Mathf.Abs(size.y), Mathf.Abs(size.z ));
             colliderRead.colliderType = ColliderType.OBB;
             colliderRead.collideFunc = collideFunc;
-            colliderRead.colliderChoice = colliderChoice;
+            colliderRead.colliderChoice = (int)colliderChoice;
             initialScale = appendTransform? appendTransform.lossyScale: Vector3.one;
 
             colliderRead.CheckValue();
@@ -246,10 +246,10 @@ namespace ADBRuntime
             this.appendTransform = appendTransform;
             colliderRead.staticRotation =  appendTransform.rotation * rotation;
             colliderRead.positionOffset = Quaternion.Inverse(appendTransform.rotation) * center;
-            colliderRead.boxSize = math.abs(size);
+            colliderRead.originBoxSize = math.abs(size);
             colliderRead.colliderType = ColliderType.OBB;
             colliderRead.collideFunc = collideFunc;
-            colliderRead.colliderChoice = colliderChoice;
+            colliderRead.colliderChoice = (int)colliderChoice;
             initialScale = appendTransform ? appendTransform.lossyScale : Vector3.one;
 
             colliderRead.CheckValue();
@@ -260,12 +260,12 @@ namespace ADBRuntime
             if (appendTransform)
             {
                 Gizmos.matrix = Matrix4x4.TRS(appendTransform.position + appendTransform.rotation *( colliderRead.positionOffset * (appendTransform.lossyScale/ initialScale)), appendTransform.rotation * colliderRead.staticRotation, appendTransform.lossyScale);
-                Gizmos.DrawWireCube(Vector3.zero, colliderRead.boxSize * 2);
+                Gizmos.DrawWireCube(Vector3.zero, colliderRead.originBoxSize * 2);
             }
             else
             {
                 Gizmos.matrix = Matrix4x4.TRS(colliderRead.positionOffset, colliderRead.staticRotation, Vector3.one);
-                Gizmos.DrawWireCube(Vector3.zero, colliderRead.boxSize * 2);
+                Gizmos.DrawWireCube(Vector3.zero, colliderRead.originBoxSize * 2);
             }
             Gizmos.DrawLine(Vector3.zero, Vector3.up);
 
@@ -279,7 +279,7 @@ namespace ADBRuntime
 
         public ColliderType colliderType;
         public CollideFunc collideFunc;
-        public ColliderChoice colliderChoice;
+        public int colliderChoice;
         public float3 positionOffset;
         public quaternion staticRotation;
         public float3 staticDirection;
@@ -287,17 +287,24 @@ namespace ADBRuntime
         /// <summary>
         /// 半尺寸
         /// </summary>
-        public float3 boxSize;
-        public float radius;
-        public float height;
+
 
         //OYM:从ColliderRead里面迁移过来数据，目前是Readonly的
         public float3 fromPosition;
         public float3 toPosition;
+        public float3 deltaPosition;
+
         public float3 fromDirection;
         public float3 toDirection;
+        public float3 deltaDirection;
+
         public quaternion fromRotation;
         public quaternion toRotation;
+        public quaternion deltaRotation;
+
+        public float3 originBoxSize;
+        public float originRadius;
+        public float originHeight;
 
         public float3 scale;
 
@@ -305,26 +312,30 @@ namespace ADBRuntime
 
         public void CheckValue()
         {
-            radius = radius < 0 ? 0 : radius;
-            height = height < 0 ? 0 : height;
+            originRadius = originRadius < 0 ? 0 : originRadius;
+            originHeight = originHeight < 0 ? 0 : originHeight;
             if (Application.isPlaying)
             {
-                if (height == 0 && colliderType == ColliderType.Capsule)
+                if (originHeight == 0 && colliderType == ColliderType.Capsule)
                 {
                     colliderType = ColliderType.Sphere;
                 }
-            }
-            if (((int)colliderChoice) == 0)
-            {
-                colliderChoice = ColliderChoice.Other;
             }
         }
     }
     public struct ColliderReadWrite
     {
+        public ColliderType colliderType;
+        public CollideFunc collideFunc;
+
         public float3 position;
         public float3 direction; //OYM:胶囊体的单位长度朝向
         public quaternion rotation;
+
+        //OYM:sphere radius :x 
+        //OYM:capsule radius:x,height:y
+        //OYM:box size:xyz
+        public float3 size;
     }
 
 

@@ -3,6 +3,7 @@ using System;
 
 namespace ADBRuntime
 {
+    using Mono;
     public enum ConstraintType
     {
         Structural_Vertical,
@@ -31,16 +32,20 @@ namespace ADBRuntime
             constraintRead.shrink = shrink;
             constraintRead.stretch = stretch;
             constraintRead.isCollider = isCollide;
-            this.direction = pointA.trans.position - pointB.trans.position;
+            this.direction = pointA.transform.position - pointB.transform.position;
             constraintRead.length = (this.direction).magnitude;
 
         }
         public override string ToString()//OYM:Debug用
         {
-            return pointA.trans.name + " " +pointB.trans.name;
+            return pointA.transform.name + " " +pointB.transform.name;
         }
         public void OnDrawGizmos(bool IsDrawOutLine)
         {
+            if (pointA==null||pointB==null)
+            {
+                return;
+            }
             switch (constraintRead.type)
             {
                 case ConstraintType.Structural_Vertical:
@@ -65,7 +70,7 @@ namespace ADBRuntime
                 default:
                     return;
             }
-            Gizmos.DrawLine(pointA.trans.position, pointB.trans.position);
+            Gizmos.DrawLine(pointA.transform.position, pointB.transform.position);
         }
     }
 
