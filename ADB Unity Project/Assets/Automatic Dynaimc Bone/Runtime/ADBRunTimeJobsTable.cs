@@ -367,7 +367,7 @@ namespace ADBRuntime.Internal
                 float3 fixedPointdeltaPosition = pPointReadWriteFixed->deltaPosition;
                 pReadWritePointTarget->position += fixedPointdeltaPosition * pReadPointTarget->moveInert * oneDivideIteration;//OYM:计算速度补偿
                 //OYM：计算以fixed位移进行为参考进行速度补偿
-                pReadWritePointTarget->deltaPosition -= fixedPointdeltaPosition * pReadPointTarget->velocityIncrease * 0.2f * oneDivideIteration;//OYM：测试了一下,0.2是个恰到好处的值,不会显得太大也不会太小
+                pReadWritePointTarget->deltaPosition -= fixedPointdeltaPosition * pReadPointTarget->velocityIncrease * oneDivideIteration;
             }
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             private static void UpdateGravity(PointRead* pReadPointTarget, PointReadWrite* pReadWritePointTarget, float deltaTime, float oneDivideIteration)

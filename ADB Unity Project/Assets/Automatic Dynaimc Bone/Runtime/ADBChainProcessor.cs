@@ -266,6 +266,7 @@ namespace ADBRuntime.Mono
                 //processed
                 point.pointRead.stiffnessLocal = 1 - Mathf.Clamp01(Mathf.Cos(point.pointRead.stiffnessLocal * Mathf.PI * 0.5f));//OYM:将角度映射到距离上
                 point.pointRead.damping = 0.5f + point.pointRead.damping * 0.5f;//OYM：只取0.5-1这一段
+                point.pointRead.velocityIncrease = point.pointRead.velocityIncrease * 0.2f;//OYM：测试了一下,0.2是个恰到好处的值,不会显得太大也不会太小
             }
         }
 
