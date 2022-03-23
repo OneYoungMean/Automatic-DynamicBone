@@ -1,3 +1,5 @@
+# License
+[MIT License](https://github.com/OneYoungMean/Automatic-DynamicBone/blob/master/LICENSE)
 # 写在开头  
 新版本可能存在不稳定的情况，如果你遇到了某些奇怪问题，请提交issue。
 作者去肝论文了，预计四月份才会出关，期间回复较慢的话请谅解（躺）
