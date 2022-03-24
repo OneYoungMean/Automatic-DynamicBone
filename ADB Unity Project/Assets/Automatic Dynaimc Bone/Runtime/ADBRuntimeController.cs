@@ -156,9 +156,8 @@ namespace ADBRuntime.Mono
 
             //  deltaTime =Mathf.Lerp(deltaTime, Mathf.Min(Time.deltaTime,0.0166f),0.1f);//OYM：用time.deltaTime并不理想,或许是我笔记本太烂的缘故?
 
-            scale =math.cmax((float3) transform.lossyScale);
-            scale = math.max(scale, math.EPSILON);
             addForce += ADBWindZone.getaddForceForce(transform.position) * windForceScale * deltaTime;
+            UpdateScale();
             UpdateOverlapsCollider();
             UpdateDataPakage();
 
@@ -250,11 +249,10 @@ namespace ADBRuntime.Mono
                 Debug.Log("Use it On Runtime!");
                 return;
             }
-            scale = math.cmax((float3)transform.lossyScale);
-            scale = math.max(scale, math.EPSILON);
-
+            UpdateScale();
             ADBkernel.restorePoint(scale);
         }
+
         public bool ParentCheck()
         {
             var parentRuntimeController = transform.parent?.GetComponentInParent<ADBRuntimeController>();
@@ -325,7 +323,10 @@ namespace ADBRuntime.Mono
             returnConstraint = constraints.ToArray();
             return isFind;
         }
-
+        private void UpdateScale()
+        {
+            scale = math.max(math.cmax(math.abs((float3)transform.lossyScale)), math.EPSILON);
+        }
         private void OnDrawGizmos()
         {
             if (!isDrawGizmo && isActiveAndEnabled) return;
