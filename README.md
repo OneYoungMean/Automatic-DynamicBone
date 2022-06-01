@@ -1,7 +1,7 @@
 # License
 [MIT License](https://github.com/OneYoungMean/Automatic-DynamicBone/blob/master/LICENSE)
 # 写在开头  
-六月份前破700star我就用六月份肝布料和英文说明(捂脸)  
+恭喜背刺成功（哭），晚点补上翻译
 新版本可能存在不稳定的情况，如果你遇到了某些奇怪问题，请提交issue。  
 作者去肝论文了，预计四月份才会出关，期间回复较慢的话请谅解（躺）
 * 如果您是第一次接触该项目,您可以选择访问[项目的说明](https://github.com/OneYoungMean/Automatic-DynamicBone/wiki/Automatic-Dynamic-Bone-%E8%AF%B4%E6%98%8E%E4%B9%A6)  
