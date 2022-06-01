@@ -1,8 +1,8 @@
 # License
 [MIT License](https://github.com/OneYoungMean/Automatic-DynamicBone/blob/master/LICENSE)
 # 写在开头  
-感谢大家的支持，700 star达成~ 
-![](https://imgtu.com/i/XGsPRx)
+感谢大家的支持，700 star达成~  
+![[](https://imgtu.com/i/XGsPRx) ](https://s1.ax1x.com/2022/06/01/XGsPRx.png)  
 新版本可能存在不稳定的情况，如果你遇到了某些奇怪问题，请提交issue。  
 作者去肝论文了，预计四月份才会出关，期间回复较慢的话请谅解（躺）
 * 如果您是第一次接触该项目,您可以选择访问[项目的说明](https://github.com/OneYoungMean/Automatic-DynamicBone/wiki/Automatic-Dynamic-Bone-%E8%AF%B4%E6%98%8E%E4%B9%A6)  
