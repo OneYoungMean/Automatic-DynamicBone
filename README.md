@@ -2,7 +2,7 @@
 [MIT License](https://github.com/OneYoungMean/Automatic-DynamicBone/blob/master/LICENSE)
 # 写在开头  
 感谢大家的支持，700 star达成~    
-该项目与[UnityBVA](https://github.com/bilibili/UnityBVA)联动中，并针对MMD转换与VRM转换做了补丁，希望大家能够多多支持~  (https://github.com/bilibili/UnityBVA/tree/main/Assets/BVA/Runtime/DynamicBone)  
+该项目前与[UnityBVA](https://github.com/bilibili/UnityBVA)联动中，并针对MMD转换与VRM转换做了补丁，希望大家能够多多支持~  (https://github.com/bilibili/UnityBVA/tree/main/Assets/BVA/Runtime/DynamicBone)  
 ![[](https://imgtu.com/i/XGsPRx) ](https://s1.ax1x.com/2022/06/01/XGsPRx.png)  
 新版本可能存在不稳定的情况，如果你遇到了某些奇怪问题，请提交issue。  
 作者去肝论文了，预计四月份才会出关，期间回复较慢的话请谅解（躺）
