@@ -71,7 +71,7 @@
 - Unity2018.4及以上,除webGL外所有支持unity jobs的平台.  
 ***
 
-## 被引
+## 使用的项目
 * [UnityBVA](https://github.com/bilibili/UnityBVA)
 
 ## 快速开始
