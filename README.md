@@ -69,7 +69,10 @@
 ## 要求
 
 - Unity2018.4及以上,除webGL外所有支持unity jobs的平台.  
+***
 
+## 被引
+* [UnityBVA](https://github.com/bilibili/UnityBVA)
 
 ## 快速开始
 
@@ -86,4 +89,4 @@
 [省略掉的小声BB的话]
 加油嗷~
 ```
-***
+
