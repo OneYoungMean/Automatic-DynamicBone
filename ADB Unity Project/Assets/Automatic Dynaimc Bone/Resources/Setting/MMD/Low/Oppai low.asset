@@ -38,7 +38,7 @@ MonoBehaviour:
     m_RotationOrder: 4
   frictionMin: 0
   frictionMax: 1
-  frictionValue: 1
+  frictionValue: 0
   isfrictionCurve: 0
   addForceScaleCurve:
     serializedVersion: 2
@@ -141,7 +141,7 @@ MonoBehaviour:
     m_RotationOrder: 4
   dampingMin: 0
   dampingMax: 1
-  dampingValue: 0.98
+  dampingValue: 0.885
   isdampingCurve: 0
   elasticityCurve:
     serializedVersion: 2
@@ -169,7 +169,7 @@ MonoBehaviour:
     m_RotationOrder: 4
   elasticityMin: 0
   elasticityMax: 1
-  elasticityValue: 0.2
+  elasticityValue: 0.055
   iselasticityCurve: 0
   velocityIncreaseCurve:
     serializedVersion: 2
@@ -225,7 +225,7 @@ MonoBehaviour:
     m_RotationOrder: 4
   stiffnessWorldMin: 0
   stiffnessWorldMax: 10
-  stiffnessWorldValue: 0.5
+  stiffnessWorldValue: 0
   isstiffnessWorldCurve: 0
   stiffnessLocalCurve:
     serializedVersion: 2
@@ -291,7 +291,7 @@ MonoBehaviour:
     m_RotationOrder: 4
   elasticityVelocityMin: 0
   elasticityVelocityMax: 1
-  elasticityVelocityValue: 0
+  elasticityVelocityValue: 0.04
   iselasticityVelocityCurve: 0
   structuralShrinkVerticalScaleCurve:
     serializedVersion: 2
@@ -657,7 +657,7 @@ MonoBehaviour:
   pointRadiuMax: 1
   pointRadiuValue: 0
   ispointRadiuCurve: 1
-  value2Curve:
+  vrmStiffnessForceCurve:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
@@ -681,7 +681,7 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  value2Value: 0
+  vrmStiffnessForceValue: 0
   value3Curve:
     serializedVersion: 2
     m_Curve:
@@ -905,11 +905,11 @@ MonoBehaviour:
   isComputeBendingVertical: 0
   isComputeBendingHorizontal: 0
   isComputeCircumference: 0
-  isCollideStructuralVertical: 1
+  isCollideStructuralVertical: 0
   isCollideStructuralHorizontal: 1
   isCollideShear: 1
   isLoopRootPoints: 1
   isDebugDraw: 1
   isFixGravityAxis: 1
   gravity: {x: 0, y: -9.81, z: 0}
-  colliderChoice: -1
+  colliderChoice: 0

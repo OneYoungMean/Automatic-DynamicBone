@@ -4,6 +4,9 @@ using UnityEngine;
 
 namespace ADBRuntime
 {
+    /// <summary>
+    /// A static windZone that provides wind power to the bones
+    /// </summary>
     public class ADBWindZone 
     {
         private static ADBWindZone windZone;
@@ -13,7 +16,11 @@ namespace ADBRuntime
         private ADBWindZone()
         {}
 
-
+        /// <summary>
+        /// Get force by space
+        /// </summary>
+        /// <param name="position"></param>
+        /// <returns></returns>
         public static Vector3 getaddForceForce(Vector3 position)
         {
             if (windZone == null)

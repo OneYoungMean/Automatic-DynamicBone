@@ -4,6 +4,9 @@ using UnityEngine;
 
 namespace ADBRuntime.Mono
 {
+    /// <summary>
+    ///  A tool which used to change physics effect 
+    /// </summary>
     [RequireComponent(typeof(ADBRuntimeController))]
     public class ADBPhysicsSettingSwitcher : MonoBehaviour
     {
