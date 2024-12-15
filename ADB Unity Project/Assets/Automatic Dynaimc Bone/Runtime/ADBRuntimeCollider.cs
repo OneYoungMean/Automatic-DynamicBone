@@ -6,43 +6,33 @@ namespace ADBRuntime
 {
     public enum ColliderType
     {
-        Sphere=0,//OYM：现有的
-        Capsule=1,//OYM：现有的
+        Sphere=0,
+        Capsule=1,
         OBB=2
     }
 
-    //OYM：暂时没用
     public enum CollideFunc
     {
-        /// <summary>
-        /// 往外排斥,并且有边界
-        /// </summary>
+
         OutsideLimit=1,
-        /// <summary>
-        /// 向内约束,并且有边界
-        /// </summary>
+
         InsideLimit=2,
-        /// <summary>
-        /// 往外排斥,并且没有边界
-        /// </summary>
+
         OutsideNoLimit = 3,
-        /// <summary>
-        /// 向内约束,并且没有边界
-        /// </summary>
+
         InsideNoLimit = 4,
-        /// <summary>
-        /// 冻死在边界上
-        /// </summary>
+
         Freeze = 5
     }
-
+    /// <summary>
+    /// Abstract collider 
+    /// </summary>
     [Serializable]
     public abstract class ADBRuntimeCollider
     {
         public ColliderRead colliderRead;
-
         public Transform appendTransform;
-        public float3 initialScale;//OYM:用来解决Gizmo绘制问题
+        public float3 initialScale;
          
         public void UpdateColliderData()
         {
@@ -83,7 +73,9 @@ namespace ADBRuntime
         }
 
     }
-
+    /// <summary>
+    /// Sphere Collider
+    /// </summary>
     public class ADBSphereCollider : ADBRuntimeCollider
     {
         public ADBSphereCollider(ColliderRead colliderRead, Transform appendtTransform)
@@ -126,7 +118,9 @@ namespace ADBRuntime
             }
         }
     }
-
+    /// <summary>
+    /// Capsule Collider
+    /// </summary>
     public class ADBCapsuleCollider : ADBRuntimeCollider
     {
         public ADBCapsuleCollider(ColliderRead colliderRead, Transform appendtTransform)
@@ -185,8 +179,8 @@ namespace ADBRuntime
                 pos = (float3)appendTransform.position + appendTransform.rotation * colliderRead.positionOffset* scale;
             }
 
-            var mOld = Gizmos.matrix;//OYM：把旧的拿出来
-            Gizmos.matrix = Matrix4x4.TRS(pos, rot,Vector3.one);//OYM：创造一个坐标矩阵
+            var mOld = Gizmos.matrix;
+            Gizmos.matrix = Matrix4x4.TRS(pos, rot,Vector3.one);
             float3 up = Vector3.up * colliderRead.originHeight*scale;
             float3 forward = Vector3.forward * colliderRead.originRadius* scale;
             float3 right = Vector3.right * colliderRead.originRadius* scale;
@@ -197,13 +191,13 @@ namespace ADBRuntime
             Gizmos.DrawLine(-right, -right + up);
             float3 upPos = pos + math.mul(rot , up);
 
-            Gizmos.matrix = Matrix4x4.TRS(pos, rot, scale);//OYM：创造一个坐标矩阵
+            Gizmos.matrix = Matrix4x4.TRS(pos, rot, scale);
             DrawWireArc(colliderRead.originRadius, 360);
             Gizmos.matrix = Matrix4x4.TRS(upPos, rot, scale);
             DrawWireArc(colliderRead.originRadius, 360);
 
-            Gizmos.matrix = Matrix4x4.TRS(upPos, rot * Quaternion.AngleAxis(90, Vector3.forward), scale);//OYM： 翻转,然后画圆,就是头尾周围那几条插插
-            DrawWireArc(colliderRead.originRadius, 180);//OYM：这里不用看了
+            Gizmos.matrix = Matrix4x4.TRS(upPos, rot * Quaternion.AngleAxis(90, Vector3.forward), scale);
+            DrawWireArc(colliderRead.originRadius, 180);
             Gizmos.matrix = Matrix4x4.TRS(upPos, rot * Quaternion.AngleAxis(90, Vector3.up) * Quaternion.AngleAxis(90, Vector3.forward), scale);
             DrawWireArc(colliderRead.originRadius, 180);
             Gizmos.matrix = Matrix4x4.TRS(pos, rot * Quaternion.AngleAxis(90, Vector3.up) * Quaternion.AngleAxis(-90, Vector3.forward), scale);
@@ -211,11 +205,15 @@ namespace ADBRuntime
             Gizmos.matrix = Matrix4x4.TRS(pos, rot * Quaternion.AngleAxis(-90, Vector3.forward), scale);
             DrawWireArc(colliderRead.originRadius, 180);
 
-            Gizmos.matrix = mOld;//OYM：记得给它还回去
+            Gizmos.matrix = mOld;
+
 
         }
     }
 
+    /// <summary>
+    /// OBB Collider
+    /// </summary>
     public class OBBBoxCollider : ADBRuntimeCollider
     {
 
@@ -272,6 +270,10 @@ namespace ADBRuntime
             Gizmos.matrix = before;
         }
     }
+
+    /// <summary>
+    /// Collider native data readonly
+    /// </summary>
     [System.Serializable]
     public struct ColliderRead 
     {
@@ -284,12 +286,6 @@ namespace ADBRuntime
         public quaternion staticRotation;
         public float3 staticDirection;
 
-        /// <summary>
-        /// 半尺寸
-        /// </summary>
-
-
-        //OYM:从ColliderRead里面迁移过来数据，目前是Readonly的
         public float3 fromPosition;
         public float3 toPosition;
         public float3 deltaPosition;
@@ -323,58 +319,24 @@ namespace ADBRuntime
             }
         }
     }
+
+    /// <summary>
+    /// Collider native data write frequency
+    /// </summary>
     public struct ColliderReadWrite
     {
         public ColliderType colliderType;
         public CollideFunc collideFunc;
 
         public float3 position;
-        public float3 direction; //OYM:胶囊体的单位长度朝向
+        public float3 direction; 
         public quaternion rotation;
 
-        //OYM:sphere radius :x 
-        //OYM:capsule radius:x,height:y
-        //OYM:box size:xyz
+        //sphere radius :x 
+        //capsule radius:x,height:y
+        //box size:xyz
         public float3 size;
     }
 
 
-}//OYM：写死我了....历时四个月有余
-/*
-class SphereComBine : ADBRuntimeCllider
-{
-    float radius;
-    public SphereComBine(float radiu, float thickness, float curvature, Vector3 center, Vector3 direction, Transform appendTransform = null, CollideFunc collideFunc = CollideFunc.OutsideLimit)
-    {
-        //OYM：A*B=radius^2,A/B=curvature
-        this.radius = radiu;
-        this.appendTransform = appendTransform;
-        //colliderRead.colliderType = ColliderType.SphereCombine;
-        colliderRead.collideFunc = collideFunc;
-        float A1 = Mathf.Sqrt(radiu * radiu * curvature);
-        float A2 = A1 < thickness ? 0.001f : A1 - thickness;
-        float B1 = radiu * radiu / A1;
-        float B2 = radiu * radiu / A2;
-        colliderRead.lengthA = (A1 + B1) * 0.5f;
-        colliderRead.lengthB = (A2 + B2) * 0.5f;
-
-        colliderRead.pointB = appendTransform ? (center - (B1 - colliderRead.lengthA) * direction) : appendTransform.InverseTransformPoint((center - (B1 - colliderRead.lengthA) * direction));
-        colliderRead.pointC = appendTransform ? (center - (B2 - colliderRead.lengthB) * direction) : appendTransform.InverseTransformPoint((center - (B2 - colliderRead.lengthB) * direction));
-
-    }
-
-    public override void OnDrawGizmos()
-    {
-        Gizmos.color = Color.red;
-        var mOld = Gizmos.matrix;//OYM：把旧的拿出来
-
-        Gizmos.matrix = Matrix4x4.TRS(appendTransform.position + appendTransform.rotation * colliderRead.positionOffset, appendTransform.rotation, Vector3.one);//OYM：创造一个坐标矩阵
-        DrawWireArc(radius, 360);
-
-        Gizmos.matrix = mOld;
-
-        Gizmos.DrawWireSphere(colliderRead.pointA, colliderRead.lengthA);
-        Gizmos.DrawWireSphere(colliderRead.pointB, colliderRead.lengthB);
-    }
 }
-*/

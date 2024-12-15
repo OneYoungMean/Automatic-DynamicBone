@@ -18,7 +18,7 @@ namespace ADBRuntime.UntiyEditor
         public override void OnInspectorGUI()
         {
             serializedObject.Update();
-            EditorGUILayout.ObjectField("Root Transform",controller.transform, typeof(Transform), true);
+            EditorGUILayout.ObjectField("Root Transform", controller.transform, typeof(Transform), true);
 
             EditorGUILayout.PropertyField(serializedObject.FindProperty("aDBSetting"), new GUIContent("©»©¥Physics Setting"), true);
             serializedObject.ApplyModifiedProperties();

@@ -9,7 +9,21 @@ namespace ADBRuntime.UntiyEditor
     [CustomEditor(typeof(ADBRuntimePoint))]
     public class ADBRunrimePointEditor : Editor
     {
-        public override void OnInspectorGUI() { } //Hide
+        public ADBChainProcessorEditor rootEditor;
+        public ADBRuntimePoint controller;
+        public void OnEnable()
+        {
+            controller = target as ADBRuntimePoint;
+            var root = controller;
+            while (root.Parent != null)
+            {
+                root = root.Parent;
+            }
+            rootEditor = Editor.CreateEditor(root as ADBChainProcessor) as ADBChainProcessorEditor;
+        }
+
+        public override void OnInspectorGUI() { }
     }
+
 
 }

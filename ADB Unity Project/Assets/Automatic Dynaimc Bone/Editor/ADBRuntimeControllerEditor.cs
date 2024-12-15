@@ -17,14 +17,13 @@ namespace ADBRuntime.UntiyEditor
 
     public enum UpdateModeZh
     {
-        Update= 1,
+        Update = 1,
         FixedUpdate = 2,
         LateUpdate = 3,
     }
     [CanEditMultipleObjects]
     [CustomEditor(typeof(ADBRuntimeController))]
     public class ADBRuntimeControllerEditor : Editor
-    //OYM：它的编辑器，我觉得我有必要把一部分方法写到里面去
     {
         private bool isFoldout;
         private bool[] isFoldouts;
@@ -33,9 +32,6 @@ namespace ADBRuntime.UntiyEditor
         private const int max=16;
         public void OnEnable()
         {
-            //OYM:在这里,serializedObject 是所有被选中的对象,target是最后一个被选中的对象
-            //OYM:如果需要批量修改的话,建议使用serializedObject而不是target
-
             controller = target as ADBRuntimeController;
             controller.InitializeChain();
             isFoldouts = new bool[controller.allChain == null ? 0 : controller.allChain.Length];
@@ -51,7 +47,7 @@ namespace ADBRuntime.UntiyEditor
             {
                 color = new Color(0.7f, 1.0f, 0.7f);
             }
-            Titlebar("ADB Runtime Controller", color,0);
+            Titlebar("ADB Kernel Controller", color,0);
             serializedObject.Update();
             if (!Application.isPlaying)
             {
@@ -86,10 +82,10 @@ namespace ADBRuntime.UntiyEditor
                     EditorGUILayout.PropertyField(serializedObject.FindProperty("overlapsColliderList"), new GUIContent(" All Collider List :" + controller.overlapsColliderList.Count), true);
                 }
             }
-            //OYM：更新表现形式;
+
             if (!Application.isPlaying)
             {
-
+                // There need something...
             }
             else
             {

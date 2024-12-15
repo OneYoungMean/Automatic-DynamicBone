@@ -9,13 +9,15 @@ namespace ADBRuntime.Mono.Tool
     public class ADBColliderGenerateTool : MonoBehaviour
     {
         [SerializeField]
-        public bool isGenerateColliderAutomaitc = false;
+        public bool isGenerateColliderAutomaitc = true;
         [SerializeField]
         public bool isGenerateByAllPoint = true;
         [SerializeField]
         public bool isGenerateFinger = false;
         [SerializeField]
         public bool isGenerateColliderOpenTrigger = true;
+        [SerializeField]
+        public bool isColliderAllMask = false;
         [SerializeField]
         public List<ADBColliderReader> generateColliderList;
         [SerializeField]
@@ -51,7 +53,7 @@ namespace ADBRuntime.Mono.Tool
                 {
                     Debug.Log("You can generate point first to get more accuracy collider");
                 }
-                generateColliderList = ADBStaticColliderFunc.GenerateBodyCollidersData(transform, allNodeList, isGenerateFinger, isGenerateColliderOpenTrigger, out int isGenerateSuccessful);
+                generateColliderList = ADBStaticColliderFunc.GenerateBodyCollidersData(transform, allNodeList, isGenerateFinger, isGenerateColliderOpenTrigger, isColliderAllMask, out int isGenerateSuccessful);
                 for (int i = 0; i < generateColliderList.Count; i++)
                 {
                     generateColliderList[i].transform.localScale *= colliderSize;

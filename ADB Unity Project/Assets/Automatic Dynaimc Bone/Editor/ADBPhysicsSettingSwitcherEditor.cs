@@ -23,7 +23,7 @@ namespace ADBRuntime.UntiyEditor
             EditorGUILayout.PropertyField(serializedObject.FindProperty("currentLinker"), new GUIContent("Current Setting Linker"), true);
             EditorGUILayout.Space(10);
             EditorGUILayout.PropertyField(serializedObject.FindProperty("targetLinkers"), new GUIContent("Setting Linker List"), true);
-            if (GUILayout.Button("Switch Setting"))
+            if (GUILayout.Button("Switch Physics Setting"))
             {
                 controller.Switch();
             }
