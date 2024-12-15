@@ -5,75 +5,78 @@ using UnityEngine;
 using System;
 namespace ADBRuntime
 {
+    /// <summary>
+    /// The physics bone's ReadOnly data.
+    /// </summary>
     [Serializable]
     public struct PointRead
     {
-        //public bool isFixGravityAxis;
+        /// <summary>
+        /// Fixed point's Index
+        /// </summary>
         public int fixedIndex;
         /// <summary>
-        /// 父节点序号
+        /// Parent point's Index
         /// </summary>
         public int parentIndex;
         /// <summary>
-        /// 子节点开头编号 
+        /// Child begin Index
         /// </summary>
         public int childFirstIndex;
         /// <summary>
-        /// 子节点结尾编号的后一个编号
+        /// Child end Index
         /// </summary>
         public int childLastIndex;
         /// <summary>
-        ///质量,杆件拉伸时候计算相互作用力使用
+        /// the point's mass
         /// </summary>);
         public float mass;
-
         /// <summary>
-        /// Collider选择性对撞
+        /// Linked constraint number
+        /// </summary>
+        public int constraintCount; 
+        /// <summary>
+        /// Collider mask
         /// </summary>
         public int colliderMask;
         /// <summary>
-        /// 固定节点是否发生旋转?
+        ///  Freeze fixed point's Rotation
         /// </summary>
         public bool isFixedPointFreezeRotation;
         /// <summary>
-        /// 阻尼：How much the bones slowed down.
+        /// Damp：How much the points slowed down.
         /// </summary>);
         public float damping;
-
         /// <summary>
-        /// 摩擦力大小,计算collider时候会对速度进行减缓时候用到,
+        /// Friction between point and collider 
         /// </summary>);
         public float friction;
         /// <summary>
-        /// 世界刚性,使骨骼回到初始的worldPosition的力度的大小
+        /// The world's rigidity brings the bones back to the initial worldPosition 
         /// </summary>
         public float stiffnessWorld;
-        /// 冻结限制,使骨骼回到初始的worldPosition的力度的大小限制
         /// </summary>
-        //public float stiffnessWorldLimit;
-        ///局部刚性,强制节点回到初始的localPosition的力的大小,
+        ///The local rigidity brings the bones back to the initial localPosition,
         /// </summary>
         public float stiffnessLocal;
         /// <summary>
-        /// 弹性：How much the force applied to return each bone to original orientation.
+        /// Elasticity:how much the force applied to return each bone to original orientation.
         /// </summary>
         public float elasticity;
         /// <summary>
-        /// 惰性：How much character's position change is ignored in physics simulation.
+        /// moveInert:How much character's position change is ignored in physics simulation.
         /// </summary>);
         public float moveInert;
         /// <summary>
-        /// 距离模拟,fixed节点发生位移,会对子节点进行位移补偿的比率,可以减少位移过长导致拉伸
+        ///VelocityIncrease How much character's position velocity is increase in physics simulation.
         /// </summary>
         public float velocityIncrease;
         /// <summary>
-        /// 重力
+        /// Gravity
         /// </summary>
         public float3 gravity;
 
-
-
-        //下面一串都是与杆件力相关
+        //Constraint parameter
         public float structuralShrinkVertical;
         public float structuralStretchVertical;
         public float structuralShrinkHorizontal;
@@ -86,23 +89,49 @@ namespace ADBRuntime
         public float bendingStretchHorizontal;
         public float circumferenceShrink;
         public float circumferenceStretch;
+
         /// <summary>
-        /// 半径
+        /// Collision radius
         /// </summary>
         public float radius;
 
-        public float3 initialLocalPosition;//OYM:相对于父粒子的节点
-        internal float initialLocalPositionLength;
-
-        public float3 initialPosition;//OYM：并不是直接的position ,二是相对于fixed点的position;
-
-        internal quaternion initialLocalRotation;
-        internal quaternion initialRotation;
-
+        /// <summary>
+        /// Point's localPosition when initial
+        /// </summary>
+        public float3 initialLocalPosition;
+        /// <summary>
+        /// localPosition's length
+        /// </summary>
+        public float initialLocalPositionLength;
+        /// <summary>
+        /// Position under its fixedpoint coordinate when initial
+        /// </summary>
+        public float3 initialPosition;
+        /// <summary>
+        /// Point's localPosition when initial
+        /// </summary>
+        public quaternion initialLocalRotation;
+        /// <summary>
+        ///  Rotation under its fixedpoint coordinate when initial
+        /// </summary>
+        public quaternion initialRotation;
+        /// <summary>
+        /// Damping for each iteration
+        /// </summary>
         internal float dampDivIteration;
+        /// <summary>
+        /// Extenral force's Scale
+        /// </summary>
         internal float addForceScale;
+        /// <summary>
+        /// Forces that make to parent's distance return to the initial LocalizationPositionLength
+        /// </summary>
         public float lengthLimitForceScale;
+        /// <summary>
+        ///  ElasticityVelocity:how much elasticity force applied in velocity.
+        /// </summary>
         public float elasticityVelocity;
+        internal float vrmstiffnessForce;
 
 
         /*        public float value2;
@@ -114,26 +143,29 @@ namespace ADBRuntime
                 public float value8;
                 public float value9;*/
     }
-
-    //OYM：写入系统
+    /// <summary>
+    /// The physics bone's readwrite frequency data.
+    /// </summary>
     public struct PointReadWrite
     {
         public float3 position;
         /// <summary>
-        /// 当为fixed节点的时候，它代表rotation，当为fixed节点的时候，它代表父节点的父节点的rotation
+        /// Fixed point's rotation or point's parent rotation
         /// </summary>
-        public quaternion rotationNoSelfRotateChange;
+        public quaternion Rotation;
         /// <summary>
-        /// 速度
+        /// velocity
         /// </summary>
         public float3 deltaPosition;
 
         /// <summary>
-        /// 角速度,目前还没完全用上
+        /// Angle velocity
         /// </summary>
         public quaternion deltaRotation;
+        internal float3 oldPosition;
+        public quaternion LoacalRotation;
+        internal quaternion rotationNoSelfRotateChange;
 
-        public bool isCollide;
         //public quaternion deltaRotationY;
     }
 }

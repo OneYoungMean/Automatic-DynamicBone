@@ -8,6 +8,9 @@ namespace ADBRuntime
 {
     using Mono;
     using Unity.Mathematics;
+    /// <summary>
+    /// Collection of methods for ADB colliders
+    /// </summary>
     public static class ADBStaticColliderFunc
     {
 
@@ -22,20 +25,32 @@ namespace ADBRuntime
         public const float lowerLegWidthAspect = 0.7f;
         public const float endLegWidthAspect = 0.7f;
         #endregion
-
+        /// <summary>
+        ///  Calculates the Bounds for the maximum range of the current chain
+        /// </summary>
+        /// <param name="transform"></param>
+        /// <param name="jointAndPointControlls"></param>
+        /// <returns></returns>
         public static Bounds CaculateBounds(Transform transform, ADBChainProcessor[] jointAndPointControlls)
         {
             MinMaxAABB aabb = CaculateAABB(transform, jointAndPointControlls);
             return new Bounds(aabb.Center, aabb.Extents);
         }
+
+        /// <summary>
+        ///  Calculates the MinMaxAABB for the maximum range of the current chain
+        /// </summary>
+        /// <param name="transform"></param>
+        /// <param name="jointAndPointControlls"></param>
+        /// <returns></returns>
         public static MinMaxAABB CaculateAABB(  Transform transform,ADBChainProcessor[] jointAndPointControlls)
         {
             Transform root = transform;
             MinMaxAABB AABB;
-            if (jointAndPointControlls == null|| jointAndPointControlls.Length==0)
+            if (jointAndPointControlls == null || jointAndPointControlls.Length == 0)//No center.
             {
                  AABB = MinMaxAABB.CreateFromCenterAndExtents(root.position, 0);
-                Transform[] allTrans = transform.GetComponentsInChildren<Transform>();//OYM:只搜索当前层
+                Transform[] allTrans = transform.GetComponentsInChildren<Transform>();
                 for (int i = 0; i < allTrans.Length; i++)
                 {
                     AABB.Encapsulate(allTrans[i].position);
@@ -61,7 +76,7 @@ namespace ADBRuntime
                         if (fixedPoint[j0]!=null)
                         {
                              MinMaxAABB smallAABB = MinMaxAABB.CreateFromCenterAndHalfExtents(fixedPoint[j0].transform.position, GetMaxDeep(fixedPoint[j0]));
-                            smallAABB.Extents *= jointAndPointControlls[0].GetADBSetting().structuralStretchVertical * 1.1f;//OYM:拉长值与重力考虑在内
+                            smallAABB.Extents *= jointAndPointControlls[0].GetADBSetting().structuralStretchVertical * 1.1f;//Potential stretching
                             AABB.Encapsulate(smallAABB);
                         }
                     }
@@ -72,6 +87,11 @@ namespace ADBRuntime
             return AABB;
         }
 
+        /// <summary>
+        /// Gets the deep of the current chain
+        /// </summary>
+        /// <param name="point"></param>
+        /// <returns></returns>
         private static float GetMaxDeep(ADBRuntimePoint point)
         {
             if (point == null)
@@ -101,14 +121,19 @@ namespace ADBRuntime
             }
         }
 
-        public static List<ADBColliderReader>  GenerateBodyCollidersData(Transform  transform,List<ADBRuntimePoint> allPointTrans, bool isGenerateFinger,bool isGenerateColliderOpenTrigger,out int isGenerateSuccessful)
+        /// <summary>
+        /// Use Animator to generate a full-body Collider
+        /// </summary>
+        /// <param name="transform"></param>
+        /// <param name="allPointTrans"></param>
+        /// <param name="isGenerateFinger"></param>
+        /// <param name="isGenerateColliderOpenTrigger"></param>
+        /// <param name="isGenerateSuccessful"></param>
+        /// <returns></returns>
+        public static List<ADBColliderReader>  GenerateBodyCollidersData(Transform  transform,List<ADBRuntimePoint> allPointTrans, bool isGenerateFinger,bool isGenerateColliderOpenTrigger, bool isColliderAllMask, out int isGenerateSuccessful)
         {
             isGenerateSuccessful = -1;
             if (transform == null) return null;
-
-            //Animator animator = controller.transform.GetComponent<Animator>() controller.transform.GetComponentInParent<Animator>();
-            //OYM:注意
-            //这种写法有大问题，他会返回你一个“null”而不是null，请务必不要用？？试图判空。
 
             Animator animator = transform.GetComponent<Animator>();
             if (animator==null)
@@ -125,11 +150,11 @@ namespace ADBRuntime
                     isGenerateSuccessful = 0;
                     generateColliderList = new List<ADBColliderReader>();
                 }
-                GenerateCollidersData(ref generateColliderList, allPointTrans, animator, isGenerateFinger, isGenerateColliderOpenTrigger);
+                GenerateCollidersData(ref generateColliderList, allPointTrans, animator, isGenerateFinger, isGenerateColliderOpenTrigger, isColliderAllMask);
             }
             else
             {
-                var animators = transform.gameObject.GetComponentsInChildren<Animator>();//OYM:或者是其子物体
+                var animators = transform.gameObject.GetComponentsInChildren<Animator>();//Or has multi Animator
                 if (animators != null && animators.Length != 0)
                 {
                     for (int i = 0; i < animators.Length; i++)
@@ -142,7 +167,7 @@ namespace ADBRuntime
                                 isGenerateSuccessful = 0;
                                 generateColliderList = new List<ADBColliderReader>();
                             }
-                            GenerateCollidersData(ref generateColliderList, allPointTrans, animator, isGenerateFinger, isGenerateColliderOpenTrigger);//OYM:尝试生成
+                            GenerateCollidersData(ref generateColliderList, allPointTrans, animator, isGenerateFinger, isGenerateColliderOpenTrigger, isColliderAllMask);//Try Generate
                         }
                         else
                         {
@@ -154,9 +179,20 @@ namespace ADBRuntime
             isGenerateSuccessful = 1;
             return generateColliderList;
         }
-        private static void GenerateCollidersData(ref List<ADBColliderReader> runtimeColliders, List<ADBRuntimePoint> allPointTrans, Animator animator, bool isGenerateFinger, bool isGenerateColliderOpenTrigger)
-        {//OYM：这坨屎山我连写注释的兴趣都没有,你知道这玩意能大概把你角色圈进去就行
-            //OYM：你问我怎么算的?当然是经验(试出来)啦 XD
+
+        /// <summary>
+        ///  generate Animator full-body's Collider
+        /// </summary>
+        /// <param name="runtimeColliders"></param>
+        /// <param name="allPointTrans"></param>
+        /// <param name="animator"></param>
+        /// <param name="isGenerateFinger"></param>
+        /// <param name="isGenerateColliderOpenTrigger"></param>
+        private static void GenerateCollidersData(ref List<ADBColliderReader> runtimeColliders, List<ADBRuntimePoint> allPointTrans, Animator animator, bool isGenerateFinger, bool isGenerateColliderOpenTrigger, bool isColliderAllMask)
+        {
+            // record transform datas
+
+            ColliderChoice colliderChoice = isColliderAllMask ? (ColliderChoice)(-1): 0;
             Vector3 scaleTemp = animator.transform.localScale;
             Vector3 positionTemp = animator.transform.position;
             Quaternion rotationTemp = animator.transform.rotation;
@@ -164,9 +200,6 @@ namespace ADBRuntime
             animator.transform.position = Vector3.zero;
             animator.transform.rotation = Quaternion.identity;
             animator.transform.localScale = Vector3.one;
-
-            //OYM:这里涉及到unity的一个坑爹特性,当父transform的scale不为1的时候,设置正常的length会被放大/缩小,最好的办法就是预先设置好角色尺寸,然后再还原回去1
-            //OYM:这种坑爹的问题真是难死人了,直接重设坐标解决吧
 
             if (animator.transform.lossyScale != Vector3.one)
             {
@@ -229,40 +262,44 @@ namespace ADBRuntime
             hipsWidth = Vector3.Distance(leftUpperLeg.position, rightUpperLeg.position);
 
 
-            //OYM：Head
+            //Head
+            ColliderChoice headMask = ColliderChoice.Head | colliderChoice;
             headCenterPoint = headStartPoint + new Vector3(0, 0.5f * torsoWidth, 0);
-            headColliderRadiu = CheckNearstPointToSegment(0.5f * torsoWidth, headCenterPoint, Vector3.zero, ColliderChoice.Head, allPointTrans);
+            headColliderRadiu = CheckNearstPointToSegment(0.5f * torsoWidth, headCenterPoint, Vector3.zero, headMask, allPointTrans);
 
-            runtimeColliders.Add(CreateUnitySphereCollider(headColliderRadiu, new Vector3(0, 0.5f * torsoWidth, 0), ColliderChoice.Head, head, "Head",isGenerateColliderOpenTrigger));
+            runtimeColliders.Add(CreateUnitySphereCollider(headColliderRadiu, new Vector3(0, 0.5f * torsoWidth, 0), headMask, head, "Head",isGenerateColliderOpenTrigger));
 
             // Spine
+            ColliderChoice upperBodyMask = ColliderChoice.UpperBody | colliderChoice;
             spineStartPoint = headCenterPoint + new Vector3(0, -torsoWidth, 0);
             spineStopPoint = upperLegCentroid;
-            spineColliderRadiu = CheckNearstPointToSegment(torsoWidth, spineStartPoint, spineStopPoint - spineStartPoint, ColliderChoice.UpperBody, allPointTrans);
+            spineColliderRadiu = CheckNearstPointToSegment(torsoWidth, spineStartPoint, spineStopPoint - spineStartPoint, upperBodyMask, allPointTrans);
 
-            runtimeColliders.Add(CreateUntiyCapsuleCollider(spineColliderRadiu, spineStartPoint, spineStopPoint, ColliderChoice.UpperBody, spine, "Spine1",isGenerateColliderOpenTrigger));
+            runtimeColliders.Add(CreateUntiyCapsuleCollider(spineColliderRadiu, spineStartPoint, spineStopPoint, upperBodyMask, spine, "Spine1",isGenerateColliderOpenTrigger));
 
             //Hip
 
             Vector3 hipColliderCenter = upperLegCentroid;
 
-            hipsColliderRadiuUp = CheckNearstPointToSegment((spineColliderRadiu * 2), hipColliderCenter, Vector3.zero, ColliderChoice.UpperBody, allPointTrans);
-           // runtimeColliders.Add(CreateUnitySphereCollider(hipsColliderRadiuUp, hipColliderCenter - spine.position, ColliderChoice.UpperBody, spine, "Spine2",isGenerateColliderOpenTrigger));
+            //  hipsColliderRadiuUp = CheckNearstPointToSegment((spineColliderRadiu * 2), hipColliderCenter, Vector3.zero, upperBodyMask, allPointTrans);
+            // runtimeColliders.Add(CreateUnitySphereCollider(hipsColliderRadiuUp, hipColliderCenter - spine.position, ColliderChoice.UpperBody, spine, "Spine2",isGenerateColliderOpenTrigger));
 
+            ColliderChoice lowerBodyMask = ColliderChoice.LowerBody | colliderChoice;
             Vector3 hipColliderCenterDownA = upperLegCentroid - new Vector3(hipsWidth * 0.5f, 0, 0);
             Vector3 hipColliderCenterDownB = hipColliderCenterDownA + new Vector3(hipsWidth, 0, 0);
-            hipsColliderRadiuDown = CheckNearstPointToSegment(hipsWidth, hipColliderCenterDownA, hipColliderCenterDownB - hipColliderCenterDownA, ColliderChoice.LowerBody, allPointTrans);
+            hipsColliderRadiuDown = CheckNearstPointToSegment(hipsWidth, hipColliderCenterDownA, hipColliderCenterDownB - hipColliderCenterDownA, lowerBodyMask, allPointTrans);
 
-            runtimeColliders.Add(CreateUntiyCapsuleCollider(hipsColliderRadiuDown, hipColliderCenterDownA, hipColliderCenterDownB, ColliderChoice.LowerBody, pelvis, "Pelvis", isGenerateColliderOpenTrigger, CollideFunc.OutsideNoLimit, true));
+            runtimeColliders.Add(CreateUntiyCapsuleCollider(hipsColliderRadiuDown, hipColliderCenterDownA, hipColliderCenterDownB, lowerBodyMask, pelvis, "Pelvis", isGenerateColliderOpenTrigger, CollideFunc.OutsideNoLimit, true));
 
 
             // LeftArms
-
+            ColliderChoice upperArmMask = ColliderChoice.UpperArm | colliderChoice;
+            ColliderChoice lowerArmMask = ColliderChoice.LowerArm | colliderChoice;
             float leftArmWidth = Vector3.Distance(leftUpperArm.position, leftLowerArm.position) * 0.3f;
-            float leftUpperArmWidth = CheckNearstPointToSegment(leftArmWidth * upperArmWidthAspect, leftUpperArm.position, leftLowerArm.position - leftUpperArm.position, ColliderChoice.UpperArm, allPointTrans);
-            float leftLowerArmWidth = CheckNearstPointToSegment(leftArmWidth * lowerArmWidthAspect, leftLowerArm.position, leftHand.position - leftLowerArm.position, ColliderChoice.LowerArm, allPointTrans);
-            runtimeColliders.Add(CreateUntiyCapsuleCollider(leftUpperArmWidth, leftUpperArm.position, leftLowerArm.position, ColliderChoice.UpperArm, leftUpperArm, "LeftUpperArm",isGenerateColliderOpenTrigger));
-            runtimeColliders.Add(CreateUntiyCapsuleCollider(leftLowerArmWidth, leftLowerArm.position, leftHand.position, ColliderChoice.LowerArm, leftLowerArm, "LeftLowerArm",isGenerateColliderOpenTrigger));
+            float leftUpperArmWidth = CheckNearstPointToSegment(leftArmWidth * upperArmWidthAspect, leftUpperArm.position, leftLowerArm.position - leftUpperArm.position, upperArmMask, allPointTrans);
+            float leftLowerArmWidth = CheckNearstPointToSegment(leftArmWidth * lowerArmWidthAspect, leftLowerArm.position, leftHand.position - leftLowerArm.position, lowerArmMask, allPointTrans);
+            runtimeColliders.Add(CreateUntiyCapsuleCollider(leftUpperArmWidth, leftUpperArm.position, leftLowerArm.position, upperArmMask, leftUpperArm, "LeftUpperArm",isGenerateColliderOpenTrigger));
+            runtimeColliders.Add(CreateUntiyCapsuleCollider(leftLowerArmWidth, leftLowerArm.position, leftHand.position, lowerArmMask, leftLowerArm, "LeftLowerArm",isGenerateColliderOpenTrigger));
 
             if (leftFinger==null)
             {
@@ -277,34 +314,38 @@ namespace ADBRuntime
 
 
             // LeftLegs
+
+            ColliderChoice upperLegMask = ColliderChoice.UpperLeg | colliderChoice;
+            ColliderChoice lowerLegMask = ColliderChoice.LowerLeg | colliderChoice;
+            ColliderChoice footMask = ColliderChoice.Foot | colliderChoice;
             float leftLegWidth = Vector3.Distance(leftUpperLeg.position, leftLowerLeg.position) * 0.3f;
-            float leftUpperLegWidth = CheckNearstPointToSegment(leftLegWidth * upperLegWidthAspect, leftUpperLeg.position, leftLowerLeg.position - leftUpperLeg.position, ColliderChoice.UpperLeg, allPointTrans);
-            float leftLowerLegWidth = CheckNearstPointToSegment(leftLegWidth * lowerLegWidthAspect, leftLowerLeg.position, leftHand.position - leftLowerLeg.position, ColliderChoice.LowerLeg, allPointTrans);
+            float leftUpperLegWidth = CheckNearstPointToSegment(leftLegWidth * upperLegWidthAspect, leftUpperLeg.position, leftLowerLeg.position - leftUpperLeg.position, upperLegMask, allPointTrans);
+            float leftLowerLegWidth = CheckNearstPointToSegment(leftLegWidth * lowerLegWidthAspect, leftLowerLeg.position, leftHand.position - leftLowerLeg.position, lowerLegMask, allPointTrans);
             float leftEndLegWidth = leftLegWidth * endLegWidthAspect;
-            runtimeColliders.Add(CreateUntiyCapsuleCollider(leftUpperLegWidth, leftUpperLeg.position - new Vector3(0, leftUpperLegWidth, 0), leftLowerLeg.position, ColliderChoice.UpperLeg, leftUpperLeg, "LeftUpperLeg",isGenerateColliderOpenTrigger));
-            runtimeColliders.Add(CreateUntiyCapsuleCollider(leftLowerLegWidth, leftLowerLeg.position, leftFoot.position, ColliderChoice.LowerLeg, leftLowerLeg, "LeftLowerLeg",isGenerateColliderOpenTrigger));
+            runtimeColliders.Add(CreateUntiyCapsuleCollider(leftUpperLegWidth, leftUpperLeg.position - new Vector3(0, leftUpperLegWidth, 0), leftLowerLeg.position, upperLegMask, leftUpperLeg, "LeftUpperLeg",isGenerateColliderOpenTrigger));
+            runtimeColliders.Add(CreateUntiyCapsuleCollider(leftLowerLegWidth, leftLowerLeg.position, leftFoot.position, lowerLegMask, leftLowerLeg, "LeftLowerLeg",isGenerateColliderOpenTrigger));
 
             // LeftFoot
 
             if (leftToes != null)
             {
-                runtimeColliders.Add(CreateUntiyCapsuleCollider(leftEndLegWidth, leftFoot.position, leftToes.position, ColliderChoice.Foot, leftFoot, "LeftFoot",isGenerateColliderOpenTrigger));
+                runtimeColliders.Add(CreateUntiyCapsuleCollider(leftEndLegWidth, leftFoot.position, leftToes.position, footMask, leftFoot, "LeftFoot",isGenerateColliderOpenTrigger));
             }
             else
             {
                 Vector3 leftfootStartPoint = leftFoot.position;
                 Vector3 leftfootStopPoint = new Vector3(leftfootStartPoint.x, animator.rootPosition.y + leftEndLegWidth, leftfootStartPoint.z) + animator.rootRotation * Vector3.forward * (leftLowerArm.position - leftHand.position).magnitude * endLegWidthAspect;
-                runtimeColliders.Add(CreateUntiyCapsuleCollider(leftEndLegWidth, leftfootStartPoint, leftfootStopPoint, ColliderChoice.Foot, leftFoot, "LeftFoot",isGenerateColliderOpenTrigger));
+                runtimeColliders.Add(CreateUntiyCapsuleCollider(leftEndLegWidth, leftfootStartPoint, leftfootStopPoint, footMask, leftFoot, "LeftFoot",isGenerateColliderOpenTrigger));
             }
 
             // rightArms
 
             float rightArmWidth = Vector3.Distance(rightUpperArm.position, rightLowerArm.position) * 0.3f;
-            float rightUpperArmWidth = CheckNearstPointToSegment(rightArmWidth * upperArmWidthAspect, rightUpperArm.position, rightLowerArm.position - rightUpperArm.position, ColliderChoice.UpperArm, allPointTrans);
-            float rightLowerArmWidth = CheckNearstPointToSegment(rightArmWidth * lowerArmWidthAspect, rightLowerArm.position, rightHand.position - rightLowerArm.position, ColliderChoice.LowerArm, allPointTrans);
+            float rightUpperArmWidth = CheckNearstPointToSegment(rightArmWidth * upperArmWidthAspect, rightUpperArm.position, rightLowerArm.position - rightUpperArm.position, upperArmMask, allPointTrans);
+            float rightLowerArmWidth = CheckNearstPointToSegment(rightArmWidth * lowerArmWidthAspect, rightLowerArm.position, rightHand.position - rightLowerArm.position, lowerArmMask, allPointTrans);
 
-            runtimeColliders.Add(CreateUntiyCapsuleCollider(rightUpperArmWidth, rightUpperArm.position, rightLowerArm.position, ColliderChoice.UpperArm, rightUpperArm, "RightUpperArm",isGenerateColliderOpenTrigger));
-            runtimeColliders.Add(CreateUntiyCapsuleCollider(rightLowerArmWidth, rightLowerArm.position, rightHand.position, ColliderChoice.LowerArm, rightLowerArm, "RightLowerArm",isGenerateColliderOpenTrigger));
+            runtimeColliders.Add(CreateUntiyCapsuleCollider(rightUpperArmWidth, rightUpperArm.position, rightLowerArm.position, upperArmMask, rightUpperArm, "RightUpperArm",isGenerateColliderOpenTrigger));
+            runtimeColliders.Add(CreateUntiyCapsuleCollider(rightLowerArmWidth, rightLowerArm.position, rightHand.position, lowerArmMask, rightLowerArm, "RightLowerArm",isGenerateColliderOpenTrigger));
             if (rightFinger == null)
             {
                 rightHandCenterPoint = (rightHand.position + (rightHand.position - rightLowerArm.position) * 0.5f) ;
@@ -316,33 +357,33 @@ namespace ADBRuntime
 
             // rightLegs
             float rightLegWidth = Vector3.Distance(rightUpperLeg.position, rightLowerLeg.position) * 0.3f;
-            float rightUpperLegWidth = CheckNearstPointToSegment(rightLegWidth * upperLegWidthAspect, rightUpperLeg.position, rightLowerLeg.position - rightUpperLeg.position, ColliderChoice.UpperLeg, allPointTrans);
-            float rightLowerLegWidth = CheckNearstPointToSegment(rightLegWidth * lowerLegWidthAspect, rightLowerLeg.position, rightHand.position - rightLowerLeg.position, ColliderChoice.LowerLeg, allPointTrans);
+            float rightUpperLegWidth = CheckNearstPointToSegment(rightLegWidth * upperLegWidthAspect, rightUpperLeg.position, rightLowerLeg.position - rightUpperLeg.position, upperLegMask, allPointTrans);
+            float rightLowerLegWidth = CheckNearstPointToSegment(rightLegWidth * lowerLegWidthAspect, rightLowerLeg.position, rightHand.position - rightLowerLeg.position, lowerLegMask, allPointTrans);
             float rightEndLegWidth = rightLegWidth * endLegWidthAspect;
-            runtimeColliders.Add(CreateUntiyCapsuleCollider(rightUpperLegWidth, rightUpperLeg.position - new Vector3(0, rightUpperLegWidth, 0), rightLowerLeg.position, ColliderChoice.UpperLeg, rightUpperLeg, "RightUpperLeg",isGenerateColliderOpenTrigger));
-            runtimeColliders.Add(CreateUntiyCapsuleCollider(rightLowerLegWidth, rightLowerLeg.position, rightFoot.position, ColliderChoice.LowerLeg, rightLowerLeg, "RightLowerLeg",isGenerateColliderOpenTrigger));
+            runtimeColliders.Add(CreateUntiyCapsuleCollider(rightUpperLegWidth, rightUpperLeg.position - new Vector3(0, rightUpperLegWidth, 0), rightLowerLeg.position, upperLegMask, rightUpperLeg, "RightUpperLeg",isGenerateColliderOpenTrigger));
+            runtimeColliders.Add(CreateUntiyCapsuleCollider(rightLowerLegWidth, rightLowerLeg.position, rightFoot.position, lowerLegMask, rightLowerLeg, "RightLowerLeg",isGenerateColliderOpenTrigger));
 
             // rightFoot
-
+            
             if (rightToes != null)
             {
-                runtimeColliders.Add(CreateUntiyCapsuleCollider(rightEndLegWidth, rightFoot.position, rightToes.position, ColliderChoice.Foot, rightFoot, "RightFoot",isGenerateColliderOpenTrigger));
+                runtimeColliders.Add(CreateUntiyCapsuleCollider(rightEndLegWidth, rightFoot.position, rightToes.position, footMask, rightFoot, "RightFoot",isGenerateColliderOpenTrigger));
             }
             else
             {
                 Vector3 rightfootStartPoint = rightFoot.position;
                 Vector3 rightfootStopPoint = new Vector3(rightfootStartPoint.x, animator.rootPosition.y + rightEndLegWidth, rightfootStartPoint.z) + animator.rootRotation * Vector3.forward * (rightLowerArm.position - rightHand.position).magnitude * endLegWidthAspect;
-                runtimeColliders.Add(CreateUntiyCapsuleCollider(rightEndLegWidth, rightfootStartPoint, rightfootStopPoint, ColliderChoice.Foot, rightFoot, "RightFoot",isGenerateColliderOpenTrigger));
+                runtimeColliders.Add(CreateUntiyCapsuleCollider(rightEndLegWidth, rightfootStartPoint, rightfootStopPoint, footMask, rightFoot, "RightFoot",isGenerateColliderOpenTrigger));
             }
-
+            ColliderChoice handMask = ColliderChoice.Foot | colliderChoice;
             if (!isGenerateFinger)
             {
-                runtimeColliders.Add(CreateUnitySphereCollider(Vector3.Distance(leftHand.position, leftHandCenterPoint), leftHandCenterPoint - leftHand.position, ColliderChoice.Hand, leftHand, "LeftHand",isGenerateColliderOpenTrigger));//OYM:lefthand
-                runtimeColliders.Add(CreateUnitySphereCollider(Vector3.Distance(rightHand.position, rightHandCenterPoint), rightHandCenterPoint - rightHand.position, ColliderChoice.Hand, rightHand, "RightHand",isGenerateColliderOpenTrigger));//OYM:righthand
+                runtimeColliders.Add(CreateUnitySphereCollider(Vector3.Distance(leftHand.position, leftHandCenterPoint), leftHandCenterPoint - leftHand.position, handMask, leftHand, "LeftHand",isGenerateColliderOpenTrigger));//lefthand
+                runtimeColliders.Add(CreateUnitySphereCollider(Vector3.Distance(rightHand.position, rightHandCenterPoint), rightHandCenterPoint - rightHand.position, handMask, rightHand, "RightHand",isGenerateColliderOpenTrigger));//righthand
             }
             else
             {
-                //OYM：Left
+                //Left
                 var leftThumb1 = animator.GetBoneTransform(HumanBodyBones.LeftThumbProximal);
                 var leftThumb2 = animator.GetBoneTransform(HumanBodyBones.LeftThumbIntermediate);
                 var leftThumb3 = animator.GetBoneTransform(HumanBodyBones.LeftThumbDistal);
@@ -360,26 +401,26 @@ namespace ADBRuntime
                 var leftLittle3 = animator.GetBoneTransform(HumanBodyBones.LeftLittleDistal);
 
                 var leftHandLength = (leftMiddle2.position - leftHand.position).magnitude;
-                //colliderList.Add(new OBBBoxCollider(leftHandCenterPoint, new Vector3(leftHandLength * 0.25f, leftHandLength, leftHandLength), leftMiddle2.position - leftMiddle1.position, ColliderChoice.Hand, leftHand));
+                //colliderList.Add(new OBBBoxCollider(leftHandCenterPoint, new Vector3(leftHandLength * 0.25f, leftHandLength, leftHandLength), leftMiddle2.position - leftMiddle1.position, handMask, leftHand));
                 Quaternion leftHandRotation = Quaternion.LookRotation(leftMiddle2.position - leftHand.position, Vector3.Cross(leftThumb3.position - leftHand.position, leftLittle3.position - leftHand.position));
 
-                runtimeColliders.Add(CreateUntiyBoxCollider(leftHandCenterPoint, leftHandRotation, new Vector3(leftHandLength * 0.75f, leftHandLength * 0.25f, leftHandLength * 0.75f), ColliderChoice.Hand, leftHand, "LeftHand",isGenerateColliderOpenTrigger));
+                runtimeColliders.Add(CreateUntiyBoxCollider(leftHandCenterPoint, leftHandRotation, new Vector3(leftHandLength * 0.75f, leftHandLength * 0.25f, leftHandLength * 0.75f), handMask, leftHand, "LeftHand",isGenerateColliderOpenTrigger));
 
-                runtimeColliders.Add(CreateUntiyCapsuleCollider((leftThumb1.position - leftThumb2.position).magnitude / 2, leftThumb1.position, leftThumb2.position, ColliderChoice.Hand, leftThumb1, "LeftThumb1",isGenerateColliderOpenTrigger));
-                runtimeColliders.Add(CreateUntiyCapsuleCollider((leftThumb2.position - leftThumb3.position).magnitude / 2, leftThumb2.position, leftThumb3.position, ColliderChoice.Hand, leftThumb2, "LeftThumb2",isGenerateColliderOpenTrigger));
-                runtimeColliders.Add(CreateUntiyCapsuleCollider((leftThumb2.position - leftThumb3.position).magnitude / 2 * 0.8f, leftThumb3.position, leftThumb3.position + (leftThumb3.position - leftThumb2.position) * 0.8f, ColliderChoice.Hand, leftThumb3, "LeftThumb3",isGenerateColliderOpenTrigger));
-                runtimeColliders.Add(CreateUntiyCapsuleCollider((leftIndex1.position - leftIndex2.position).magnitude / 2, leftIndex1.position, leftIndex2.position, ColliderChoice.Hand, leftIndex1, "LeftIndex1",isGenerateColliderOpenTrigger));
-                runtimeColliders.Add(CreateUntiyCapsuleCollider((leftIndex2.position - leftIndex3.position).magnitude / 2, leftIndex2.position, leftIndex3.position, ColliderChoice.Hand, leftIndex2, "LeftIndex2",isGenerateColliderOpenTrigger));
-                runtimeColliders.Add(CreateUntiyCapsuleCollider((leftIndex2.position - leftIndex3.position).magnitude / 2 * 0.8f, leftIndex3.position, leftIndex3.position + (leftIndex3.position - leftIndex2.position) * 0.8f, ColliderChoice.Hand, leftIndex3, "LeftIndex3",isGenerateColliderOpenTrigger));
-                runtimeColliders.Add(CreateUntiyCapsuleCollider((leftMiddle1.position - leftMiddle2.position).magnitude / 2, leftMiddle1.position, leftMiddle2.position, ColliderChoice.Hand, leftMiddle1, "LeftMiddle1",isGenerateColliderOpenTrigger));
-                runtimeColliders.Add(CreateUntiyCapsuleCollider((leftMiddle2.position - leftMiddle3.position).magnitude / 2, leftMiddle2.position, leftMiddle3.position, ColliderChoice.Hand, leftMiddle2, "LeftMiddle2",isGenerateColliderOpenTrigger));
-                runtimeColliders.Add(CreateUntiyCapsuleCollider((leftMiddle2.position - leftMiddle3.position).magnitude / 2 * 0.8f, leftMiddle3.position, leftMiddle3.position + (leftMiddle3.position - leftMiddle2.position) * 0.8f, ColliderChoice.Hand, leftMiddle3, "LeftMiddle3",isGenerateColliderOpenTrigger));
-                runtimeColliders.Add(CreateUntiyCapsuleCollider((leftRing1.position - leftRing2.position).magnitude / 2, leftRing1.position, leftRing2.position, ColliderChoice.Hand, leftRing1, "LeftRing1",isGenerateColliderOpenTrigger));
-                runtimeColliders.Add(CreateUntiyCapsuleCollider((leftRing2.position - leftRing3.position).magnitude / 2, leftRing2.position, leftRing3.position, ColliderChoice.Hand, leftRing2, "LeftRing2",isGenerateColliderOpenTrigger));
-                runtimeColliders.Add(CreateUntiyCapsuleCollider((leftRing2.position - leftRing3.position).magnitude / 2 * 0.8f, leftRing3.position, leftRing3.position + (leftRing3.position - leftRing2.position) * 0.8f, ColliderChoice.Hand, leftRing3, "LeftRing3",isGenerateColliderOpenTrigger));
-                runtimeColliders.Add(CreateUntiyCapsuleCollider((leftLittle1.position - leftLittle2.position).magnitude / 2, leftLittle1.position, leftLittle2.position, ColliderChoice.Hand, leftLittle1, "LeftLittle1",isGenerateColliderOpenTrigger));
-                runtimeColliders.Add(CreateUntiyCapsuleCollider((leftLittle2.position - leftLittle3.position).magnitude / 2, leftLittle2.position, leftLittle3.position, ColliderChoice.Hand, leftLittle2, "LeftLittle2",isGenerateColliderOpenTrigger));
-                runtimeColliders.Add(CreateUntiyCapsuleCollider((leftLittle2.position - leftLittle3.position).magnitude / 2 * 0.8f, leftLittle3.position, leftLittle3.position + (leftLittle3.position - leftLittle2.position) * 0.8f, ColliderChoice.Hand, leftLittle3, "LeftLittle3",isGenerateColliderOpenTrigger));
+                runtimeColliders.Add(CreateUntiyCapsuleCollider((leftThumb1.position - leftThumb2.position).magnitude / 2, leftThumb1.position, leftThumb2.position, handMask, leftThumb1, "LeftThumb1",isGenerateColliderOpenTrigger));
+                runtimeColliders.Add(CreateUntiyCapsuleCollider((leftThumb2.position - leftThumb3.position).magnitude / 2, leftThumb2.position, leftThumb3.position, handMask, leftThumb2, "LeftThumb2",isGenerateColliderOpenTrigger));
+                runtimeColliders.Add(CreateUntiyCapsuleCollider((leftThumb2.position - leftThumb3.position).magnitude / 2 * 0.8f, leftThumb3.position, leftThumb3.position + (leftThumb3.position - leftThumb2.position) * 0.8f, handMask, leftThumb3, "LeftThumb3",isGenerateColliderOpenTrigger));
+                runtimeColliders.Add(CreateUntiyCapsuleCollider((leftIndex1.position - leftIndex2.position).magnitude / 2, leftIndex1.position, leftIndex2.position, handMask, leftIndex1, "LeftIndex1",isGenerateColliderOpenTrigger));
+                runtimeColliders.Add(CreateUntiyCapsuleCollider((leftIndex2.position - leftIndex3.position).magnitude / 2, leftIndex2.position, leftIndex3.position, handMask, leftIndex2, "LeftIndex2",isGenerateColliderOpenTrigger));
+                runtimeColliders.Add(CreateUntiyCapsuleCollider((leftIndex2.position - leftIndex3.position).magnitude / 2 * 0.8f, leftIndex3.position, leftIndex3.position + (leftIndex3.position - leftIndex2.position) * 0.8f, handMask, leftIndex3, "LeftIndex3",isGenerateColliderOpenTrigger));
+                runtimeColliders.Add(CreateUntiyCapsuleCollider((leftMiddle1.position - leftMiddle2.position).magnitude / 2, leftMiddle1.position, leftMiddle2.position, handMask, leftMiddle1, "LeftMiddle1",isGenerateColliderOpenTrigger));
+                runtimeColliders.Add(CreateUntiyCapsuleCollider((leftMiddle2.position - leftMiddle3.position).magnitude / 2, leftMiddle2.position, leftMiddle3.position, handMask, leftMiddle2, "LeftMiddle2",isGenerateColliderOpenTrigger));
+                runtimeColliders.Add(CreateUntiyCapsuleCollider((leftMiddle2.position - leftMiddle3.position).magnitude / 2 * 0.8f, leftMiddle3.position, leftMiddle3.position + (leftMiddle3.position - leftMiddle2.position) * 0.8f, handMask, leftMiddle3, "LeftMiddle3",isGenerateColliderOpenTrigger));
+                runtimeColliders.Add(CreateUntiyCapsuleCollider((leftRing1.position - leftRing2.position).magnitude / 2, leftRing1.position, leftRing2.position, handMask, leftRing1, "LeftRing1",isGenerateColliderOpenTrigger));
+                runtimeColliders.Add(CreateUntiyCapsuleCollider((leftRing2.position - leftRing3.position).magnitude / 2, leftRing2.position, leftRing3.position, handMask, leftRing2, "LeftRing2",isGenerateColliderOpenTrigger));
+                runtimeColliders.Add(CreateUntiyCapsuleCollider((leftRing2.position - leftRing3.position).magnitude / 2 * 0.8f, leftRing3.position, leftRing3.position + (leftRing3.position - leftRing2.position) * 0.8f, handMask, leftRing3, "LeftRing3",isGenerateColliderOpenTrigger));
+                runtimeColliders.Add(CreateUntiyCapsuleCollider((leftLittle1.position - leftLittle2.position).magnitude / 2, leftLittle1.position, leftLittle2.position, handMask, leftLittle1, "LeftLittle1",isGenerateColliderOpenTrigger));
+                runtimeColliders.Add(CreateUntiyCapsuleCollider((leftLittle2.position - leftLittle3.position).magnitude / 2, leftLittle2.position, leftLittle3.position, handMask, leftLittle2, "LeftLittle2",isGenerateColliderOpenTrigger));
+                runtimeColliders.Add(CreateUntiyCapsuleCollider((leftLittle2.position - leftLittle3.position).magnitude / 2 * 0.8f, leftLittle3.position, leftLittle3.position + (leftLittle3.position - leftLittle2.position) * 0.8f, handMask, leftLittle3, "LeftLittle3",isGenerateColliderOpenTrigger));
                 // right
                 var rightThumb1 = animator.GetBoneTransform(HumanBodyBones.RightThumbProximal);
                 var rightThumb2 = animator.GetBoneTransform(HumanBodyBones.RightThumbIntermediate);
@@ -398,33 +439,45 @@ namespace ADBRuntime
                 var rightLittle3 = animator.GetBoneTransform(HumanBodyBones.RightLittleDistal);
 
                 var rightHandLength = (rightMiddle2.position - rightHand.position).magnitude;
-                //colliderList.Add(new OBBBoxCollider(rightHandCenterPoint, new Vector3(rightHandLength * 0.25f, rightHandLength, rightHandLength), rightMiddle2.position - rightMiddle1.position, ColliderChoice.Hand, rightHand));
+                //colliderList.Add(new OBBBoxCollider(rightHandCenterPoint, new Vector3(rightHandLength * 0.25f, rightHandLength, rightHandLength), rightMiddle2.position - rightMiddle1.position, handMask, rightHand));
                 Quaternion rightHandRotation = Quaternion.LookRotation(rightMiddle2.position - rightHand.position, Vector3.Cross(rightThumb3.position - rightHand.position, rightLittle3.position - rightHand.position));
 
-                runtimeColliders.Add(CreateUntiyBoxCollider((rightHand.position + rightMiddle1.position) / 2, rightHandRotation, new Vector3(rightHandLength * 0.75f, rightHandLength * 0.25f, rightHandLength * 0.75f), ColliderChoice.Hand, rightHand, "RightHand",isGenerateColliderOpenTrigger));
+                runtimeColliders.Add(CreateUntiyBoxCollider((rightHand.position + rightMiddle1.position) / 2, rightHandRotation, new Vector3(rightHandLength * 0.75f, rightHandLength * 0.25f, rightHandLength * 0.75f), handMask, rightHand, "RightHand",isGenerateColliderOpenTrigger));
 
-                runtimeColliders.Add(CreateUntiyCapsuleCollider((rightThumb1.position - rightThumb2.position).magnitude / 2, rightThumb1.position, rightThumb2.position, ColliderChoice.Hand, rightThumb1, "RightThumb1",isGenerateColliderOpenTrigger));
-                runtimeColliders.Add(CreateUntiyCapsuleCollider((rightThumb2.position - rightThumb3.position).magnitude / 2, rightThumb2.position, rightThumb3.position, ColliderChoice.Hand, rightThumb2, "RightThumb2",isGenerateColliderOpenTrigger));
-                runtimeColliders.Add(CreateUntiyCapsuleCollider((rightThumb2.position - rightThumb3.position).magnitude / 2 * 0.8f, rightThumb3.position, rightThumb3.position + (rightThumb3.position - rightThumb2.position) * 0.8f, ColliderChoice.Hand, rightThumb3, "RightThumb3",isGenerateColliderOpenTrigger));
-                runtimeColliders.Add(CreateUntiyCapsuleCollider((rightIndex1.position - rightIndex2.position).magnitude / 2, rightIndex1.position, rightIndex2.position, ColliderChoice.Hand, rightIndex1, "RightIndex1",isGenerateColliderOpenTrigger));
-                runtimeColliders.Add(CreateUntiyCapsuleCollider((rightIndex2.position - rightIndex3.position).magnitude / 2, rightIndex2.position, rightIndex3.position, ColliderChoice.Hand, rightIndex2, "RightIndex2",isGenerateColliderOpenTrigger));
-                runtimeColliders.Add(CreateUntiyCapsuleCollider((rightIndex2.position - rightIndex3.position).magnitude / 2 * 0.8f, rightIndex3.position, rightIndex3.position + (rightIndex3.position - rightIndex2.position) * 0.8f, ColliderChoice.Hand, rightIndex3, "RightIndex3",isGenerateColliderOpenTrigger));
-                runtimeColliders.Add(CreateUntiyCapsuleCollider((rightMiddle1.position - rightMiddle2.position).magnitude / 2, rightMiddle1.position, rightMiddle2.position, ColliderChoice.Hand, rightMiddle1, "RightMiddle1",isGenerateColliderOpenTrigger));
-                runtimeColliders.Add(CreateUntiyCapsuleCollider((rightMiddle2.position - rightMiddle3.position).magnitude / 2, rightMiddle2.position, rightMiddle3.position, ColliderChoice.Hand, rightMiddle2, "RightMiddle2",isGenerateColliderOpenTrigger));
-                runtimeColliders.Add(CreateUntiyCapsuleCollider((rightMiddle2.position - rightMiddle3.position).magnitude / 2 * 0.8f, rightMiddle3.position, rightMiddle3.position + (rightMiddle3.position - rightMiddle2.position) * 0.8f, ColliderChoice.Hand, rightMiddle3, "RightMiddle3",isGenerateColliderOpenTrigger));
-                runtimeColliders.Add(CreateUntiyCapsuleCollider((rightRing1.position - rightRing2.position).magnitude / 2, rightRing1.position, rightRing2.position, ColliderChoice.Hand, rightRing1, "RightRing1",isGenerateColliderOpenTrigger));
-                runtimeColliders.Add(CreateUntiyCapsuleCollider((rightRing2.position - rightRing3.position).magnitude / 2, rightRing2.position, rightRing3.position, ColliderChoice.Hand, rightRing2, "RightRing2",isGenerateColliderOpenTrigger));
-                runtimeColliders.Add(CreateUntiyCapsuleCollider((rightRing2.position - rightRing3.position).magnitude / 2 * 0.8f, rightRing3.position, rightRing3.position + (rightRing3.position - rightRing2.position) * 0.8f, ColliderChoice.Hand, rightRing3, "RightRing3",isGenerateColliderOpenTrigger));
-                runtimeColliders.Add(CreateUntiyCapsuleCollider((rightLittle1.position - rightLittle2.position).magnitude / 2, rightLittle1.position, rightLittle2.position, ColliderChoice.Hand, rightLittle1, "RightLittle1",isGenerateColliderOpenTrigger));
-                runtimeColliders.Add(CreateUntiyCapsuleCollider((rightLittle2.position - rightLittle3.position).magnitude / 2, rightLittle2.position, rightLittle3.position, ColliderChoice.Hand, rightLittle2, "RightLittle2",isGenerateColliderOpenTrigger));
-                runtimeColliders.Add(CreateUntiyCapsuleCollider((rightLittle2.position - rightLittle3.position).magnitude / 2 * 0.8f, rightLittle3.position, rightLittle3.position + (rightLittle3.position - rightLittle2.position) * 0.8f, ColliderChoice.Hand, rightLittle3, "RightLittle3",isGenerateColliderOpenTrigger));
+                runtimeColliders.Add(CreateUntiyCapsuleCollider((rightThumb1.position - rightThumb2.position).magnitude / 2, rightThumb1.position, rightThumb2.position, handMask, rightThumb1, "RightThumb1",isGenerateColliderOpenTrigger));
+                runtimeColliders.Add(CreateUntiyCapsuleCollider((rightThumb2.position - rightThumb3.position).magnitude / 2, rightThumb2.position, rightThumb3.position, handMask, rightThumb2, "RightThumb2",isGenerateColliderOpenTrigger));
+                runtimeColliders.Add(CreateUntiyCapsuleCollider((rightThumb2.position - rightThumb3.position).magnitude / 2 * 0.8f, rightThumb3.position, rightThumb3.position + (rightThumb3.position - rightThumb2.position) * 0.8f, handMask, rightThumb3, "RightThumb3",isGenerateColliderOpenTrigger));
+                runtimeColliders.Add(CreateUntiyCapsuleCollider((rightIndex1.position - rightIndex2.position).magnitude / 2, rightIndex1.position, rightIndex2.position, handMask, rightIndex1, "RightIndex1",isGenerateColliderOpenTrigger));
+                runtimeColliders.Add(CreateUntiyCapsuleCollider((rightIndex2.position - rightIndex3.position).magnitude / 2, rightIndex2.position, rightIndex3.position, handMask, rightIndex2, "RightIndex2",isGenerateColliderOpenTrigger));
+                runtimeColliders.Add(CreateUntiyCapsuleCollider((rightIndex2.position - rightIndex3.position).magnitude / 2 * 0.8f, rightIndex3.position, rightIndex3.position + (rightIndex3.position - rightIndex2.position) * 0.8f, handMask, rightIndex3, "RightIndex3",isGenerateColliderOpenTrigger));
+                runtimeColliders.Add(CreateUntiyCapsuleCollider((rightMiddle1.position - rightMiddle2.position).magnitude / 2, rightMiddle1.position, rightMiddle2.position, handMask, rightMiddle1, "RightMiddle1",isGenerateColliderOpenTrigger));
+                runtimeColliders.Add(CreateUntiyCapsuleCollider((rightMiddle2.position - rightMiddle3.position).magnitude / 2, rightMiddle2.position, rightMiddle3.position, handMask, rightMiddle2, "RightMiddle2",isGenerateColliderOpenTrigger));
+                runtimeColliders.Add(CreateUntiyCapsuleCollider((rightMiddle2.position - rightMiddle3.position).magnitude / 2 * 0.8f, rightMiddle3.position, rightMiddle3.position + (rightMiddle3.position - rightMiddle2.position) * 0.8f, handMask, rightMiddle3, "RightMiddle3",isGenerateColliderOpenTrigger));
+                runtimeColliders.Add(CreateUntiyCapsuleCollider((rightRing1.position - rightRing2.position).magnitude / 2, rightRing1.position, rightRing2.position, handMask, rightRing1, "RightRing1",isGenerateColliderOpenTrigger));
+                runtimeColliders.Add(CreateUntiyCapsuleCollider((rightRing2.position - rightRing3.position).magnitude / 2, rightRing2.position, rightRing3.position, handMask, rightRing2, "RightRing2",isGenerateColliderOpenTrigger));
+                runtimeColliders.Add(CreateUntiyCapsuleCollider((rightRing2.position - rightRing3.position).magnitude / 2 * 0.8f, rightRing3.position, rightRing3.position + (rightRing3.position - rightRing2.position) * 0.8f, handMask, rightRing3, "RightRing3",isGenerateColliderOpenTrigger));
+                runtimeColliders.Add(CreateUntiyCapsuleCollider((rightLittle1.position - rightLittle2.position).magnitude / 2, rightLittle1.position, rightLittle2.position, handMask, rightLittle1, "RightLittle1",isGenerateColliderOpenTrigger));
+                runtimeColliders.Add(CreateUntiyCapsuleCollider((rightLittle2.position - rightLittle3.position).magnitude / 2, rightLittle2.position, rightLittle3.position, handMask, rightLittle2, "RightLittle2",isGenerateColliderOpenTrigger));
+                runtimeColliders.Add(CreateUntiyCapsuleCollider((rightLittle2.position - rightLittle3.position).magnitude / 2 * 0.8f, rightLittle3.position, rightLittle3.position + (rightLittle3.position - rightLittle2.position) * 0.8f, handMask, rightLittle3, "RightLittle3",isGenerateColliderOpenTrigger));
             }
 
-            //OYM:恢复坐标
+            //Repair it
             animator.transform.localScale = scaleTemp;
             animator.transform.position = positionTemp;
             animator.transform.rotation = rotationTemp;
         }
+
+        /// <summary>
+        /// Get the nearest point's distance to segment
+        /// Used to determine the maximum radius of the capsule
+        /// </summary>
+        /// <param name="MaxLength"></param>
+        /// <param name="position"></param>
+        /// <param name="direction"></param>
+        /// <param name="choice"></param>
+        /// <param name="pointTrans"></param>
+        /// <param name="isInverse"></param>
+        /// <returns></returns>
         private static float CheckNearstPointToSegment(float MaxLength, Vector3 position, Vector3 direction, ColliderChoice choice, List<ADBRuntimePoint> pointTrans, bool isInverse = false)
         {
             if (pointTrans == null || pointTrans.Count == 0)
@@ -464,6 +517,19 @@ namespace ADBRuntime
             }
             return MaxLength;
         }
+        /// <summary>
+        /// Create a box collider.
+        /// </summary>
+        /// <param name="position"></param>
+        /// <param name="rotation"></param>
+        /// <param name="size"></param>
+        /// <param name="colliderChoice"></param>
+        /// <param name="appendTransform"></param>
+        /// <param name="name"></param>
+        /// <param name="isGenerateColliderOpenTrigger"></param>
+        /// <param name="collideFunc"></param>
+        /// <param name="isOwner"></param>
+        /// <returns></returns>
         private static ADBColliderReader CreateUntiyBoxCollider(Vector3 position, Quaternion rotation, Vector3 size, ColliderChoice colliderChoice, Transform appendTransform, string name, bool isGenerateColliderOpenTrigger = true, CollideFunc collideFunc = CollideFunc.OutsideLimit, bool isOwner = false)
         {
             Transform transform = new GameObject(name + "BoxCollider").transform;
@@ -479,8 +545,26 @@ namespace ADBRuntime
             ADBColliderReader target = transform.gameObject.AddComponent<ADBColliderReader>();
             target.collideFunc = collideFunc;
             target.colliderMask = colliderChoice;
+
+#if UNITY_EDITOR
+            UnityEditor.Undo.RegisterCreatedObjectUndo(transform.gameObject, "Create Collider");
+#endif
+
             return target;
         }
+        /// <summary>
+        /// Create a capsule collider.
+        /// </summary>
+        /// <param name="radius"></param>
+        /// <param name="pointHead"></param>
+        /// <param name="pointTail"></param>
+        /// <param name="colliderChoice"></param>
+        /// <param name="appendTransform"></param>
+        /// <param name="name"></param>
+        /// <param name="isGenerateColliderOpenTrigger"></param>
+        /// <param name="collideFunc"></param>
+        /// <param name="isOwner"></param>
+        /// <returns></returns>
         private static ADBColliderReader CreateUntiyCapsuleCollider(float radius, Vector3 pointHead, Vector3 pointTail, ColliderChoice colliderChoice, Transform appendTransform, string name, bool isGenerateColliderOpenTrigger = true, CollideFunc collideFunc = CollideFunc.OutsideLimit, bool isOwner = false)
         {
             Transform transform = new GameObject(name + "CapsuleCollider").transform;
@@ -498,8 +582,28 @@ namespace ADBRuntime
             ADBColliderReader target = transform.gameObject.AddComponent<ADBColliderReader>();
             target.collideFunc = collideFunc;
             target.colliderMask = colliderChoice;
+
+#if UNITY_EDITOR
+            UnityEditor.Undo.RegisterCreatedObjectUndo(transform.gameObject, "Create Collider");
+#endif
+
             return target;
+
+
         }
+        /// <summary>
+        /// Create a sphere collider.
+        /// </summary>
+        /// <param name="radius"></param>
+        /// <param name="pointHead"></param>
+        /// <param name="pointTail"></param>
+        /// <param name="colliderChoice"></param>
+        /// <param name="appendTransform"></param>
+        /// <param name="name"></param>
+        /// <param name="isGenerateColliderOpenTrigger"></param>
+        /// <param name="collideFunc"></param>
+        /// <param name="isOwner"></param>
+        /// <returns></returns>
         private static ADBColliderReader CreateUnitySphereCollider(float radius, Vector3 position, ColliderChoice colliderChoice, Transform appendTransform, string name, bool isGenerateColliderOpenTrigger = true, CollideFunc collideFunc = CollideFunc.OutsideLimit, bool isOwner = false)
         {
             Transform transform = new GameObject(name + "SphereCollider").transform;
@@ -514,10 +618,11 @@ namespace ADBRuntime
             ADBColliderReader target = transform.gameObject.AddComponent<ADBColliderReader>();
             target.collideFunc = collideFunc;
             target.colliderMask = colliderChoice;
-/*            if (isOwner)
-            {
-                target.AddOwner(controller);
-            }*/
+
+#if UNITY_EDITOR
+            UnityEditor.Undo.RegisterCreatedObjectUndo(transform.gameObject, "Create Collider");
+#endif
+
             return target;
         }
     }

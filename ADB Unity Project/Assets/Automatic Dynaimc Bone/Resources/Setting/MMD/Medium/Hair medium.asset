@@ -141,7 +141,7 @@ MonoBehaviour:
     m_RotationOrder: 4
   dampingMin: 0
   dampingMax: 1
-  dampingValue: 0.96
+  dampingValue: 0.161
   isdampingCurve: 0
   elasticityCurve:
     serializedVersion: 2
@@ -657,7 +657,7 @@ MonoBehaviour:
   pointRadiuMax: 1
   pointRadiuValue: 0
   ispointRadiuCurve: 0
-  value2Curve:
+  vrmStiffnessForceCurve:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
@@ -681,7 +681,7 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  value2Value: 0
+  vrmStiffnessForceValue: 0
   value3Curve:
     serializedVersion: 2
     m_Curve:

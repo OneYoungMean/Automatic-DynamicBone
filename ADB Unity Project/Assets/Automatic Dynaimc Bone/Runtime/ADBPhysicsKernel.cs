@@ -13,8 +13,12 @@ namespace ADBRuntime
     using Internal;
     using Mono;
     using System.Linq;
+    using Unity.Mathematics;
     using static ADBRuntime.Internal.ADBRunTimeJobsTable;
+    /// <summary>
+    /// Physics kernel,schedule the physics job execution
 
+    /// </summary>
     public unsafe class ADBPhysicsKernel
     {
         static int BatchLength = 64;
@@ -27,12 +31,19 @@ namespace ADBRuntime
         private ADBRunTimeJobsTable.PointUpdate pointUpdate;
         private ADBRunTimeJobsTable.ConstraintUpdate constraintUpdates;
         private ADBRunTimeJobsTable.ConstraintForceUpdateByPoint constraintForceUpdateByPoint;
+        private ADBRunTimeJobsTable.ClacSpringBonePhysics clacSpringBonePhysics;
         private ADBRunTimeJobsTable.JobPointToTransform pointToTransform;
+
 
         private NativeArray<ColliderRead> collidersReadNativeArray;
         private NativeArray<ColliderReadWrite> collidersReadWriteNativeArray;
-        private NativeMultiHashMap<int, ConstraintRead> ConstraintReadMultiHashMap;//OYM:对应的粒子的index 与ConstraintRead
+#if UNITY_2022_OR_NEWER
+        private NativeParallelMultiHashMap<int, ConstraintRead> ConstraintReadMultiHashMap;
+#else
+        private NativeMultiHashMap<int, ConstraintRead> ConstraintReadMultiHashMap;
+#endif
 
+        private NativeArray<PositionKalmanFilter> positionFliterNativeArray;
         private List<ConstraintRead[]> m_constraintList;
         private List<PointRead> m_pointReadList;
         private List<PointReadWrite> m_pointReadWriteList;
@@ -58,18 +69,7 @@ namespace ADBRuntime
             collidersReadNativeArray = new NativeArray<ColliderRead>(ADBRuntimeController.MAXCOLLIDERCOUNT, Allocator.Persistent);
             collidersReadWriteNativeArray = new NativeArray<ColliderReadWrite>(ADBRuntimeController.MAXCOLLIDERCOUNT, Allocator.Persistent);
         }
-        /// <summary>
-        /// 物理接口,如果要更新物理数据,需要在里面填入相关的信息
-        /// </summary>
-        /// <param name="deltaTime"></param>
-        /// <param name="scale"></param>
-        /// <param name="iteration"></param>
-        /// <param name="addForce"></param>
-        /// <param name="colliderCollisionType"></param>
-        /// <param name="isOptimize"></param>
-        /// <param name="detectAsync"></param>
-        /// <param name="isParallel"></param>
-        /// <returns></returns>
+
         internal bool Schedule(float deltaTime, float scale, ref int iteration, Vector3 addForce, ColliderCollisionType colliderCollisionType, bool isOptimize, bool isRunAsync, bool isParallel,
             float startDampTime)
         {
@@ -77,38 +77,37 @@ namespace ADBRuntime
             {
                 return false;
             }
-            //OYM:优先更新坐标 
-            CompleteHandleArray.Clear();
-            //OYM:需要三个空jobhandle作为起点
 
-            //OYM：当我用ADBRunTimeJobsTable.returnHJob时候,任务会在我调用的时候被强制完成,当我用本地的Hjob的时候,任务会在异步进行
-            //OYM:  注意,JH底层很可能也是单例
-            //OYM:  赋参
+            CompleteHandleArray.Clear();
+            deltaTime = math.clamp(deltaTime, 0, 1 / 60f);
             float oneDivideIteration = 1.0f / iteration;
             pointToTransform.startDampTime = startDampTime;
 
             constraintForceUpdateByPoint.oneDivideIteration = constraintUpdates.oneDivideIteration = pointUpdate.oneDivideIteration = colliderCalcAABB.oneDivideIteration = pointGet.oneDivideIteration = colliderUpdate.oneDivideIteration= oneDivideIteration;
 
-            pointUpdate.deltaTime = deltaTime;
+            clacSpringBonePhysics.deltaTime= pointGet.deltaTime= pointUpdate.deltaTime = deltaTime;
             pointToTransform.worldScale=  pointGet.worldScale = scale;
             colliderCalcAABB.localScale = 1 / scale;
             pointUpdate.isOptimize = isOptimize;
             pointUpdate.addForcePower = addForce;
             pointUpdate.isCollision = (colliderCollisionType == ColliderCollisionType.Both || colliderCollisionType == ColliderCollisionType.Point);
-            //OYM:  下面就是随机顺序了
+
             constraintUpdates.isCollision = (colliderCollisionType == ColliderCollisionType.Both || colliderCollisionType == ColliderCollisionType.Constraint); ;
 
             #region LifeCycle
 
-            if (!isRunAsync)//OYM:单线程
+            if (!isRunAsync)
             {
+
+                
                 colliderCalcAABB.Run(pointUpdate.colliderCount);
                 pointGet.Schedule(pointTransformsAccessArray).Complete();
 
                 for (int i = 0; i < iteration; i++)
                 {
-                    pointUpdate.Run(pointReadNativeArray.Length);
+                   pointUpdate.Run(pointReadNativeArray.Length);
                     colliderUpdate.Run(pointUpdate.colliderCount);
+
 
                     if (colliderCollisionType == ColliderCollisionType.Constraint || colliderCollisionType == ColliderCollisionType.Both)
                     {
@@ -119,12 +118,14 @@ namespace ADBRuntime
                         constraintForceUpdateByPoint.Run(pointReadNativeArray.Length);
                     }
                 }
+                clacSpringBonePhysics.Run(pointReadNativeArray.Length);
             }
             else
             {
                 Hjob = JobHandle.CombineDependencies(colliderCalcAABB.Schedule(pointUpdate.colliderCount, BatchLength), pointGet.Schedule(pointTransformsAccessArray));
+
                 CompleteHandleArray.Add(Hjob);
-                NativeList<JobHandle> HJobs = CompleteHandleArray;//OYM:这么写短一点
+                NativeList<JobHandle> HJobs = CompleteHandleArray;
 
                 for (int i = 0; i < iteration; i++)
                 {
@@ -133,7 +134,7 @@ namespace ADBRuntime
                         JobHandle.ScheduleBatchedJobs();
                     }
 
-                    if (!isParallel) //OYM:多线程异步(中等)
+                    if (!isParallel) 
                     {
                        JobHandle hjob1= colliderUpdate.Schedule(pointUpdate.colliderCount, BatchLength, HJobs[HJobs.Length - 1]);
                         JobHandle hjob2=pointUpdate.Schedule(pointReadNativeArray.Length, BatchLength, HJobs[HJobs.Length - 1]);
@@ -148,7 +149,7 @@ namespace ADBRuntime
                         }
                         HJobs.Add(JobHandle.CombineDependencies(hjob1, hjob2, hjob3));
                     }
-                    else //OYM:多线程并行(最快)
+                    else 
                     {
                         colliderUpdate.Schedule(pointUpdate.colliderCount, BatchLength);
                         pointUpdate.Schedule(pointReadNativeArray.Length, BatchLength);
@@ -162,9 +163,10 @@ namespace ADBRuntime
                         }
                     }
                 }
+                Hjob = clacSpringBonePhysics.Schedule(pointReadNativeArray.Length, Hjob);
                 Hjob = JobHandle.CombineDependencies(HJobs.AsArray());
             }
-
+            
             Hjob = pointToTransform.Schedule(pointTransformsAccessArray, Hjob);
             #endregion
             return true;
@@ -172,7 +174,10 @@ namespace ADBRuntime
 
         internal void SetRuntimeCollider(ColliderRead[] collidersReadArray)
         {
-            NativeArray<ColliderRead>.Copy(collidersReadArray,0, collidersReadNativeArray,0, collidersReadArray.Length);
+            for (int i = 0; i < collidersReadArray.Length; i++)
+            {
+                collidersReadNativeArray[i] = collidersReadArray[i];
+            }
 
             pointUpdate.colliderCount = collidersReadArray.Length;
             constraintUpdates.colliderCount = collidersReadArray.Length;
@@ -218,14 +223,27 @@ namespace ADBRuntime
         }
         public void SetNativeArray()
         {
-            //OYM:  创建各种实例
-            pointReadNativeArray = new NativeArray<PointRead>(m_pointReadList.ToArray(), Allocator.Persistent);
-            pointReadWriteListNativeArray = new NativeArray<PointReadWrite>(m_pointReadWriteList.ToArray(), Allocator.Persistent);
+
+            pointReadNativeArray = new NativeArray<PointRead>(m_pointReadList.Count, Allocator.Persistent);
+
+            
+            for (int i = 0; i < m_pointReadList.Count; i++)
+            {
+                pointReadNativeArray[i] = m_pointReadList[i];
+            }
+
+            pointReadWriteListNativeArray = new NativeArray<PointReadWrite>(m_pointReadWriteList.Count, Allocator.Persistent);
 
             pointTransformsAccessArray = new TransformAccessArray(m_pointTransforms.ToArray());
 
             List<ConstraintRead> constraintReadListTarget = new List<ConstraintRead>();
+#if UNITY_2022_OR_NEWER
+        ConstraintReadMultiHashMap = new NativeParallelMultiHashMap<int, ConstraintRead>(8, Allocator.Persistent);
+#else
             ConstraintReadMultiHashMap = new NativeMultiHashMap<int, ConstraintRead>(8, Allocator.Persistent);
+#endif
+
+            positionFliterNativeArray = new NativeArray<PositionKalmanFilter>(m_pointReadWriteList.Count, Allocator.Persistent);
             for (int i = 0; i < m_constraintList.Count; i++)
             {
                 constraintReadListTarget.AddRange(m_constraintList[i]);
@@ -233,14 +251,19 @@ namespace ADBRuntime
                 {
                     ConstraintRead temp = m_constraintList[i][j];
                     ConstraintReadMultiHashMap.Add(m_constraintList[i][j].indexA, temp);
-                    //OYM:  交换顺序,再添加一次
                     int exchange = temp.indexA;
                     temp.indexA = temp.indexB;
                     temp.indexB = exchange;
                     ConstraintReadMultiHashMap.Add(m_constraintList[i][j].indexB, temp);
                 }
             }
-            constraintReadList = new NativeArray<ConstraintRead>(constraintReadListTarget.ToArray(), Allocator.Persistent);
+
+            constraintReadList = new NativeArray<ConstraintRead>(constraintReadListTarget.Count, Allocator.Persistent);
+
+            for (int i = 0; i < constraintReadList.Length; i++)
+            {
+                constraintReadList[i] = constraintReadListTarget[i];
+            }
 
             colliderCalcAABB = new ADBRunTimeJobsTable.ColliderClacAABB();
             colliderUpdate = new ADBRunTimeJobsTable.ColliderPositionUpdate();
@@ -250,14 +273,21 @@ namespace ADBRuntime
             constraintUpdates = new ADBRunTimeJobsTable.ConstraintUpdate();
             constraintForceUpdateByPoint = new ADBRunTimeJobsTable.ConstraintForceUpdateByPoint();
             pointToTransform = new ADBRunTimeJobsTable.JobPointToTransform();
+            clacSpringBonePhysics = new ClacSpringBonePhysics();
 
             pointGet.pReadPoints = (PointRead*)pointReadNativeArray.GetUnsafePtr();
             pointGet.pReadWritePoints = (PointReadWrite*)pointReadWriteListNativeArray.GetUnsafePtr();
+            pointGet.pPositionFliters = (PositionKalmanFilter*)positionFliterNativeArray.GetUnsafePtr();
 
             pointUpdate.pReadPoints = (PointRead*)pointReadNativeArray.GetUnsafePtr();
             pointUpdate.pReadWritePoints = (PointReadWrite*)pointReadWriteListNativeArray.GetUnsafePtr();
             pointUpdate.pReadColliders = (ColliderRead*)collidersReadNativeArray.GetUnsafePtr();
             pointUpdate.pReadWriteColliders = (ColliderReadWrite*)collidersReadWriteNativeArray.GetUnsafePtr();
+
+            clacSpringBonePhysics.pReadPoints = (PointRead*)pointReadNativeArray.GetUnsafePtr();
+            clacSpringBonePhysics.pReadWritePoints = (PointReadWrite*)pointReadWriteListNativeArray.GetUnsafePtr();
+            clacSpringBonePhysics.pReadColliders = (ColliderRead*)collidersReadNativeArray.GetUnsafePtr();
+            clacSpringBonePhysics.pReadWriteColliders = (ColliderReadWrite*)collidersReadWriteNativeArray.GetUnsafePtr();
 
             constraintUpdates.pReadPoints = (PointRead*)pointReadNativeArray.GetUnsafePtr();
             constraintUpdates.pReadWritePoints = (PointReadWrite*)pointReadWriteListNativeArray.GetUnsafePtr();
@@ -278,17 +308,19 @@ namespace ADBRuntime
             colliderUpdate.pReadColliders = (ColliderRead*)collidersReadNativeArray.GetUnsafePtr();
             colliderUpdate.pReadWriteColliders = (ColliderReadWrite*)collidersReadWriteNativeArray.GetUnsafePtr();
 
+
+
             isInitialize = true;
         }
 
         /// <summary>
-        /// 重置所有点
+        /// restrore all point
         /// </summary>
         public void restorePoint(float scale)
         {
             Hjob.Complete();
 
-            if (pointTransformsAccessArray.isCreated) //OYM:优先
+            if (pointTransformsAccessArray.isCreated)
             {
                 ADBRunTimeJobsTable.InitiralizePoint1 initialpoint = new ADBRunTimeJobsTable.InitiralizePoint1
                 {
@@ -302,31 +334,48 @@ namespace ADBRuntime
                 {
                     pReadPoints = (PointRead*)pointReadNativeArray.GetUnsafePtr(),
                     pReadWritePoints = (PointReadWrite*)pointReadWriteListNativeArray.GetUnsafePtr(),
+                    pPositionFliter = (PositionKalmanFilter*)positionFliterNativeArray.GetUnsafePtr(),
                     worldScale = scale,
                 };
                 Hjob=initialpoint2.Schedule(pointTransformsAccessArray, Hjob); 
             }
         }
-        /// <summary>
-        /// 释放,如果为true,则重新加载数据
-        /// 注意,该操作会释放大量GC
-        /// </summary>
-        /// <param name="isReset"></param>
+
         public void Dispose()
         {
             isInitialize = false;
             Hjob.Complete();
 
-            pointReadNativeArray.Dispose();
-            pointReadWriteListNativeArray.Dispose();
-            pointTransformsAccessArray.Dispose();
 
-            constraintReadList.Dispose();
-            ConstraintReadMultiHashMap.Dispose();
-            collidersReadNativeArray.Dispose();
-            collidersReadWriteNativeArray.Dispose();
+            DisposeNativeArray(pointReadNativeArray);
+            DisposeNativeArray(pointReadWriteListNativeArray);
+            DisposeNativeArray(positionFliterNativeArray);
+            DisposeNativeArray(constraintReadList);
+            DisposeNativeArray(collidersReadNativeArray);
+            DisposeNativeArray(collidersReadWriteNativeArray);
 
-            CompleteHandleArray.Dispose();
+            if (pointTransformsAccessArray.isCreated)
+            {
+                pointTransformsAccessArray.Dispose();
+            }
+
+            if (CompleteHandleArray.IsCreated)
+            {
+                CompleteHandleArray.Dispose();
+            }
+
+            if (ConstraintReadMultiHashMap.IsCreated)
+            {
+                ConstraintReadMultiHashMap.Dispose();
+            }
+        }
+
+        private void DisposeNativeArray<T>(NativeArray<T> data) where T : struct
+        {
+            if ( data.IsCreated)
+            {
+                data.Dispose();
+            }
         }
 
         internal void DrawGizmos()

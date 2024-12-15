@@ -169,7 +169,7 @@ MonoBehaviour:
     m_RotationOrder: 4
   elasticityMin: 0
   elasticityMax: 1
-  elasticityValue: 0.5
+  elasticityValue: 0.045
   iselasticityCurve: 0
   velocityIncreaseCurve:
     serializedVersion: 2
@@ -657,7 +657,7 @@ MonoBehaviour:
   pointRadiuMax: 1
   pointRadiuValue: 0.05
   ispointRadiuCurve: 1
-  value2Curve:
+  vrmStiffnessForceCurve:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
@@ -681,7 +681,7 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  value2Value: 0
+  vrmStiffnessForceValue: 0
   value3Curve:
     serializedVersion: 2
     m_Curve:
@@ -905,7 +905,7 @@ MonoBehaviour:
   isComputeBendingVertical: 0
   isComputeBendingHorizontal: 0
   isComputeCircumference: 0
-  isCollideStructuralVertical: 1
+  isCollideStructuralVertical: 0
   isCollideStructuralHorizontal: 1
   isCollideShear: 1
   isLoopRootPoints: 1
