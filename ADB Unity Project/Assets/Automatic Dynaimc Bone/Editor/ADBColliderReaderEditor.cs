@@ -6,6 +6,19 @@ using UnityEditor;
 namespace ADBRuntime.UntiyEditor
 {
     using Mono;
+    public enum ColliderChoiceZh
+    {
+        Head = 1 << 0,
+        UpperBody = 1 << 1,
+        LowerBody = 1 << 2,
+        UpperLeg = 1 << 3,
+        LowerLeg = 1 << 4,
+        UpperArm = 1 << 5,
+        LowerArm = 1 << 6,
+        Hand = 1 << 7,
+        Foot = 1 << 8,
+        Other = 1 << 9,
+    }
     public class ADBEditorColliderEditor : Editor
     {
         [CustomEditor(typeof(ADBColliderReader))]
@@ -15,30 +28,19 @@ namespace ADBRuntime.UntiyEditor
 
             private enum CollideTypecZh
             {
-                Sphere = 0,
-                Capsule = 1,
-                Box = 2
+                Sphere=0,
+                Capsule=1,
+                Box=2
             }
             private enum CollideFuncZh
             {
-                OutsideStrict = 1,
-                InsideStrict = 2,
-                OutsideSoft = 3,
-                InsideSoft = 4,
+                OutsideStrict=1,
+                InsideStrict=2,
+                OutsideSoft=3,
+                InsideSoft=4,
+              //  冻结在表面 = 5,
             }
-            public enum ColliderChoiceZh
-            {
-                Head = 1 << 0,
-                UpperBody = 1 << 1,
-                LowerBody = 1 << 2,
-                UpperLeg = 1 << 3,
-                LowerLeg = 1 << 4,
-                UpperArm = 1 << 5,
-                LowerArm = 1 << 6,
-                Hand = 1 << 7,
-                Foot = 1 << 8,
-                Other = 1 << 9,
-            }
+
             public void OnEnable()
             {
                 controller = (target as ADBColliderReader);
@@ -60,9 +62,9 @@ namespace ADBRuntime.UntiyEditor
                     controller.UpdatePriorities();
                 }
                 
-                Titlebar("ADB Collider Reader", Color.Lerp(Color.white, Color.blue, 0.5f));
+                Titlebar("ADB碰撞体标记", Color.Lerp(Color.white, Color.blue, 0.5f));
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("unityCollider"), new GUIContent("ColliderTarget"), true);
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("isReadOnly"), new GUIContent("┗━I Is Collider ReadOnly (highly performance)"), true);
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("isReadOnly"), new GUIContent("┗━I is Collider ReadOnly (highly performance)"), true);
                 if (controller.isReadOnly)
                 {
                     EditorGUILayout.PropertyField(serializedObject.FindProperty("isStatic"), new GUIContent("┗━I Is Collider Fixed(highly performance)"), true);

@@ -8,148 +8,49 @@ namespace ADBRuntime.Mono.Tool
 {
     public enum ChainGeneratorMode
     {
-        Select,
-        DynamicBone,
-        ADBChain,
-        Clear,
-
-
+         DynamicBone,
+         ADBChain,
+         Clear
     }
-
-    [SerializeField]
-    public class SelectHelper
+    public class ADBChainGenerateTool :MonoBehaviour
     {
-        public enum SelectType
-        {
-
-            ClothBone=0,
-            InvalidBone = 1,
-            SelectBone =2,
-            SelectFixedBone = 3,
-            GenerateBone=4,
-            GenerateFixedBone=5,
-            OtherBone = 6,
-        }
-
-        public bool isOpen { get => 
-                selectType == SelectType.SelectBone ||
-                selectType == SelectType.SelectFixedBone ||
-                selectType == SelectType.GenerateBone ||
-                selectType == SelectType.GenerateFixedBone 
-                ; }
-
-        public SelectType selectType;
-        public Transform parent;
-        public Transform target;
-        public List<Transform> child = new List<Transform>();
-        public Color GetColor()
-        {
-            switch (selectType)
-            {
-                case SelectType.InvalidBone:
-                    return Color.gray;
-                case SelectType.ClothBone:
-                    return Color.white;
-                case SelectType.SelectBone:
-                    return Color.Lerp(Color.white, Color.green, 0.5f);
-                case SelectType.SelectFixedBone:
-                    return Color.Lerp(Color.white, Color.red, 0.5f);
-                case SelectType.GenerateBone:
-                    return Color.green;
-                case SelectType.GenerateFixedBone:
-                    return Color.red;
-                case SelectType.OtherBone:
-                    return Color.Lerp(Color.gray, Color.yellow, 0.5f);
-                default:
-                    return Color.black;
-
-            }
-        }
-        public float GetScale()
-        {
-            switch (selectType)
-            {
-                case SelectType.InvalidBone:
-                    return 1;
-                case SelectType.ClothBone:
-                    return 1.1f;
-                case SelectType.SelectBone:
-                    return 1;
-                case SelectType.SelectFixedBone:
-                    return 1;
-                case SelectType.GenerateBone:
-                    return 0.9f;
-                case SelectType.GenerateFixedBone:
-                    return 0.9f;
-                case SelectType.OtherBone:
-                    return 1;
-                default:
-                    return 1;
-            }
-        }
-    }
-
-    /// <summary>
-    /// Physics bone's generate tool
-    /// </summary>
-    [RequireComponent(typeof(ADBRuntimeController))]
-    public class ADBChainGenerateTool : MonoBehaviour
-    {
-        #region  Field&Property
         [SerializeField]
-        public List<string> generateKeyWordWhiteList = new List<string> { };// "hair", "tail", 
+        public List<string> generateKeyWordWhiteList = new List<string> {};// "hair", "tail", 
         [SerializeField]
-        public List<string> generateKeyWordBlackList = new List<string> { "ik", "mesh" };
+        public List<string> generateKeyWordBlackList = new List<string> { "ik","mesh" };
         [SerializeField]
         public List<Transform> blackListOfGenerateTransform = new List<Transform>();
         [SerializeField]
-        public List<Transform> generateTransformList = new List<Transform>() { };
+        public List<Transform> generateTransformList = new List<Transform>() {};
         [SerializeField]
         public ADBSettingLinker linker;
         [SerializeField]
         public ADBPhysicsSetting setting;
         [SerializeField]
-        public List<ADBChainProcessor> allChain = new List<ADBChainProcessor>();
+        public List<ADBChainProcessor> allChain;
         [SerializeField]
         public bool isGenerateOnStart;
         [SerializeField]
         public ChainGeneratorMode generatorMode;
-        [SerializeField]
-        public bool isOpenMonitor;
-        [SerializeField]
-        public SelectHelper[] selectHelpers;
 
-        private Dictionary<Transform, SelectHelper> selectDictionary = new Dictionary<Transform, SelectHelper>();
-        private static List<string> everyKey = new List<string>() { "" };
-
-        #endregion
-
-        #region UnityFunc
-
-        private void OnEnable()
-        {
-            ListCheck();
-        }
-
-        #endregion
-
-        #region LocalFunc
-
-        /// <summary>
-        /// Check value
-        /// </summary>
         private void ListCheck()
         {
             if (allChain == null)
             {
                 allChain = new List<ADBChainProcessor>();
             }
-
-            if (generatorMode != ChainGeneratorMode.ADBChain)
+            for (int i = 0; i < allChain.Count; i++)
+            {
+                if (allChain[i]==null)
+                {
+                    allChain.RemoveAt(i);
+                    i--;
+                }
+            }
+            if (generatorMode != ChainGeneratorMode.ADBChain)//OYM:只有chain才会被检查
             {
                 return;
             }
-
             if (generateKeyWordWhiteList == null || generateKeyWordWhiteList.Count == 0)
             {
                 generateKeyWordWhiteList = linker?.AllKeyWord;
@@ -182,24 +83,18 @@ namespace ADBRuntime.Mono.Tool
                 linker = Resources.Load("Setting/ADBDefaultSettingLinker") as ADBSettingLinker;
             }
         }
-        /*        public void RefreshBoneChain()
-                {
-                    allChain = GetChainsInChildren();
-                }*/
-        /// <summary>
-        /// Clear generate bone chain
-        /// </summary>
-        public void ClearBoneChain()
+/*        public void RefreshBoneChain()
         {
-            for (int i = 0; i < allChain.Count; i++)
+            allChain = GetChainsInChildren();
+        }*/
+        public  void ClearBoneChain()
+        {
+            for (int i = 0; i < allChain?.Count; i++)
             {
                 var targetChain = allChain[i];
                 for (int j0 = 0; j0 < targetChain.allPointList.Count; j0++)
                 {
-                    if (targetChain.allPointList[j0]!=null)
-                    {
-                        DestroyImmediate(targetChain.allPointList[j0]);
-                    }
+                    DestroyImmediate(targetChain.allPointList[j0]);
                 }
                 DestroyImmediate(targetChain);
             }
@@ -208,31 +103,30 @@ namespace ADBRuntime.Mono.Tool
             {
                 target.ListCheck();
             }
-            allChain.Clear();
+            allChain = null;
         }
-        public string GetPointCount()
+            public string GetPointCount()
         {
             int count = 0;
             for (int i = 0; i < allChain?.Count; i++)
             {
-                if (allChain[i].allPointList != null)
+                if (allChain[i]!=null&&allChain[i].allPointList!=null)
                 {
                     count += allChain[i].allPointList.Count;
                 }
+
             }
             return count.ToString();
         }
-        /// <summary>
-        /// Initialize
-        /// </summary>
+
         public void InitializeChain()
         {
             ListCheck();
-            var tempLinker = ScriptableObject.CreateInstance<ADBSettingLinker>();
             switch (generatorMode)
             {
                 case ChainGeneratorMode.DynamicBone:
-
+                    List<string> everyKey = new List<string>() { "" };
+                    var tempLinker = ScriptableObject.CreateInstance<ADBSettingLinker>();
                     tempLinker.settings = new List<KeyWordSetting>() {
                         new KeyWordSetting()
                         {
@@ -246,52 +140,29 @@ namespace ADBRuntime.Mono.Tool
                     }
                     for (int i = 0; i < generateTransformList.Count; i++)
                     {
-                        if (generateTransformList[i] == null || (!generateTransformList[i].gameObject.GetComponentsInParent<Transform>().Contains(transform)))
+                        if (generateTransformList[i]==null||(!generateTransformList[i].gameObject.GetComponentsInParent<Transform>().Contains(transform)))
                         {
                             continue;
                         }
                         GenerateBoneChainImporter(generateTransformList[i], everyKey, new List<string>(), new List<Transform>(), tempLinker, ref allChain);
                     }
-                    Debug.Log("Create " + setting.name + " DynamicBone " + allChain.Count + " Chain Successful;");
                     break;
                 case ChainGeneratorMode.ADBChain:
                     for (int i = 0; i < transform.childCount; i++)
                     {
                         GenerateBoneChainImporter(transform.GetChild(i), generateKeyWordWhiteList, generateKeyWordBlackList, blackListOfGenerateTransform, linker, ref allChain);
                     }
-                    Debug.Log("Create " + linker.name + " DynamicBone " + allChain.Count + " Chain Successful;");
-                    break;
-                case ChainGeneratorMode.Select:
-                    tempLinker.settings = new List<KeyWordSetting>() {
-                        new KeyWordSetting()
-                        {
-                            setting=setting,
-                            keyWord =everyKey,
-                        }
-                    };
-                    var blackList = new List<Transform>();
-                    foreach (var item in selectDictionary)
-                    {
-                        if (!item.Value.isOpen)
-                        {
-                            blackList.Add(item.Key);
-                        }
-                    }
-                    for (int i = 0; i < transform.childCount; i++)
-                    {
-                        GenerateBoneChainImporter(transform.GetChild(i), everyKey, new List<string>(), blackList, tempLinker, ref allChain);
-                    }
-                    UpdateSelectDictionary(true);
-                    Debug.Log("Create " + setting.name + " DynamicBone " + allChain.Count + " Chain Successful;");
                     break;
                 default:
                     break;
             }
             //RefreshBoneChain();
-
+            for (int i = 0; i < allChain.Count; i++)
+            {
+                allChain[i].Initialize();
+            }
 
         }
-        #endregion
         #region Static Generate Func
         public static void ClearBoneChain(Transform transform)
         {
@@ -304,10 +175,11 @@ namespace ADBRuntime.Mono.Tool
             for (int i = 0; i < points.Length; i++)
             {
                 Component.DestroyImmediate(points[i]);
+
             }
 
         }
-        public ADBChainProcessor[] GetChainsInChildren()
+        public  ADBChainProcessor[] GetChainsInChildren()
         {
             switch (generatorMode)
             {
@@ -329,287 +201,122 @@ namespace ADBRuntime.Mono.Tool
                     return gameObject.GetComponentsInChildren<ADBChainProcessor>();
                 default:
                     throw new InvalidOperationException();
+                    break;
             }
 
         }
-        public Dictionary<Transform, SelectHelper> UpdateSelectDictionary(bool isDirty = false)
+        public static void GenerateBoneChainImporter(Transform transform, List<string> generateKeyWordWhiteList, List<string> generateKeyWordBlackList, List<Transform> blackListOfGenerateTransform, ADBSettingLinker settings,ref List<ADBChainProcessor> chainProcessors)//OYM：一个巨啰嗦的方法
         {
-            if (!isDirty && selectDictionary != null && selectDictionary.Count != 0)
+            if (transform == null||
+                (transform.TryGetComponent<ADBRuntimePoint>(out ADBRuntimePoint point)&&!point.isRoot)) return ;
+
+            bool isblack = false;
+            do
             {
-                return selectDictionary;
-            }
-            if (!isDirty &&selectHelpers != null && selectHelpers.Length != 0)
-            {
-                for (int i = 0; i < selectHelpers.Length; i++)
-                {
-                    selectDictionary.Add(selectHelpers[i].target, selectHelpers[i]);
-                }
-                selectHelpers = null;
-            }
-            else
-            {
-                selectDictionary.Clear();
-                Transform[] allTransform = GetComponentsInChildren<Transform>(true);
-                for (int i = 0; i < allTransform.Length; i++)
-                {
-                    SelectHelper selectHelper = new SelectHelper();
-                    selectHelper.selectType = SelectHelper.SelectType.ClothBone;
-                    selectDictionary.Add(allTransform[i], new SelectHelper());
-                }
-
-                Animator animator = GetComponent<Animator>();
-                if (animator != null)
-                {
-                    List<Transform> animatorTransforms = new List<Transform>();
-                    for (int i = 0; i < (int)HumanBodyBones.LastBone; i++)
-                    {
-                        Transform humanBone = animator.GetBoneTransform((HumanBodyBones)i);
-                        if (humanBone != null)
-                        {
-                            animatorTransforms.Add(humanBone);
-                        }
-                    }
-                    for (int i = 0; i < allTransform.Length; i++)
-                    {
-                        Transform target = allTransform[i];
-                        Transform[] childs = target.GetComponentsInChildren<Transform>(true);
-                        for (int ii = 0; ii < childs.Length; ii++)
-                        {
-                            Transform child = childs[ii];
-                            if (animatorTransforms.Contains(child))
-                            {
-                                selectDictionary[target].selectType = SelectHelper.SelectType.InvalidBone;
-                                break;
-                            }
-                        }
-                    }
-                }
-
-
-                for (int i = 0; i < allTransform.Length; i++)
-                {
-                    var target = allTransform[i];
-                    int childCount = target.childCount;
-                    for (int ii = 0; ii < childCount; ii++)
-                    {
-                        var child = target.GetChild(ii);
-                        if (selectDictionary.ContainsKey(child))
-                        {
-                            var parent = selectDictionary[target];
-                            selectDictionary[target].child.Add(child);
-                        }
-                    }
-                }
-                for (int i = 0; i < allTransform.Length; i++)
-                {
-                    ADBRuntimePoint point = allTransform[i].gameObject.GetComponent<ADBRuntimePoint>();
-                    if (point != null)
-                    {
-                        selectDictionary[allTransform[i]].selectType = SelectHelper.SelectType.OtherBone;
-                    }
-                }
-                for (int i = 0; i < allChain.Count; i++)
-                {
-                    for (int ii = 0; ii < allChain[i].allPointList.Count; ii++)
-                    {
-                        try
-                        {
-                            selectDictionary[allChain[i].allPointList[ii].transform].selectType = SelectHelper.SelectType.GenerateBone;
-                        }
-                        catch (Exception)
-                        {
-
-                            throw;
-                        }
-
-                    }
-                    for (int ii = 0; ii < allChain[i].fixedPointList.Count; ii++)
-                    {
-                        selectDictionary[allChain[i].allPointList[ii].transform].selectType = SelectHelper.SelectType.GenerateFixedBone;
-                    }
-                }
-
-            }
-            return selectDictionary;
-        }
-
-        public void SaveSelectData()
-        {
-            if (selectDictionary != null)
-            {
-                selectHelpers = selectDictionary.Values.ToArray();
-            }
-        }
-
-        #endregion
-
-        public static void GenerateBoneChainImporter(Transform root, List<string> generateKeyWordWhiteList, List<string> generateKeyWordBlackList, List<Transform> blackListOfGenerateTransform, ADBSettingLinker settings, ref List<ADBChainProcessor> chainProcessors)
-        {
-            Transform[] bfsSortTransform = GetBFS(root);
-
-            for (int i = 0; i < bfsSortTransform.Length; i++)
-            {
-                Transform target = bfsSortTransform[i];
-
-                if (target == null || target.parent == null) continue;
-                ADBRuntimePoint appendOther = target.GetComponent<ADBRuntimePoint>();
-                if (appendOther!=null&&!appendOther.isRoot) continue;
-
-                Transform parent = target.parent;
-
-                bool isInvaild = false;
-                string transformName = target.name;
-                for (int ii = 0; ii < blackListOfGenerateTransform.Count; ii++)
-                {
-                    if (target.Equals(blackListOfGenerateTransform[ii]))
-                    {
-                        isInvaild = true;
-                        break;
-                    }
-                }
-
-                for (int ii = 0; ii < generateKeyWordBlackList.Count; ii++)
-                {
-                    if (transformName.Contains(generateKeyWordBlackList[ii]))
-                    {
-                        isInvaild = true;
-                        break;
-                    }
-                }
-
-                if (isInvaild)
+                if (!transform.gameObject.activeInHierarchy|| transform.parent==null)//OYM:没有打开,或者是根节点
                 {
                     continue;
                 }
-                else
+
+                for (int j0 = 0; j0 < blackListOfGenerateTransform.Count; j0++)//OYM：是否在节点黑名单
                 {
-                    for (int ii = 0; ii < generateKeyWordWhiteList.Count; ii++)
+                    if (isblack) break;
+                    isblack = transform.Equals(blackListOfGenerateTransform[j0]);
+                }
+                if (isblack) return;//OYM:节点在黑名单时,不再向下搜索
+
+                string transformName = transform.name.ToLower();
+                for (int j0 = 0; j0 < generateKeyWordBlackList.Count; j0++)//OYM：是否在名字黑名单
+                {
+                    if (isblack) break;
+                    isblack = transformName.Contains(generateKeyWordBlackList[j0]);
+
+                }
+                if (isblack) break;//OYM:名字在黑名单时,仍然继续向下搜索
+
+                for (int i = 0; i < generateKeyWordWhiteList.Count; i++)
+                {
+                    string whiteKey = generateKeyWordWhiteList[i];
+                    if (whiteKey == null) continue;
+
+                    if (transformName.Contains(whiteKey))
                     {
-                        string whiteKey = generateKeyWordWhiteList[ii];
-                        if (whiteKey == null) continue;
-
-                        if (transformName.Contains(whiteKey))
+                       var fixedNode =  SearchADBRuntimePoint(transform, new List<string>() { whiteKey }, generateKeyWordBlackList, blackListOfGenerateTransform, 0);
+                        var parent = transform.parent;
+                        ADBChainProcessor chainProcessor= chainProcessors.FirstOrDefault(x => x.CanMerge(fixedNode, settings.GetSetting(whiteKey)));
+                        if (chainProcessor == null)
                         {
-                           var fixedNode= SearchADBRuntimePoint(target, new List<string>() { whiteKey }, generateKeyWordBlackList, blackListOfGenerateTransform);
-
-                            ADBChainProcessor chainProcessor = chainProcessors.FirstOrDefault(x => x.CanMerge(fixedNode, settings.GetSetting(whiteKey)));
-
-                            if (chainProcessor == null)
-                            {
-                                chainProcessor = ADBChainProcessor.CreateADBChainProcessor(parent, whiteKey, settings.GetSetting(whiteKey));
-                                chainProcessors.Add(chainProcessor);
-                            }
-                            chainProcessor.AddChild(fixedNode);
+                            chainProcessor = ADBChainProcessor.CreateADBChainProcessor(parent, whiteKey, settings.GetSetting(whiteKey));
+                            chainProcessors.Add(chainProcessor);
                         }
+                        chainProcessor.AddChild(fixedNode);
                     }
                 }
-            }
+            } while (false);
 
-            for (int i = 0; i < chainProcessors.Count; i++)
+            for (int i = 0; i < transform.childCount; i++)
             {
-                chainProcessors[i].Initialize();
+                GenerateBoneChainImporter(transform.GetChild(i), generateKeyWordWhiteList, generateKeyWordBlackList, blackListOfGenerateTransform, settings,ref chainProcessors);
             }
         }
 
-        //deep search the fixed point ,get they childpoint and add it to their point data 
-        private static ADBRuntimePoint SearchADBRuntimePoint(Transform transform, List<string> generateKeyWordWhiteList, List<string> generateKeyWordBlackList, List<Transform> blackListOfGenerateTransform)
-        {
-            Transform[] bfsSortTransform = GetBFS(transform);
-            List<ADBRuntimePoint> pointResult = new List<ADBRuntimePoint>();
+        //OYM：deep search the fixed point ,get they childpoint and add it to their point data 
+        private static ADBRuntimePoint SearchADBRuntimePoint(Transform transform, List<string> generateKeyWordWhiteList, List<string> generateKeyWordBlackList, List<Transform> blackListOfGenerateTransform, int depth)
+        {       //OYM：利用深度搜索,能很快找到所有的固定点,
+                //OYM：如果是子节点与父节点匹配,则父节点添加子节点坐标
+                //OYM：
 
-            for (int i = 0; i < bfsSortTransform.Length; i++)
+            ADBRuntimePoint point = null;
+            do
             {
-                Transform target = bfsSortTransform[i];
+                if (transform == null) break;
 
-                if (target == null) continue ;
-
-                if (!target.gameObject.activeInHierarchy) continue;
+                if (!transform.gameObject.activeInHierarchy) break;//OYM:关闭了就不再进行添加
                 bool isblack = false;
 
-                for (int ii = 0; ii < blackListOfGenerateTransform.Count; ii++)
+                for (int i = 0; i < blackListOfGenerateTransform.Count; i++)//OYM：是否在节点黑名单
                 {
                     if (isblack) break;
-                    isblack = target.Equals(blackListOfGenerateTransform[ii]);
+                    isblack = transform.Equals(blackListOfGenerateTransform[i]);
                 }
-                string transformName = target.name.ToLower();
-                for (int ii = 0; ii < generateKeyWordBlackList.Count; ii++)
+                string transformName = transform.name.ToLower();
+                for (int i = 0; i < generateKeyWordBlackList.Count; i++)//OYM：是否在名字黑名单
                 {
                     if (isblack) break;
-                    isblack = transformName.Contains(generateKeyWordBlackList[ii]);
+                    isblack = transformName.Contains(generateKeyWordBlackList[i]);
 
                 }
                 if (isblack) break;
 
-                for (int ii = 0; ii < generateKeyWordWhiteList.Count; ii++)
+                for (int i = 0; i < generateKeyWordWhiteList.Count; i++)//OYM:搜索白名单以内的骨骼
                 {
-                    string whiteKey = generateKeyWordWhiteList[ii];
+                    string whiteKey = generateKeyWordWhiteList[i];
                     if (whiteKey == null) continue;
                     if (transformName.Contains(whiteKey))
                     {
-                        pointResult.Add( ADBRuntimePoint.CreateRuntimePoint(target,0, whiteKey, !transformName.Contains(ADBChainProcessor.virtualKey)));
-                    }
-                }
-            }
-            BuildParentChildRelation(pointResult);
-            return pointResult[0];
-        }
-
-        private static void BuildParentChildRelation(List<ADBRuntimePoint> pointList)
-        {
-            Transform[] transformList = pointList.Select(x => x.transform).ToArray();
-            List<ADBRuntimePoint> rootPoint = new List<ADBRuntimePoint>();
-            for (int i = 0; i < transformList.Length; i++)
-            {
-                Transform parentIter = transformList[i].parent;
-                while (parentIter!=null)
-                {
-                    int parentIndex = Array.IndexOf(transformList, parentIter);
-                    if (parentIndex != -1)
-                    {
-                        pointList[parentIndex].AddChild(pointList[i]);
+                        point =  ADBRuntimePoint.CreateRuntimePoint(transform, depth, whiteKey, !transformName.Contains(ADBChainProcessor.virtualKey));//OYM: 创建活动节点
                         break;
                     }
-                    parentIter = parentIter.parent;
                 }
-                if (parentIter == null)
+            } while (false);
+
+
+            //OYM：get point child
+            //OYM：注意,这个递归非常有意思,值得好好看看
+            if (point != null)
+            {
+
+                for (int i = 0; i < transform.childCount; i++)
                 {
-                    rootPoint.Add(pointList[i]);
+                    var childPoint = SearchADBRuntimePoint(point.transform.GetChild(i), generateKeyWordWhiteList, generateKeyWordBlackList, blackListOfGenerateTransform, depth + 1);
+                    if (childPoint != null)
+                    {
+                        point.AddChild(childPoint);
+                    }
                 }
             }
-
-            for (int i = 0; i < rootPoint.Count; i++)
-            {
-                SetDepth(rootPoint[i], 0);
-            }
+            return point;
         }
-        private static void SetDepth(ADBRuntimePoint target,int depth)
-        {
-            target.depth = depth;
-            for (int i = 0; i < target.ChildPoints?.Count; i++)
-            {
-                SetDepth(target.ChildPoints[i], depth + 1);
-            }
-        }
-
-
-        private static Transform[] GetBFS(Transform root)
-        {
-            Queue<Transform> targetQueue = new Queue<Transform>();
-            List<Transform> bfsResult = new List<Transform>();
-
-            targetQueue.Enqueue(root);
-            while (targetQueue.Count>0)
-            {
-                Transform target = targetQueue.Dequeue();
-                bfsResult.Add(target);
-                int childCount = target.childCount;
-                for (int i = 0; i < childCount; i++)
-                {
-                    targetQueue.Enqueue(target.GetChild(i));
-                }
-            }
-            return bfsResult.ToArray();
-        }
+        #endregion
     }
-
 }

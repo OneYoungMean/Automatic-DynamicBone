@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5dacefedb29654d4dbf485e7db79a880, type: 3}
-  m_Name: Hair medium
+  m_Name: Oppai medium copy
   m_EditorClassIdentifier: 
   frictionCurve:
     serializedVersion: 2
@@ -169,7 +169,7 @@ MonoBehaviour:
     m_RotationOrder: 4
   elasticityMin: 0
   elasticityMax: 1
-  elasticityValue: 0.1
+  elasticityValue: 0.3
   iselasticityCurve: 0
   velocityIncreaseCurve:
     serializedVersion: 2
@@ -225,7 +225,7 @@ MonoBehaviour:
     m_RotationOrder: 4
   stiffnessWorldMin: 0
   stiffnessWorldMax: 10
-  stiffnessWorldValue: 0
+  stiffnessWorldValue: 1
   isstiffnessWorldCurve: 0
   stiffnessLocalCurve:
     serializedVersion: 2
@@ -291,7 +291,7 @@ MonoBehaviour:
     m_RotationOrder: 4
   elasticityVelocityMin: 0
   elasticityVelocityMax: 1
-  elasticityVelocityValue: 0.5
+  elasticityVelocityValue: 1
   iselasticityVelocityCurve: 0
   structuralShrinkVerticalScaleCurve:
     serializedVersion: 2
@@ -899,8 +899,8 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  isComputeStructuralVertical: 0
-  isComputeStructuralHorizontal: 0
+  isComputeStructuralVertical: 1
+  isComputeStructuralHorizontal: 1
   isComputeShear: 0
   isComputeBendingVertical: 0
   isComputeBendingHorizontal: 0

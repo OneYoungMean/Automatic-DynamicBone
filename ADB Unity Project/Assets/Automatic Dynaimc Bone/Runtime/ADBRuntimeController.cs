@@ -8,11 +8,8 @@ using UnityEngine.SceneManagement;
 
 namespace ADBRuntime.Mono
 {
-    /// <summary>
-    /// Phyiscs kernel controller
-    /// </summary>
+
     [DisallowMultipleComponent]
-    [DefaultExecutionOrder(12000)]
     public class ADBRuntimeController : MonoBehaviour, IADBPhysicMonoComponent
     {
         public MonoBehaviour Target => this;
@@ -22,20 +19,19 @@ namespace ADBRuntime.Mono
         public float bufferTime=1f;
         public int iteration=4;
         public float windForceScale=0f;
-        [SerializeField]
         public bool isDrawGizmo=false;
-        [SerializeField]
         public bool isOptimize = false;
-        [SerializeField]
-        public float timeScale = 1;
-        [SerializeField]
-        public bool isRunAsync;
-        [SerializeField]
-        public bool isParallel ;
+       
+
         public ColliderCollisionType colliderCollisionType = ColliderCollisionType.Constraint;
+
+        public float timeScale = 1;
+        public bool isRunAsync = false;
+        public bool isParallel=false;
 
         public List<ADBColliderReader> overlapsColliderList;
         public Bounds OverlapBox;
+
 
         public UpdateMode updateMode=UpdateMode.FixedUpdate;
         public ADBChainProcessor[] allChain;
@@ -52,9 +48,11 @@ namespace ADBRuntime.Mono
 
 
         public float colliderSize=1;
+        //OYM:Advanced
 
+     
 
-        private void Start()
+        private void Start()//OYM：滚回来自己来趟这趟屎山
         {
             if (!ParentCheck())
             {
@@ -74,7 +72,7 @@ namespace ADBRuntime.Mono
             {
                 for (int i = 0; i < allChain.Length; i++)
                 {
-                    allChain[i].SetData( ADBkernel);
+                    allChain[i].SetData( ADBkernel);//OYM：在这里对各种joint和point进行分类与编号
                 }
                 //colliderControll.GetData(ref dataPackage);
                 ADBkernel.SetNativeArray();
@@ -105,14 +103,14 @@ namespace ADBRuntime.Mono
         {
             if (updateMode==UpdateMode.Update)
             {
-                Run(Time.smoothDeltaTime* timeScale);
+                Run(Time.deltaTime* timeScale);
             }
         }
         private void FixedUpdate()
         {
             if (updateMode == UpdateMode.FixedUpdate)
             {
-                Run(1/60f* timeScale);
+                Run(Time.fixedDeltaTime* timeScale);
             }
 
         }
@@ -121,7 +119,7 @@ namespace ADBRuntime.Mono
         {
             if (updateMode == UpdateMode.LateUpdate)
             {
-                Run(Time.smoothDeltaTime * timeScale);
+                Run(Time.unscaledDeltaTime* timeScale);
             }
         }
         private void OnDisable()
@@ -149,28 +147,22 @@ namespace ADBRuntime.Mono
             {
                 isResetPoint = false;
                 RestoreRuntimePoint();
-                addForce+= UnityEngine.Random.insideUnitSphere * 1e-6f;//Increase a fretting force to prevent some strange bugs when initializing
+                addForce+= UnityEngine.Random.insideUnitSphere * 1e-6f;//OYM:增加一个微动的力,防止初始化时出现一些奇怪bug
                 startVelocityDamp = 0;
                 return;
             }
-            if (deltaTime==0)
-            {
-                deltaTime = inputDeltaTime;
-            }
-            else
-            {
-                deltaTime = Mathf.Min(0.02f, Mathf.Lerp(deltaTime, inputDeltaTime, 1 / (bufferTime * 60)));
-            }
-            
-            
+            deltaTime =Mathf.Min(0.02f, Mathf.Lerp(deltaTime, inputDeltaTime, 1 / (bufferTime * 60)));
             startVelocityDamp =math.saturate (startVelocityDamp+ inputDeltaTime / bufferTime);
 
+            //  deltaTime =Mathf.Lerp(deltaTime, Mathf.Min(Time.deltaTime,0.0166f),0.1f);//OYM：用time.deltaTime并不理想,或许是我笔记本太烂的缘故?
 
             scale =math.cmax((float3) transform.lossyScale);
             scale = math.max(scale, math.EPSILON);
             addForce += ADBWindZone.getaddForceForce(transform.position) * windForceScale * deltaTime;
             UpdateOverlapsCollider();
             UpdateDataPakage();
+
+            //OYM：理论上你多执行几次UpdateDataPakage()也没啥关系
         }
         private void UpdateDataPakage()
         {
@@ -217,9 +209,10 @@ namespace ADBRuntime.Mono
             tempColliderReads.Clear();
             for (int i = 0; i < count; i++)
             {
-                if (ADBColliderReader.ColliderTokenDic.TryGetValue(colliders[i].GetInstanceID(),out ADBColliderReader colliderToken)&& colliderToken.runtimeCollider!=null)
+                if (ADBColliderReader.ColliderTokenDic.TryGetValue(colliders[i].GetInstanceID(),out ADBColliderReader colliderToken))
                 {
-                    tempColliderReads.Add(colliderToken.runtimeCollider.colliderRead);
+                    tempColliderReads.Add( colliderToken.runtimeCollider.colliderRead);
+                    //OYM:这里应该对在内求一个
                     overlapsColliderList.Add(colliderToken);
                 }
             }
@@ -233,7 +226,6 @@ namespace ADBRuntime.Mono
         public void ResetData()
         {
             RestoreRuntimePoint();
-            ADBkernel.Dispose();
             Start();
 
         }
@@ -279,7 +271,8 @@ namespace ADBRuntime.Mono
             return allChain?.Length > 0;
         }
         public void ListCheck()
-        {
+        {//OYM：一个简单的防报错和把关键词tolower的方法
+
             if (overlapsColliderList == null)
             {
                 overlapsColliderList = new List<ADBColliderReader>();
@@ -296,7 +289,7 @@ namespace ADBRuntime.Mono
         {
             for (int i = 0; i < allChain?.Length; i++)
             {
-                allChain[i].Initialize();
+                allChain[i].Initialize();//OYM：在这里对各种joint和point进行分类与编号
             }
 
             if (allChain == null)
@@ -306,15 +299,12 @@ namespace ADBRuntime.Mono
         }
         private void ClacBounds()
         {
-            if (allChain.Length==0)
-            {
-                return;
-            }
             OverlapBox = allChain[0].GetCurrentRangeBounds();
             for (int i = 1; i < allChain.Length; i++)
             {
                 OverlapBox.Encapsulate(allChain[i].GetCurrentRangeBounds());
             }
+
         }
         public void AddForce(Vector3 force)
         {
@@ -338,7 +328,7 @@ namespace ADBRuntime.Mono
 
         private void OnDrawGizmos()
         {
-            if (!isDrawGizmo || !isActiveAndEnabled) return;
+            if (!isDrawGizmo && isActiveAndEnabled) return;
 
             for (int i = 0; i < allChain?.Length; i++)
             {
@@ -349,10 +339,10 @@ namespace ADBRuntime.Mono
             Vector3 center = OverlapBox.center ;
             Vector3 halfExtent = OverlapBox.extents * scale;
             Gizmos.DrawWireCube(center, halfExtent*2);
-/*            if (Application.isPlaying)
+            if (Application.isPlaying)
             {
-                ADBkernel?.DrawGizmos();
-            }*/
+                ADBkernel.DrawGizmos();
+            }
         }
     }
     public enum ColliderCollisionType
@@ -372,7 +362,7 @@ namespace ADBRuntime.Mono
 
         Point = 3,
         /// <summary>
-        ///No Collide
+        /// 没有碰撞(最快)
         /// </summary>
 
         Null = 4

@@ -94,7 +94,7 @@ MonoBehaviour:
     m_RotationOrder: 4
   gravityScaleMin: 0
   gravityScaleMax: 10
-  gravityScaleValue: 3.09
+  gravityScaleValue: 0.1
   isgravityScaleCurve: 0
   moveInertCurve:
     serializedVersion: 2
@@ -141,7 +141,7 @@ MonoBehaviour:
     m_RotationOrder: 4
   dampingMin: 0
   dampingMax: 1
-  dampingValue: 0.363
+  dampingValue: 0.85
   isdampingCurve: 0
   elasticityCurve:
     serializedVersion: 2
@@ -169,7 +169,7 @@ MonoBehaviour:
     m_RotationOrder: 4
   elasticityMin: 0
   elasticityMax: 1
-  elasticityValue: 0.175
+  elasticityValue: 0.3
   iselasticityCurve: 0
   velocityIncreaseCurve:
     serializedVersion: 2
@@ -272,7 +272,7 @@ MonoBehaviour:
     m_RotationOrder: 4
   lengthLimitForceScaleMin: 0
   lengthLimitForceScaleMax: 1
-  lengthLimitForceScaleValue: 0.702
+  lengthLimitForceScaleValue: 1
   islengthLimitForceScaleCurve: 0
   elasticityVelocityCurve:
     serializedVersion: 2
@@ -291,7 +291,7 @@ MonoBehaviour:
     m_RotationOrder: 4
   elasticityVelocityMin: 0
   elasticityVelocityMax: 1
-  elasticityVelocityValue: 0.019
+  elasticityVelocityValue: 0.1
   iselasticityVelocityCurve: 0
   structuralShrinkVerticalScaleCurve:
     serializedVersion: 2
@@ -657,7 +657,7 @@ MonoBehaviour:
   pointRadiuMax: 1
   pointRadiuValue: 0
   ispointRadiuCurve: 1
-  vrmStiffnessForceCurve:
+  value2Curve:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
@@ -681,7 +681,7 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  vrmStiffnessForceValue: 0
+  value2Value: 0
   value3Curve:
     serializedVersion: 2
     m_Curve:

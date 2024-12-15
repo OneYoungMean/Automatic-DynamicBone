@@ -13,14 +13,11 @@ namespace ADBRuntime
         Bending_Horizontal,
         Circumference,
     }
-    /// <summary>
-    /// ADB Constraint
-    /// </summary>
     public class ADBRuntimeConstraint
     {
         public ConstraintRead constraintRead;
-        public ADBRuntimePoint pointA { get; private set; }
-        public ADBRuntimePoint pointB { get; private set; }
+        public ADBRuntimePoint pointA { get; private set; }//OYM：父节点
+        public ADBRuntimePoint pointB { get; private set; }//OYM：子节点
         public Vector3 direction { get; private set; }
 
         public ADBRuntimeConstraint(ConstraintType type, ADBRuntimePoint pointA, ADBRuntimePoint pointB, float shrink, float stretch, bool isCollide)
@@ -28,7 +25,7 @@ namespace ADBRuntime
             constraintRead.type = type;
             this.pointA = pointA;
             this.pointB = pointB;
-            constraintRead.radius = 0.5f * (pointA.pointRead.radius + pointB.pointRead.radius);
+            constraintRead.radius = 0.5f * (pointA.pointRead.radius + pointB.pointRead.radius);//要用这个属性自己改,反正用起来太奇怪了=w=
 
             constraintRead.indexA = pointA.index;
             constraintRead.indexB = pointB.index;
@@ -39,7 +36,7 @@ namespace ADBRuntime
             constraintRead.length = (this.direction).magnitude;
 
         }
-        public override string ToString()
+        public override string ToString()//OYM:Debug用
         {
             return pointA.transform.name + " " +pointB.transform.name;
         }
@@ -76,30 +73,43 @@ namespace ADBRuntime
             Gizmos.DrawLine(pointA.transform.position, pointB.transform.position);
         }
     }
-    /// <summary>
-    /// ADB Constraint native
-    /// </summary>
+
     public struct ConstraintRead:IEquatable<ConstraintRead>
     {
         public bool isCollider;
-
+        /// <summary>
+        /// 种类
+        /// </summary>
         public ConstraintType type;
-
+        /// <summary>
+        /// 节点A
+        /// </summary>
         public int indexA;
-
+        /// <summary>
+        /// 节点B
+        /// </summary>
         public int indexB;
-
+        /// <summary>
+        /// 长度
+        /// </summary>
         public float length;
-
+        /// <summary>
+        /// 收缩值
+        /// </summary>
         public float shrink;
-
+        /// <summary>
+        /// 拉伸值
+        /// </summary>
         public float stretch;
-
+        /// <summary>
+        /// 半径
+        /// </summary>
         public float radius;
          
         public bool Equals(ConstraintRead other)
         {
             return(other.indexA == indexA ||other.indexB == indexB|| other.indexA == indexB || other.indexB == indexA);
+            //OYM：理论上而言是存在完全相等的杆件的,但是我应该尽量避免了这种情况.
         }
     }
 }

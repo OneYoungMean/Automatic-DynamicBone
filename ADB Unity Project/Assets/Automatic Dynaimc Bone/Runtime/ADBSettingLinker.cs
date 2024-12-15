@@ -5,22 +5,12 @@ using UnityEngine;
 
 namespace ADBRuntime
 {
-    /// <summary>
-    /// A class used to store multiple settings and keyword pairs
-    /// Used to auto generate.
-    /// </summary>
     [CreateAssetMenu(fileName = "ADBSettingLinker", menuName = "ADB/ADBSettingLinker")]
     public class ADBSettingLinker : ScriptableObject
     {
         public ADBPhysicsSetting defaultSetting;
         public List<KeyWordSetting> settings;
         public List<string> AllKeyWord { get { return settings.SelectMany(x => x.keyWord, (x, y) => y).ToList(); } }
-        /// <summary>
-        /// Get setting by keyword
-        /// </summary>
-        /// <param name="keyword"></param>
-        /// <param name="setting"></param>
-        /// <returns></returns>
         public bool TryGetSetting(string keyword,out ADBPhysicsSetting setting)
         {
             if (!(settings == null || settings.Count == 0))
@@ -56,11 +46,6 @@ namespace ADBRuntime
                 return false;
             }
         }
-        /// <summary>
-        /// Get Setting by keyword
-        /// </summary>
-        /// <param name="keyword"></param>
-        /// <returns></returns>
         public ADBPhysicsSetting GetSetting(string keyword)
         {
             TryGetSetting(keyword, out ADBPhysicsSetting setting);
@@ -88,9 +73,6 @@ namespace ADBRuntime
         }
 
     }
-    /// <summary>
-    /// Word list-setting pair 
-    /// </summary>
     [System.Serializable]
     public class KeyWordSetting
     {

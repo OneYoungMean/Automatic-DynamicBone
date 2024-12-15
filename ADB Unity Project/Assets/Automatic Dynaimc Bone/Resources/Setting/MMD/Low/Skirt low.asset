@@ -657,7 +657,7 @@ MonoBehaviour:
   pointRadiuMax: 1
   pointRadiuValue: 0
   ispointRadiuCurve: 1
-  vrmStiffnessForceCurve:
+  value2Curve:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
@@ -681,7 +681,7 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  vrmStiffnessForceValue: 0
+  value2Value: 0
   value3Curve:
     serializedVersion: 2
     m_Curve:
@@ -912,4 +912,4 @@ MonoBehaviour:
   isDebugDraw: 1
   isFixGravityAxis: 1
   gravity: {x: 0, y: -9.81, z: 0}
-  colliderChoice: 0
+  colliderChoice: -1

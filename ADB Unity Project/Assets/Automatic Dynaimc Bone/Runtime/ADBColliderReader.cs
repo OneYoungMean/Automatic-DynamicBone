@@ -4,9 +4,6 @@ using UnityEngine;
 using System;
 namespace ADBRuntime.Mono
 {
-    /// <summary>
-    /// Record unity collider,used to check if it has been changed.
-    /// </summary>
     public struct ColliderChecker:IEquatable<UnityEngine.SphereCollider>,IEquatable<UnityEngine.CapsuleCollider>, IEquatable<UnityEngine.BoxCollider>
     {
         public float radius;
@@ -41,6 +38,9 @@ namespace ADBRuntime.Mono
 
         public bool Equals(UnityEngine.SphereCollider sphereCollider)
         {
+
+
+
             return colliderType == ColliderType.Sphere&&radius == sphereCollider.radius&& center == sphereCollider.center;
         }
 
@@ -60,9 +60,6 @@ namespace ADBRuntime.Mono
             size == boxCollider.size;
         }
     }
-    /// <summary>
-    /// ADB Collider reader,corvert unity collider to ADB collider. 
-    /// </summary>
     public class ADBColliderReader :MonoBehaviour, IADBPhysicMonoComponent
     {
         public MonoBehaviour Target => this;
@@ -73,7 +70,7 @@ namespace ADBRuntime.Mono
                 if (colliderTokenDic == null)
                 {
                     colliderTokenDic = new Dictionary<int, ADBColliderReader>();
-                    Application.quitting += () => colliderTokenDic = null;//Delete Dict only when you exit
+                    Application.quitting += () => colliderTokenDic = null;//OYM:只有退出的时候删除
                 }
                 return colliderTokenDic;
             }
@@ -85,7 +82,7 @@ namespace ADBRuntime.Mono
         private Vector3 initialSize;
         public CollideFunc collideFunc = CollideFunc.OutsideLimit;
         public ColliderChoice colliderMask=ColliderChoice.Other;
-        private ColliderChecker colliderChecker;
+        private ColliderChecker colliderChecker;//OYM:用来检查collider有没有被改变,这该死的untiy连个委托都没有留给我....
         public ADBRuntimeCollider runtimeCollider;
 
         public Collider unityCollider;
@@ -120,11 +117,6 @@ namespace ADBRuntime.Mono
         private void OnEnable()
         {
             CheckAndBuildADBRuntimeCollider();
-            if (runtimeCollider==null)
-            {
-                Debug.Log(name+ " radius==0 ,is been disabled");
-                enabled = false;
-            }
         }
 
         private void OnDisable()
@@ -148,7 +140,7 @@ namespace ADBRuntime.Mono
         }
         public bool CheckAndBuildADBRuntimeCollider()
         {
-            if (unityCollider == null && (!TryGetComponent<Collider>(out unityCollider) || !unityCollider.enabled))
+            if (unityCollider == null && (!TryGetComponent<Collider>(out unityCollider) || !unityCollider.enabled))//OYM:获取不到或者没打开
             {
                 if (ColliderTokenDic.TryGetValue(id,out _))
                 {
@@ -195,11 +187,11 @@ namespace ADBRuntime.Mono
             {
                 unitySphereCollider = unityCollider as UnityEngine.SphereCollider;
             }
-            if (colliderChecker.Equals(unitySphereCollider))
+            if (colliderChecker.Equals(unitySphereCollider))//OYM:检查是否跟之前构建的一样
             { return false; }
 
             colliderChecker = new ColliderChecker(unitySphereCollider);
-            runtimeCollider = new ADBSphereCollider(unitySphereCollider.radius, unitySphereCollider.center, colliderMask, unitySphereCollider.transform, collideFunc);
+            runtimeCollider = new ADBSphereCollider(unitySphereCollider.radius, unitySphereCollider.center, colliderMask, unitySphereCollider.transform, collideFunc);//OYM:懒得写更改函数了,这部分麻烦的要死,直接new 吧,又不是每帧运行
             runtimeCollider.InitialColliderData();
             return true;
         }
@@ -211,7 +203,7 @@ namespace ADBRuntime.Mono
             {
                 unityCapsuleCollider = unityCollider as UnityEngine.CapsuleCollider;
             }
-            if (colliderChecker.Equals(unityCapsuleCollider))
+            if (colliderChecker.Equals(unityCapsuleCollider))//OYM:检查是否跟之前构建的一样
             { return false; }
 
             colliderChecker = new ColliderChecker(unityCapsuleCollider);
@@ -245,7 +237,7 @@ namespace ADBRuntime.Mono
             {
                 unityBoxCollider = unityCollider as UnityEngine.BoxCollider;
             }
-            if (colliderChecker.Equals(unityBoxCollider))
+            if (colliderChecker.Equals(unityBoxCollider))//OYM:检查是否跟之前构建的一样
             { return false; }
             colliderChecker = new ColliderChecker(unityBoxCollider);
 

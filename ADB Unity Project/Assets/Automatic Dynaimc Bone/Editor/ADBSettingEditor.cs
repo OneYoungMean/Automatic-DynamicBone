@@ -34,24 +34,29 @@ namespace ADBRuntime.UntiyEditor
                 }
             }
 
+/*            if (GUILayout.Button("转换为曲线"))
+            {
+
+            }*/
+
             serializedObject.Update();
             Titlebar("PhysicsSetting", Color.white);
 
-            Titlebar("Cruve|PointSetting", Color.green);
+            Titlebar("PointSetting", Color.green);
                 DrawValueOrCurve(serializedObject,"gravityScale", "Gravity Scale");
                 DrawValueOrCurve(serializedObject,"stiffnessWorld", "Displacement Stiffness Scale");
                 DrawValueOrCurve(serializedObject,"stiffnessLocal", "Angle Limit Scale");
                 DrawValueOrCurve(serializedObject,"elasticity", "Angle Stiffness Scale");
                 DrawValueOrCurve(serializedObject,"elasticityVelocity", "Angle Stiffness Velocity Scale");
                 DrawValueOrCurve(serializedObject,"lengthLimitForceScale", "Length Limit Force Scale");
-                DrawValueOrCurve(serializedObject,"damping", "Damping");
+                DrawValueOrCurve(serializedObject,"damping","Damping");
                 DrawValueOrCurve(serializedObject,"moveInert", "Move Inert");
                 DrawValueOrCurve(serializedObject,"velocityIncrease", "Velocity Increase");
-                DrawValueOrCurve(serializedObject,"friction", "Friction");
-                DrawValueOrCurve(serializedObject,"addForceScale", "Add Force Scale");
+                DrawValueOrCurve(serializedObject,"friction","Friction");
+                DrawValueOrCurve(serializedObject,"addForceScale","Add Force Scale");
 
             GUILayout.Space(5);
-            DrawValueOrCurve(serializedObject,"pointRadiu", "Point Radius");
+            DrawValueOrCurve(serializedObject,"pointRadiu","Point Radius");
             Titlebar("StickSetting", Color.green);
 
             EditorGUILayout.PropertyField(serializedObject.FindProperty( "isComputeStructuralVertical"), new GUIContent("Is Open StructuralVertical Stick"), true);
@@ -142,7 +147,7 @@ namespace ADBRuntime.UntiyEditor
             EditorGUILayout.PropertyField(serializedObject.FindProperty( "gravity"), new GUIContent("Gravity Direction"), true);
             //EditorGUILayout.PropertyField(serializedObject.FindProperty( "isFixGravityAxis"), new GUIContent("重力轴随角色旋转而旋转"), true);
             EditorGUILayout.PropertyField(serializedObject.FindProperty( "isFixedPointFreezeRotation"), new GUIContent("Is Freeze Fixed Transform's Rotation"), true);
-            controller.colliderChoice =(ColliderChoice) EditorGUILayout.EnumFlagsField("ColliderMask", (ColliderChoice)controller.colliderChoice);
+            controller.colliderChoice =(ColliderChoice) EditorGUILayout.EnumFlagsField("ColliderMask",(ColliderChoiceZh)controller.colliderChoice);
             EditorUtility.SetDirty(controller);
             serializedObject.ApplyModifiedProperties();
         }
@@ -182,12 +187,14 @@ namespace ADBRuntime.UntiyEditor
                     var valueMin = serializedObject.FindProperty(baseName + "Min");
                     var valueMax = serializedObject.FindProperty(baseName + "Max");
                     valueField.floatValue = EditorGUILayout.Slider(baseNameCN + "Value", valueField.floatValue, valueMin.floatValue, valueMax.floatValue);
+                    //EditorGUILayout.PropertyField(valueField, new GUIContent(baseNameCN + "值"), false);
                 }
 
                 EditorGUILayout.EndHorizontal();
             }
             catch (System.Exception)
             {
+
                 throw;
             }
 
